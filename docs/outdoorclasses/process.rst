@@ -1,7 +1,18 @@
 =====
-Process Library
+Block_Process Library
 =====
 
-To use OUTDOOR in a project::
+This library includes classes which depict models of different unit operations.
 
-	import outdoor
+Process
+
+PhysicalProcess
+VirtualProcess
+
+StoichReactor
+YieldReactor
+
+ElectricityGenerator
+SteamGenerator
+
+ProductPool
