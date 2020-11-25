@@ -7,7 +7,7 @@ Contents
 
    readme
    installation
-   ProcessLibrary
+   outdoor classes
    usage
    reference/index
    contributing
