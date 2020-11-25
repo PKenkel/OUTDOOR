@@ -7,8 +7,7 @@ Contents
 
    readme
    installation
-   outdoorclasses/process
-   outdoorclasses/superstructure
+   outdoorclasses/index
    usage
    reference/index
    contributing
