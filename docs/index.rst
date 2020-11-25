@@ -7,6 +7,7 @@ Contents
 
    readme
    installation
+   ProcessLibrary
    usage
    reference/index
    contributing
