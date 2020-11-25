@@ -2,6 +2,20 @@
 Overview
 ========
 
+OUTDOOR ( Open Superstructure Modeling and Optimization Framework) is a tool to construct superstructure optimization models and solve them using MILP solvers. 
+ 
+The Program consists of three main aspects:
+
+1) The outdoor_core module provides classes for unit operations such as Reactors and stream splitters, as well as a class for system data like electricity prices and heating utilities. These Classes can be used to construct superstructures by creating unit operations objects and adding them to a superstructure class object. 
+
+2) The outdoor_core module also implements a generic MILP superstructure model, which is written as an PYOMO abstract model, and can be applied to different cases such as biorefineries, chemical industry or Power-to-X. The generic model is created and afterwards converted into a concrete model by initializing the data from the populated superstructure.
+
+3) Objects and data can either be created and populated by python scripting utilizing class-specific setter function. However, outdoor also includes a excel_wrapper tool which turn predesigned excel templates automatically into populated superstructures which can be solved using the outdoor framework. 
+
+An example is proved in the example folder.
+
+
+
 .. start-badges
 
 .. list-table::
