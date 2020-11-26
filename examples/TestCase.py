@@ -3,11 +3,16 @@ import os
 
 a = os.path.dirname(__file__)
 a = os.path.dirname(a)
+
+
 b= a + '/src'
 sys.path.append(b)
 
+
 'test'
+
 import outdoor
+
 Excel_Path = "Test_Excel.xlsm"
 
 Results_Path = a + '/examples/results'
