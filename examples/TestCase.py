@@ -6,6 +6,7 @@ a = os.path.dirname(a)
 b= a + '/src'
 sys.path.append(b)
 
+'test'
 import outdoor
 Excel_Path = "Test_Excel.xlsm"
 
