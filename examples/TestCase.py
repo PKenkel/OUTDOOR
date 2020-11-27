@@ -15,11 +15,11 @@ import outdoor
 
 Excel_Path = "Test_Excel.xlsm"
 
-Results_Path = a + '/examples/results'
+Results_Path = a + '/examples/results/'
 
 ts = outdoor.get_DataFromExcel(Excel_Path)
 
-(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'cplex')
+(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'gurobi')
 
 
 outdoor.Save_CaseStudy(Opt, Info, Results_Path)
