@@ -19,7 +19,7 @@ Results_Path = a + '/examples/results/'
 
 ts = outdoor.get_DataFromExcel(Excel_Path)
 
-(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'gurobi')
+(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'cplex', 'remote')
 
 
 outdoor.Save_CaseStudy(Opt, Info, Results_Path)
