@@ -15,7 +15,7 @@ import outdoor
 
 Excel_Path = "Test_Excel.xlsm"
 
-Results_Path = a + '/examples/results'
+Results_Path = a + '/examples/results/'
 
 ts = outdoor.get_DataFromExcel(Excel_Path)
 
