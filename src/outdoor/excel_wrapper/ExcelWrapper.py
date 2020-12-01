@@ -47,13 +47,23 @@ def get_DataFromExcel(PathName=None):
     PU_ObjectList  =[]
 
     ## Hidden tables with specific names will be skipped:
-     
+    Hidden_Tables = []
+    Hidden_Tables.append('Template_PhysicalProcess')
+    Hidden_Tables.append('Template_StoichReactor')
+    Hidden_Tables.append('Template_YieldReactor')
+    Hidden_Tables.append('Template_SteamGenerator')
+    Hidden_Tables.append('Template_ElGenerator')
+    Hidden_Tables.append('Template_ProductPool')
+    Hidden_Tables.append('DataBank')
+        
+        
     for i in datframe.keys():
         if i == 'Systemblatt':
             Superstructure_Object = wrapp_SystemData(datframe[i])
-        elif i == 'Tabelle1' or i == 'Template_CC' or i =='Template_Stö' or i =='Template_Yield' or i =='Template_Heat' or i == 'Template_Produktpool':
+        elif i in Hidden_Tables:
             continue
         else:
+            print(i)
             PU_ObjectList.append(wrapp_ProcessUnits(datframe[i]))
             
 
