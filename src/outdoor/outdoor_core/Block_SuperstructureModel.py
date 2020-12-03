@@ -813,11 +813,11 @@ class SuperstructureModel(AbstractModel):
         
         def GWP_7_rule(self,u):
             return self.GWP_CREDITS[u] == self.em_fac_prod[u] \
-                * sum(self.FLOW_IN[u,i] for i in self.I) * self.H
+                * sum(self.FLOW_IN[u,i] for i in self.I) * self.flh[u]
         
         def GWP_8_rule(self,u):
             return self.GWP_CAPTURE[u] == sum(self.FLOW_ADD_TOT[u,i] \
-                                              * self.em_fac_comp[i] for i in self.I) * self.H
+                                              * self.em_fac_comp[i] for i in self.I) * self.flh[u]
     
         self.EnvironmentalEquation6 = Constraint(self.U_C, rule=GWP_6_rule)
         self.EnvironmentalEquation7 = Constraint(self.U_PP, rule=GWP_7_rule)
@@ -833,7 +833,7 @@ class SuperstructureModel(AbstractModel):
         # Constraints
         
         def GWP_1_rule(self,u):
-            return self.GWP_U[u] == self.H \
+            return self.GWP_U[u] == self.flh[u] \
                 * sum(self.FLOW_WASTE[u,i] * self.em_fac_comp[i] for i in self.I)
 
         def GWP_2_rule(self):
