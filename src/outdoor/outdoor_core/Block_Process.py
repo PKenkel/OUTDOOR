@@ -52,7 +52,8 @@ class Process():
         self.kappa_1_rhs_conc = {'kappa_1_rhs_conc': {}}
         self.kappa_2_rhs_conc = {'kappa_2_rhs_conc': {}}
 
-
+        self.FLH = {'flh': {self.Number: None}}
+        
         if Parent is not None:
             Parent.add_Units(self)
 
@@ -232,7 +233,8 @@ class Process():
             self.kappa_2_rhs_conc['kappa_2_rhs_conc'][self.Number]  = 3
 
 
-
+    def set_full_load_hours(self, full_load_hours = None):
+        self.FLH['flh'][self.Number] = full_load_hours
 
 
 
