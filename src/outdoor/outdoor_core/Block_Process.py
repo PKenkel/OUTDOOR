@@ -112,8 +112,8 @@ class Process():
         self.set_conc(RequiredConcentration)
         self.add_myuFactors(SplitfactorDictionary)
         self.add_addflowFactors(dic1)
-        self.set_upperlimits(UpperLimitAdditionalFLow1,
-                             UpperLimitAdditionalFLow2)
+        self.set_upperlimits(UpperLimitAdditionalFlow1,
+                             UpperLimitAdditionalFlow2)
 
 
 
