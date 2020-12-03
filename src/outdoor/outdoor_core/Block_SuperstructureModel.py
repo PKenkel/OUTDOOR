@@ -152,7 +152,7 @@ class SuperstructureModel(AbstractModel):
          
         def MassBalance_1_rule(self,u,i):
             return self.FLOW_IN[u,i] == self.FLOW_ADD_TOT[u,i] \
-                + sum(self.FLOW[uu,u,i] for uu in self.UU) 
+                + sum(self.flh[uu] / self.flh[u] *  self.FLOW[uu,u,i] for uu in self.UU) 
 
         def MassBalance_2_rule(self,u,i):
             return self.FLOW_ADD_TOT[u,i] <= self.alpha[u] * self.Y[u]
