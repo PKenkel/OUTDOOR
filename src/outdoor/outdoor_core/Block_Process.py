@@ -262,7 +262,7 @@ class Process():
         self.ParameterList.append(self.kappa_2_lhs_conc)
         self.ParameterList.append(self.kappa_1_rhs_conc)
         self.ParameterList.append(self.kappa_2_rhs_conc)
-        
+        self.ParameterList.append(self.FLH)
         
         
     
