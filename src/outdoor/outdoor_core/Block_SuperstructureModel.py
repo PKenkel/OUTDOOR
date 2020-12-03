@@ -309,7 +309,7 @@ class SuperstructureModel(AbstractModel):
         self.ENERGY_DEMAND_COOLING = Var(within=NonNegativeReals)
         self.ENERGY_DEMAND_HP_EL  = Var(within=NonNegativeReals)
         self.ENERGY_DEMAND_HP_USE = Var(within=NonNegativeReals)
-        # self.ENERGY_DEMAND_HEAT_TOT = Var(self.HI)  
+
         self.EXCHANGE_TOT = Var()
         self.ENERGY_EXCHANGE = Var(self.HI, within=NonNegativeReals)
         self.ENERGY_DEMAND_HEAT_PROD_USE = Var(within=NonNegativeReals)
@@ -834,7 +834,7 @@ class SuperstructureModel(AbstractModel):
                 * sum(self.FLOW_WASTE[u,i] * self.em_fac_comp[i] for i in self.I)
 
         def GWP_2_rule(self):
-            return self.GWP_UT['Electricity'] == self.H * self.ENERGY_DEMAND_EL_TOT \
+            return self.GWP_UT['Electricity'] == self.ENERGY_DEMAND_EL_TOT \
                 * self.em_fac_ut['Electricity'] \
                 
         
