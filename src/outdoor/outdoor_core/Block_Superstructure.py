@@ -702,7 +702,10 @@ class Superstructure():
                 
 
                 
-        
+    def set_optionalFLH(self):
+        for x in self.UnitsList:
+            if x.FLH['flh'][x.Number] is None:
+                x.FLH['flh'][x.Number] = self.H['H']        
         
 
 
@@ -872,7 +875,7 @@ class Superstructure():
         
         self.calculate_capacityflow()
 
-
+        self.set_optionalFLH()
 
     
     def prepare_HeatBalances(self):
