@@ -340,8 +340,8 @@ class SuperstructureModel(AbstractModel):
                 * sum(self.LHV[i] * self.FLOW_IN[u,i] for i in self.I)
             
         def ElectricityBalance_4_rule(self):
-            return self.ENERGY_DEMAND_EL_TOT == sum(self.ENERGY_DEMAND_EL[u] for u in self.U) \
-                - sum(self.EL_PROD_1[u] for u in self.U_TUR) + self.ENERGY_DEMAND_HP_EL
+            return self.ENERGY_DEMAND_EL_TOT == sum(self.ENERGY_DEMAND_EL[u] * self.flh[u] for u in self.U) \
+                - sum(self.EL_PROD_1[u] * self.flh[u] for u in self.U_TUR) + self.ENERGY_DEMAND_HP_EL * self.H
         
         
         self.ElectricityBalance_1 = Constraint(self.U, rule=ElectricityBalance_1_rule)
@@ -698,7 +698,7 @@ class SuperstructureModel(AbstractModel):
         # -------------
          
         def Ut_CostBalance_2_rule(self):
-            return self.COST_EL == self.ENERGY_DEMAND_EL_TOT * self.delta_el * self.H
+            return self.COST_EL == self.ENERGY_DEMAND_EL_TOT * self.delta_el 
         
         def Ut_CostBalance_3_rule(self):
             return self.COST_UT == self.COST_EL 
