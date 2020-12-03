@@ -494,8 +494,8 @@ class PhysicalProcess(Process):
          return fac
      
         
-    def calc_TurnOver_ACC(self, H,IR):
-        h = H['H']
+    def calc_TurnOver_ACC(self, IR):
+        h = self.FLH['flh'][self.Number]
         lt = self.LT['LT'][self.Number]
         
 

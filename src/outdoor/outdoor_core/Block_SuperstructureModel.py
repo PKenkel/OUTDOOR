@@ -407,16 +407,16 @@ class SuperstructureModel(AbstractModel):
                         
         def HeatBalance_5_rule(self,hi):
             if hi == 1 :
-                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] for u in self.U)
+                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U)
             else:
-                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] for u in self.U)
+                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U)
         
         def HeatBalance_6_rule(self,hi):
             if hi == 1 :
-                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_HEAT[u,hi] for u in self.U) \
+                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u]  for u in self.U) \
                     + self.ENERGY_DEMAND_HEAT_PROD_USE
             else:
-                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_HEAT[u,hi] for u in self.U) \
+                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
                     + self.ENERGY_DEMAND_HEAT_RESI[hi-1]
         
         def HeatBalance_7_rule(self):
