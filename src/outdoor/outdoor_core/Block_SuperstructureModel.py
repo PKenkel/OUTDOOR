@@ -558,7 +558,6 @@ class SuperstructureModel(AbstractModel):
         
         
         self.HEATCOST = Var(self.HI)
-        self.ELCOST = Var()
         self.C_TOT = Var()
         self.HENCOST = Var(self.HI, within=NonNegativeReals)
         self.UtCosts = Var()
@@ -663,8 +662,7 @@ class SuperstructureModel(AbstractModel):
                                     - self.ENERGY_DEMAND_HEAT_PROD_SELL * self.delta_q[1] * 0.7 \
                                     + self.ENERGY_DEMAND_COOLING * self.delta_cool) *self.H
        
-        def HEN_CostBalance_3_rule(self):
-            return self.ELCOST == self.ENERGY_DEMAND_HP_EL * self.delta_el * self.H 
+
         
         def HEN_CostBalance_4_rule(self,hi):
             return self.HENCOST[hi]  <= 13.459 * 1000 *  self.ENERGY_EXCHANGE[hi] \
@@ -686,7 +684,6 @@ class SuperstructureModel(AbstractModel):
         
         self.HEN_CostBalance_1 = Constraint(self.HI, rule = HEN_CostBalance_1_rule)
         self.HEN_CostBalance_2 = Constraint(rule = HEN_CostBalance_2_rule)
-        self.HEN_CostBalance_3= Constraint(rule = HEN_CostBalance_3_rule)
         self.HEN_CostBalance_4 = Constraint(self.HI, rule=HEN_CostBalance_4_rule) 
         self.HEN_CostBalance_4b = Constraint(self.HI, rule=HEN_CostBalance_4b_rule)
         self.HEN_CostBalance_4c = Constraint(self.HI, rule=HEN_CostBalance_4c_rule)
