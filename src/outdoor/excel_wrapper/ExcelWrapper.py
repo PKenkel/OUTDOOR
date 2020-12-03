@@ -63,7 +63,6 @@ def get_DataFromExcel(PathName=None):
         elif i in Hidden_Tables:
             continue
         else:
-            print(i)
             PU_ObjectList.append(wrapp_ProcessUnits(datframe[i]))
             
 
