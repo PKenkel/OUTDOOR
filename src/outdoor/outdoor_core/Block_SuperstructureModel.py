@@ -165,7 +165,6 @@ class SuperstructureModel(AbstractModel):
             return self.FLOW_ADD_TOT[u,i] >= self.FLOW_ADD_1[u] * self.phi1[u,i] \
                 + self.FLOW_ADD_2[u] * self.phi2[u,i] - self.alpha[u] * (1-self.Y[u]) 
                 
-                
         def MassBalance_13_rule(self,u):
             return self.FLOW_ADD_1[u]  <= self.ul_1[u]
         
@@ -714,18 +713,12 @@ class SuperstructureModel(AbstractModel):
         # -------------------------------------------
             
         def RM_CostBalance_1_rule(self,u):
-            return self.RM_COST[u] <= self.alpha[u] * self.Y[u]
-        
-        def RM_CostBalance_2_rule(self,u):
-            return self.RM_COST[u] <= sum(self.FLOW_ADD_TOT[u,i] * self.delta_rm[i] for i in self.I) \
-                + self.alpha[u] *  (1-self.Y[u]) 
-
-        def RM_CostBalance_3_rule(self,u):
-            return self.RM_COST[u] >= sum(self.FLOW_ADD_TOT[u,i] * self.delta_rm[i] for i in self.I) \
-                - self.alpha[u] *  (1-self.Y[u]) 
-            
-        def RM_CostBalance_4_rule(self):
-            return self.RM_COST_TOT == sum(self.RM_COST[u] for u in self.U_C) * self.H
+            return self.RM_COST[u]  == sum(self.FLOW_ADD_TOT[u,i] \
+                                        * self.delta_rm[i] for i in self.I) \
+                                        * self.flh[u]
+                   
+        def RM_CostBalance_2_rule(self):
+            return self.RM_COST_TOT == sum(self.RM_COST[u] for u in self.U_C)
         
         
         
@@ -760,9 +753,7 @@ class SuperstructureModel(AbstractModel):
         
         
         self.RM_CostBalance_1 = Constraint(self.U_C, rule= RM_CostBalance_1_rule)
-        self.RM_CostBalance_2 = Constraint(self.U_C, rule= RM_CostBalance_2_rule)
-        self.RM_CostBalance_3 = Constraint(self.U_C, rule= RM_CostBalance_3_rule)
-        self.RM_CostBalance_4 = Constraint(rule= RM_CostBalance_4_rule)
+        self.RM_CostBalance_2 = Constraint(rule= RM_CostBalance_2_rule)
         
         
         
