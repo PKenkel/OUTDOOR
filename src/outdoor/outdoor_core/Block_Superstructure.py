@@ -697,7 +697,7 @@ class Superstructure():
         
         for i in self.UnitsList:
             if i.Number in self.CostUnitsList['U_C']:
-                i.turn_over_acc['to_acc'][i.Number] = i.calc_TurnOver_ACC(self.H, self.IR)
+                i.turn_over_acc['to_acc'][i.Number] = i.calc_TurnOver_ACC(self.IR)
                 
                 
 
@@ -871,11 +871,13 @@ class Superstructure():
       
         self.fill_ACCFactorParameter()
         
+        self.set_optionalFLH()
+        
         self.fill_TurnOverParameter()
         
         self.calculate_capacityflow()
 
-        self.set_optionalFLH()
+        
 
     
     def prepare_HeatBalances(self):
