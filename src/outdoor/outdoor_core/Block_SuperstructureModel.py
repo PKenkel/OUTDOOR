@@ -133,7 +133,7 @@ class SuperstructureModel(AbstractModel):
         self.ul_1 = Param(self.U, initialize = 10000000)
         self.ul_2 = Param(self.U, initialize = 10000000)
         
-
+        self.flh = Param(self.U)
 
         # Variables
         self.FLOW = Var(self.U, self.UU, self.I,  within=NonNegativeReals)
