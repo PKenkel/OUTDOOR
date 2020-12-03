@@ -56,11 +56,16 @@ def wrapp_GeneralData(obj, df1):
             time_mode = 'Yearly'
         else:
             time_mode = 'Hourly'
-
+            
+    if not pd.isnull(df1.iloc[17,0]):
+        full_load_hours = df1.iloc[17,0]
+    else:
+        full_load_hours = None
 
     obj.set_data_general(ProcessGroup, 
                          LifeTime, 
                          emissions,
+                         full_load_hours,
                          maintenance_factor, 
                          cost_percentage, 
                          time_span, 

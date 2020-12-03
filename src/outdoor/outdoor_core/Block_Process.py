@@ -65,11 +65,12 @@ class Process():
     def set_data_general(self,
                          ProcessGroup,
                          lifetime  = None,
-                         emissions = 0
+                         emissions = 0,
+                         full_load_hours = None
                          ):
        
         self.set_Group(ProcessGroup)
-
+        self.set_full_load_hours(full_load_hours)
 
     def set_Name(self, Name):
         self.Name = Name
@@ -80,8 +81,8 @@ class Process():
     def set_Group(self, processgroup):
         self.Group = processgroup
 
-
-
+    def set_full_load_hours(self, full_load_hours = None):
+        self.FLH['flh'][self.Number] = full_load_hours
 
 
 
@@ -233,8 +234,7 @@ class Process():
             self.kappa_2_rhs_conc['kappa_2_rhs_conc'][self.Number]  = 3
 
 
-    def set_full_load_hours(self, full_load_hours = None):
-        self.FLH['flh'][self.Number] = full_load_hours
+
 
 
 
@@ -361,13 +361,14 @@ class PhysicalProcess(Process):
                          ProcessGroup,
                          lifetime,
                          emissions = 0,
+                         full_load_hours = None,
                          maintenancefactor = 0.044875,
                          CostPercentage = None,
                          TimeSpan = None,
                          TimeMode = None
                          ):
         
-        super().set_data_general(ProcessGroup,lifetime,emissions)
+        super().set_data_general(ProcessGroup,lifetime,emissions,full_load_hours)
         self.set_lifeTime(lifetime)
         self.set_em_fac_unit(emissions)
         self.set_Maintenance_factor(maintenancefactor)
