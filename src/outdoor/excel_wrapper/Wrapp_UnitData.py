@@ -212,29 +212,9 @@ def wrapp_Temperatures(obj, df1, df2):
         TIN2 = df1.iloc[9,0]
         TOUT2 = df1.iloc[10,0]       
         obj.set_Temperatures(TIN1, TOUT1, tau1, TIN2, TOUT2, tau2)
+   
  
-def wrapp_BalanceData(obj, df):
-    
-    """
-    Description 
-    -----------     
-    Define specific columns from the spreadsheet to set myu factors
-
-    Context 
-    ----------
-    function is called in Wrapp_ProcessUnits
-    
-
-    Parameters
-    ----------
-    df : Dataframe
-    
-    """
-    
-    dict1 = WF.read_type2 (df,0,1,2)
-    obj.add_myuFactors(dict1)     
- 
-def wrapp_AdditivesData(obj,df1, df2):
+def wrapp_AdditivesData(obj,df1, df2, df3):
     
     """
     Description 
@@ -253,58 +233,58 @@ def wrapp_AdditivesData(obj,df1, df2):
     
     """   
     
-    dict1 = {}
-    pylist1= {}
-    pylist2 = {}
-    pylist4 = []
+    additional_flow_composition_1 = {}
+    additional_flow_composition_2 = {}
+
+    req_concentration = None
+    upper_limit_1 = 10000
+    upper_limit_2 = 10000
+    
+    
     
     for x in range(len(df1)):
         if  df1.iloc[x,2] == 'phi1':
-            pylist1[df1.iloc[x,0]] = df1.iloc[x,3]
+            additional_flow_composition_1[df1.iloc[x,0]] = df1.iloc[x,3]
 
         else:
             if not pd.isnull(df1.iloc[x,0]):
-                pylist2[df1.iloc[x,0]] = df1.iloc[x,3]
-    
-    dict1['phi1'] = pylist1 
-    dict1['phi2'] = pylist2 
-    
-             
-    obj.add_addflowFactors(dict1) 
+                additional_flow_composition_2[df1.iloc[x,0]] = df1.iloc[x,3]
     
     
+
     if not pd.isnull(df1.iloc[0,1]): 
-        pylist4.append(df1.iloc[0,1])
+        upper_limit_1 = df1.iloc[0,1]
+               
+    if not  pd.isnull(df1.iloc[1,1]): 
+        upper_limit_2 = df1.iloc[1,1]
         
-        
-    if not  pd.isnull(df1.iloc[0,2]): 
-        pylist4.append(df1.iloc[0,2])
-    obj.set_upperlimits(pylist4)
 
+    lhs_comp_list = WF.read_list (df2,1)
     
- 
-    pylist3 = WF.read_list (df2,1)
-    obj.add_kappa_1_lhs_conc(pylist3)
-    
-    
-    pylist3 = WF.read_list (df2,3)
-    obj.add_kappa_1_rhs_conc(pylist3)
-    
+    rhs_comp_list = WF.read_list (df2,3)
 
-    pylist3 = df2.iloc[0,0]
-    obj.add_kappa_2_lhs_conc(pylist3)
-    
-    
-    pylist3 = df2.iloc[0,2]
-    obj.add_kappa_2_rhs_conc(pylist3)
-    
-    
-    pylist3 = df2.iloc[0,4]
+    lhs_ref_flow = df2.iloc[0,0]
+
+    rhs_ref_flow = df2.iloc[0,2]
+
 
     if not pd.isnull(df2.iloc[0,4]):
-        obj.set_conc(pylist3)
+        req_concentration = df2.iloc[0,4]
+        
+    myu_dict = WF.read_type2 (df3,0,1,2)
+   
     
-    
+    obj.set_data_flow(req_concentration,
+                      additional_flow_composition_1,
+                      additional_flow_composition_2,
+                      rhs_ref_flow,
+                      lhs_ref_flow,
+                      rhs_comp_list,
+                      lhs_comp_list,
+                      myu_dict,
+                      upper_limit_1,
+                      upper_limit_2                     
+                      )
 
 
 def wrapp_EconomicData(obj, df, df2):

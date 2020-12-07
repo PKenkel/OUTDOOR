@@ -94,9 +94,8 @@ def wrapp_ProcessUnits(dfi):
     if process_class != "Productpool":
         
         wrapp_GeneralData(obj, dfi.iloc[GeneralDataRange])
-        wrapp_BalanceData(obj, dfi.iloc[BalanceDataRange]) 
         wrapp_EconomicData(obj, dfi.iloc[EconomicDataRange], dfi.iloc[GeneralDataRange])
-        wrapp_AdditivesData(obj, dfi.iloc[Add_FlowDataRange], dfi.iloc[ConcDataRange])
+        wrapp_AdditivesData(obj, dfi.iloc[Add_FlowDataRange], dfi.iloc[ConcDataRange] ,dfi.iloc[BalanceDataRange])
         
     else:
         pass 

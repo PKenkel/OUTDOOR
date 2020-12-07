@@ -43,8 +43,8 @@ class Process():
         # Indexed Attributes 
         self.myu ={'myu': {}}
         self.conc  ={'conc': {self.Number: 0}}
-        self.ul1 = {'ul_1': {self.Number: 0 }}
-        self.ul2 = {'ul_2': {self.Number: 0 }}
+        self.ul1 = {'ul_1': {self.Number: 10000 }}
+        self.ul2 = {'ul_2': {self.Number: 10000 }}
         
         self.add_flow = dict()
         self.kappa_1_lhs_conc = {'kappa_1_lhs_conc': {}}
@@ -95,8 +95,8 @@ class Process():
 
     def set_data_flow(self,
                       RequiredConcentration = None,
-                      AdditionalFlowComposition1 = [],
-                      AdditionalFlowComposition2 = [],
+                      AdditionalFlowComposition1 = {},
+                      AdditionalFlowComposition2 = {},
                       RightHandSideReferenceFlow = None,
                       LeftHandSideReferenceFlow = None,
                       RightHandSideComponentList = [],
@@ -114,10 +114,14 @@ class Process():
         self.set_conc(RequiredConcentration)
         self.add_myuFactors(SplitfactorDictionary)
         self.add_addflowFactors(dic1)
+        
         self.set_upperlimits(UpperLimitAdditionalFlow1,
                              UpperLimitAdditionalFlow2)
 
-
+        self.add_kappa_1_lhs_conc(LeftHandSideComponentList)
+        self.add_kappa_1_rhs_conc(RightHandSideComponentList)
+        self.add_kappa_2_lhs_conc(LeftHandSideReferenceFlow)
+        self.add_kappa_2_rhs_conc(RightHandSideReferenceFlow)
 
     def set_conc(self, concentration):
         self.conc['conc'][self.Number] = concentration
@@ -263,7 +267,8 @@ class Process():
         self.ParameterList.append(self.kappa_1_rhs_conc)
         self.ParameterList.append(self.kappa_2_rhs_conc)
         self.ParameterList.append(self.FLH)
-        
+        self.ParameterList.append(self.ul1)
+        self.ParameterList.append(self.ul2)
         
     
 
