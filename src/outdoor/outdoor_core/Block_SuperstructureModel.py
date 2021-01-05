@@ -341,7 +341,7 @@ class SuperstructureModel(AbstractModel):
             
         def ElectricityBalance_4_rule(self):
             return self.ENERGY_DEMAND_EL_TOT == sum(self.ENERGY_DEMAND_EL[u] * self.flh[u] for u in self.U) \
-                - sum(self.EL_PROD_1[u] * self.flh[u] for u in self.U_TUR) + self.ENERGY_DEMAND_HP_EL
+                - sum(self.EL_PROD_1[u] * self.flh[u] for u in self.U_TUR) 
         
         
         self.ElectricityBalance_1 = Constraint(self.U, rule=ElectricityBalance_1_rule)
@@ -376,40 +376,91 @@ class SuperstructureModel(AbstractModel):
                     * self.REF_FLOW_HEAT[u] for ut in self.H_UT) 
         
         
-        def HeatBalance_3_rule(self,u,hi):
-            k = len(self.HI)
-            if hi == 1:
-                return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
-                    + self.ENERGY_DEMAND_HEAT_PROD_USE - self.ENERGY_DEMAND_HEAT_RESI[hi] \
-                        - self.ENERGY_EXCHANGE[hi] == 0
-            elif hi == k:
-                return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
-                    + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_DEMAND_COOLING \
-                        - self.ENERGY_DEMAND_HP - self.ENERGY_EXCHANGE[hi] == 0
-            else:
-                return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
-                    + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_EXCHANGE[hi] \
-                        - self.ENERGY_DEMAND_HEAT_RESI[hi]  == 0
-             
-        def HeatBalance_4_rule(self,u,hi):
-            k = len(self.HI)
-            if hi == 1:
+        if self.SS.HP_active == True:
+            hp_tin = self.SS.HP_T_IN['Interval']
+            hp_tout = self.SS.HP_T_OUT['Interval']
+        
+            def HeatBalance_3_rule(self,u,hi):
+
+                
+                k = len(self.HI)
+                if hi == 1:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_PROD_USE - self.ENERGY_DEMAND_HEAT_RESI[hi] \
+                            - self.ENERGY_EXCHANGE[hi] == 0
+                elif hi == hp_tin:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_DEMAND_HEAT_RESI[hi] \
+                            - self.ENERGY_DEMAND_HP - self.ENERGY_EXCHANGE[hi] == 0
+                elif hi == k:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_DEMAND_COOLING \
+                            - self.ENERGY_EXCHANGE[hi] == 0
+                else:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_EXCHANGE[hi] \
+                            - self.ENERGY_DEMAND_HEAT_RESI[hi]  == 0
+                 
+            def HeatBalance_4_rule(self,u,hi):
+                k = len(self.HI)
+                if hi == 1:
+                    return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
+                        - self.ENERGY_EXCHANGE[hi] - self.ENERGY_DEMAND_HEAT_DEFI[hi] == 0
+                elif hi == hp_tout:
+                    return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
+                        - self.ENERGY_DEMAND_HEAT_DEFI[hi]  \
+                            - self.ENERGY_EXCHANGE[hi]  \
+                                - self.ENERGY_DEMAND_HP_USE == 0
+                else:
+                    return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
+                        - self.ENERGY_EXCHANGE[hi] - self.ENERGY_DEMAND_HEAT_DEFI[hi] == 0  
+         
+                    
+            def HeatBalance_8_rule(self):
+                return self.ENERGY_DEMAND_HP_USE == self.ENERGY_DEMAND_HP / (1-(1/self.COP_HP))
+            
+            def HeatBalance_9_rule(self):
+                return self.ENERGY_DEMAND_HP_EL == self.ENERGY_DEMAND_HP / (self.COP_HP - 1 )         
+            
+            self.HeatBalance_8 = Constraint(rule = HeatBalance_8_rule)
+            self.HeatBalance_9 = Constraint(rule = HeatBalance_9_rule)
+        
+        else:
+            
+            
+            def HeatBalance_3_rule(self,u,hi):
+                k = len(self.HI)
+                if hi == 1:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_PROD_USE - self.ENERGY_DEMAND_HEAT_RESI[hi] \
+                            - self.ENERGY_EXCHANGE[hi] == 0
+                elif hi == k:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_DEMAND_COOLING \
+                             - self.ENERGY_EXCHANGE[hi] == 0
+                else:
+                    return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
+                        + self.ENERGY_DEMAND_HEAT_RESI[hi-1] - self.ENERGY_EXCHANGE[hi] \
+                            - self.ENERGY_DEMAND_HEAT_RESI[hi]  == 0
+                 
+            def HeatBalance_4_rule(self,u,hi):
                 return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
                     - self.ENERGY_EXCHANGE[hi] - self.ENERGY_DEMAND_HEAT_DEFI[hi] == 0
-            elif hi == k-1:
-                return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
-                    - self.ENERGY_DEMAND_HEAT_DEFI[hi] \
-                        - self.ENERGY_EXCHANGE[hi]  \
-                            - self.ENERGY_DEMAND_HP_USE == 0
-            else:
-                return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
-                    - self.ENERGY_EXCHANGE[hi] - self.ENERGY_DEMAND_HEAT_DEFI[hi] == 0  
-                        
+                    
+            def HeatBalance_8_rule(self):
+                return self.ENERGY_DEMAND_HP_USE == 0          
+            
+            def HeatBalance_9_rule(self):
+                return self.ENERGY_DEMAND_HP_EL == 0
+            
+            self.HeatBalance_8 = Constraint(rule = HeatBalance_8_rule)
+            self.HeatBalance_9 = Constraint(rule = HeatBalance_9_rule)
+         
+
+    
         def HeatBalance_5_rule(self,hi):
-            if hi == 1 :
-                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U)
-            else:
-                return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U)
+            return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U)
+
         
         def HeatBalance_6_rule(self,hi):
             if hi == 1 :
@@ -422,11 +473,19 @@ class SuperstructureModel(AbstractModel):
         def HeatBalance_7_rule(self):
             return self.EXCHANGE_TOT == sum(self.ENERGY_EXCHANGE[hi] for hi in self.HI)
     
-        def HeatBalance_8_rule(self):
-            return self.ENERGY_DEMAND_HP_USE == self.ENERGY_DEMAND_HP / (1-(1/self.COP_HP))
+    
+    
+    
+    
+    
+    
+
         
-        def HeatBalance_9_rule(self):
-            return self.ENERGY_DEMAND_HP_EL == self.ENERGY_DEMAND_HP / (self.COP_HP - 1 )
+        
+        
+        
+        
+        
         
         def HeatBalance_12_rule(self,hi):
             return self.ENERGY_EXCHANGE[hi] <= self.Y_HEX[hi] * self.alpha_hex
@@ -458,8 +517,7 @@ class SuperstructureModel(AbstractModel):
         self.HeatBalance_5 = Constraint(self.HI, rule = HeatBalance_5_rule)
         self.HeatBalance_6 = Constraint(self.HI, rule = HeatBalance_6_rule)
         self.HeatBalance_7 = Constraint(rule = HeatBalance_7_rule)
-        self.HeatBalance_8 = Constraint(rule = HeatBalance_8_rule)
-        self.HeatBalance_9 = Constraint(rule = HeatBalance_9_rule)
+
         self.HeatBalance_11 = Constraint(self.U, rule=HeatBalance_11_rule)
         self.HeatBalance_12 = Constraint(self.HI, rule= HeatBalance_12_rule)
         self.HeatBalance_13 = Constraint(self.U_FUR, rule=HeatBalance_13_rule)
@@ -556,7 +614,7 @@ class SuperstructureModel(AbstractModel):
         self.PROFITS_TOT = Var()
         
         
-        
+        self.ELCOST = Var()
         self.HEATCOST = Var(self.HI)
         self.C_TOT = Var()
         self.HENCOST = Var(self.HI, within=NonNegativeReals)
@@ -621,12 +679,18 @@ class SuperstructureModel(AbstractModel):
         def CapexEquation_8_rule(self,u):
             return self.ACC[u] == self.FCI[u] * self.ACC_Factor[u]
         
+        
+        
+        
         def CapexEquation_9_rule(self):
-            return self.ACC_HP  == self.HP_ACC_Factor * self.HP_Costs * self.ENERGY_DEMAND_HP_USE / self.H
+            return self.ACC_HP  == self.HP_ACC_Factor * self.HP_Costs * self.ENERGY_DEMAND_HP_USE * 1000 / self.H
+        
+        
+        
 
         def CapexEquation_10_rule(self):
             return self.CAPEX == sum(self.ACC[u] for u in self.U_C) *1000000 + \
-                self.ACC_HP * 1000000 + self.TO_CAPEX_TOT * 1000000
+                self.ACC_HP + self.TO_CAPEX_TOT * 1000000
         
         
         def CapexEquation_11_rule(self,u):
@@ -662,7 +726,8 @@ class SuperstructureModel(AbstractModel):
                                     - self.ENERGY_DEMAND_HEAT_PROD_SELL * self.delta_q[1] * 0.7 \
                                     + self.ENERGY_DEMAND_COOLING * self.delta_cool)
        
-
+        def HEN_CostBalance_3_rule(self):
+            return self.ELCOST == self.ENERGY_DEMAND_HP_EL * self.delta_el 
         
         def HEN_CostBalance_4_rule(self,hi):
             return self.HENCOST[hi]  <=  13.459 * 1000 *  self.ENERGY_EXCHANGE[hi] / self.H \
@@ -685,10 +750,11 @@ class SuperstructureModel(AbstractModel):
         
         self.HEN_CostBalance_1 = Constraint(self.HI, rule = HEN_CostBalance_1_rule)
         self.HEN_CostBalance_2 = Constraint(rule = HEN_CostBalance_2_rule)
+        self.HEN_CostBalance_3= Constraint(rule = HEN_CostBalance_3_rule)
         self.HEN_CostBalance_4 = Constraint(self.HI, rule=HEN_CostBalance_4_rule) 
         self.HEN_CostBalance_4b = Constraint(self.HI, rule=HEN_CostBalance_4b_rule)
         self.HEN_CostBalance_4c = Constraint(self.HI, rule=HEN_CostBalance_4c_rule)
-        self.HEN_CostBalance_5 = Constraint(rule = HEN_CostBalance_5_rule)
+        # self.HEN_CostBalance_5 = Constraint(rule = HEN_CostBalance_5_rule)
         self.HEN_CostBalance_6 = Constraint(rule = HEN_CostBalance_6_rule)
         
                     
@@ -699,7 +765,7 @@ class SuperstructureModel(AbstractModel):
             return self.COST_EL == self.ENERGY_DEMAND_EL_TOT * self.delta_el 
         
         def Ut_CostBalance_3_rule(self):
-            return self.COST_UT == self.COST_EL 
+            return self.COST_UT == self.COST_EL + self.ELCOST
         
         
 
@@ -835,7 +901,7 @@ class SuperstructureModel(AbstractModel):
                 * sum(self.FLOW_WASTE[u,i] * self.em_fac_comp[i] for i in self.I)
 
         def GWP_2_rule(self):
-            return self.GWP_UT['Electricity'] == self.ENERGY_DEMAND_EL_TOT \
+            return self.GWP_UT['Electricity'] == (self.ENERGY_DEMAND_EL_TOT + self.ENERGY_DEMAND_HP_EL) \
                 * self.em_fac_ut['Electricity'] \
                 
         
@@ -894,7 +960,7 @@ class SuperstructureModel(AbstractModel):
             return self.TAC <= 176000000 
 
         def Test7(self):
-            return self.Y[2300] == 0
+            return self.ENERGY_DEMAND_HP == 0
         
         
         self.TestCon1 = Constraint(rule=TestRule)
@@ -903,7 +969,7 @@ class SuperstructureModel(AbstractModel):
         # self.TestCon4 = Constraint(rule=TestRule4)
         # self.TestCon5 = Constraint(rule=TestRule6)
         # self.TestCon6 = Constraint(self.HI, rule=TestRule6)
-        # self.TestCon7 = Constraint(rule=Test7)  
+        self.TestCon7 = Constraint(rule=Test7)  
      
         
         

@@ -45,7 +45,7 @@ def wrapp_SystemData(dfi):
 
     # Setting the Ranges
 
-    GeneralDataRange = WF.convert_total('B', 4, 'C', 15)
+    GeneralDataRange = WF.convert_total('B', 4, 'C', 20)
     UtitilylistRange = WF.convert_total('S', 5, 'U', 8)
     ComponentlistRange = WF.convert_total('E', 5, 'K', 30)
     TemperatureIntervals = WF.convert_total('B', 34, 'B', 39)
@@ -58,6 +58,7 @@ def wrapp_SystemData(dfi):
 
 
     df1 = dfi.iloc[GeneralDataRange]
+
 
     df2 = dfi.iloc[UtitilylistRange ] 
 
@@ -97,8 +98,21 @@ def wrapp_SystemData(dfi):
     
     
     
+    # Heat Pumo values
     
-    # obj.set_COP(COP=df1.iloc[4,1])
+    if df1.iloc[11,1] == 'Yes':
+        COP = df1.iloc[12,1]
+        Costs = df1.iloc[13,1]
+        Lifetime = df1.iloc[14,1]
+        T_IN = df1.iloc[15,1]
+        T_OUT = df1.iloc[16,1]
+        
+        obj.set_HeatPump(Costs,
+                         Lifetime,
+                         COP,
+                         T_IN,
+                         T_OUT
+                         )
     
     
     
@@ -146,6 +160,8 @@ def wrapp_SystemData(dfi):
 
   
     obj.add_HeatUtilities(liste1, liste2)
+    
+    
     
     
     return obj

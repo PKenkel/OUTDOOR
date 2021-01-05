@@ -60,6 +60,9 @@ class Superstructure():
 # NEW ---
 
         self.HeatIntervals = {}
+        
+
+        
 
 # -----
         
@@ -83,10 +86,37 @@ class Superstructure():
         self.H = {'H': 0}
         self.K_O = {'K_OM' : 2.06875}
         self.CECPI = {'CECPI': 0}
-        self.COP_HP = {'COP_HP': 3}
-        self.HP_LT = {'HP_LT': 0}
-        self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
+        
+        
+        
+        
+        
+
+        
+        # Heat Pump Procedures 
+        
         self.HP_Costs = {'HP_Costs': 0}
+        self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
+        self.COP_HP = {'COP_HP': 3}
+        
+        self.HP_LT = None
+        self.HP_T_IN = {}
+        self.HP_T_OUT = {}
+        
+        
+        self.HP_active = False
+        
+    
+    
+        
+        
+        
+
+
+        
+        
+        
+        # ---------
         
         self.linearizationDetail = 'average'
 
@@ -124,7 +154,44 @@ class Superstructure():
 
 
 
-
+    def set_HeatPump(self, 
+                     SpecificCosts,
+                     LifeTime,
+                     COP,
+                     T_IN,
+                     T_OUT
+                     ):
+        try:
+            self.HP_active = True
+            self.HP_Costs['HP_Costs'] = SpecificCosts
+            self.COP_HP['COP_HP']  = COP
+            self.HP_LT = LifeTime
+            self.HP_T_IN['Temperature'] = T_IN
+            self.HP_T_OUT['Temperature'] = T_OUT
+            self.add_HeatTemperatures(T_IN, T_OUT)
+ 
+        except:
+            print('Please chose for State either On or Off, a non-negative \
+                  lifetime and for COP a value > 1')
+                  
+    
+    
+    def calc_HeatPump(self):
+        if self.HP_active == True:
+            ir = self.IR['IR']
+            lt = self.HP_LT
+            self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1)) 
+            
+            for i,j in self.HeatIntervals.items():
+                if j == self.HP_T_IN['Temperature']:
+                    self.HP_T_IN['Interval'] = i + 1
+                elif j == self.HP_T_OUT['Temperature']:
+                    self.HP_T_OUT['Interval'] = i + 1
+                      
+        else:
+            self.HP_ACC_Factor['HP_ACC_Factor'] = 0
+            self.HP_Costs['HP_Costs'] = 0     
+            self.COP_HP['COP_HP']  = 3
 
      
         
@@ -154,8 +221,10 @@ class Superstructure():
             
         """
         self.CECPI['CECPI'] = self.CECPI_dic[year]
-       
-    def set_COP(self, COP=0, LT=15, Costs = 450):
+        
+            
+
+    def set_COP(self, COP=0, LT=15, Costs = 450, TIN = 65, TOUT = 130):
         """
         Parameters
         ----------
@@ -175,10 +244,9 @@ class Superstructure():
 
         """
         self.COP_HP['COP_HP'] = COP
-        self.HP_LT['HP_LT'] = LT
         self.HP_Costs['HP_Costs'] = Costs
         ir = self.IR['IR']
-        lt = self.HP_LT['HP_LT']
+        lt = LT
         self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1))   
       
     def set_linearizationDetail(self, Detail):
@@ -748,6 +816,7 @@ class Superstructure():
         self.NI_ParameterList.append(self.CECPI)
         self.NI_ParameterList.append(self.delta_el)
         self.NI_ParameterList.append(self.delta_cool)
+        
         self.NI_ParameterList.append(self.COP_HP)
         self.NI_ParameterList.append(self.HP_ACC_Factor)
         self.NI_ParameterList.append(self.HP_Costs)
@@ -898,6 +967,8 @@ class Superstructure():
         self.add_ProcessTemperatures()
         
         self.add_TemperatureIntervals()
+        
+        self.calc_HeatPump()
         
         self.add_deltaQ()
             
