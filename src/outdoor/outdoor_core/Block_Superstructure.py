@@ -158,22 +158,7 @@ class Superstructure():
                   
     
     
-    def calc_HeatPump(self):
-        if self.HP_active == True:
-            ir = self.IR['IR']
-            lt = self.HP_LT
-            self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1)) 
-            
-            for i,j in self.HeatIntervals.items():
-                if j == self.HP_T_IN['Temperature']:
-                    self.HP_T_IN['Interval'] = i + 1
-                elif j == self.HP_T_OUT['Temperature']:
-                    self.HP_T_OUT['Interval'] = i + 1
-                      
-        else:
-            self.HP_ACC_Factor['HP_ACC_Factor'] = 0
-            self.HP_Costs['HP_Costs'] = 0     
-            self.COP_HP['COP_HP']  = 3
+
 
      
         
@@ -205,31 +190,6 @@ class Superstructure():
         self.CECPI['CECPI'] = self.CECPI_dic[year]
         
             
-
-    # def set_COP(self, COP=0, LT=15, Costs = 450, TIN = 65, TOUT = 130):
-    #     """
-    #     Parameters
-    #     ----------
-    #     COP : Float, optional
-    #         DESCRIPTION. The default is 0, describes the Coefficient of Performance
-    #     LT : Integer, optional
-    #         DESCRIPTION. The default is 15, describes the lifetime of the HP
-    #     Costs : Float, optional
-    #         DESCRIPTION. The default is 450, describs the linear Costs of the HP
-    #                         in €/kW-Installed
-
-    #     Description
-    #     -----------
-    #     Takes Values for COP, LT and Costs and calculated annualized costs for
-    #     the Heatpump. These costs are later used and multiplied with the utilzed
-    #     heat in the Superstructure Model
-
-    #     """
-    #     self.COP_HP['COP_HP'] = COP
-    #     self.HP_Costs['HP_Costs'] = Costs
-    #     ir = self.IR['IR']
-    #     lt = LT
-    #     self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1))   
 
     def set_HeatPump(self, 
                      SpecificCosts,
@@ -672,7 +632,37 @@ class Superstructure():
             self.heat_utilities[TemperatureList[i]] = CostList[i] 
             self.add_HeatTemperatures(TemperatureList[i])
             
+    def calc_HeatPump(self):
+        """
+        
+
+        Description
+        -------
+        This method is called via preparation of the heat balances.
+        If "HP_active" == True, than yearly costs for the heat pump are calculated
+        using Lifetime and Interest Rate. 
+        Afterwards, TIN and TOUT are compared to the HeatIntervals and and the
+        corresponding intervals are marked up for the heat balances inside the model.
+        If "HP_active" == False Costs, Yearly Factor and COP are set to dummy values 
+        (This is probably unnessacery).
+        
+
+        """
+        if self.HP_active == True:
+            ir = self.IR['IR']
+            lt = self.HP_LT
+            self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1)) 
             
+            for i,j in self.HeatIntervals.items():
+                if j == self.HP_T_IN['Temperature']:
+                    self.HP_T_IN['Interval'] = i + 1
+                elif j == self.HP_T_OUT['Temperature']:
+                    self.HP_T_OUT['Interval'] = i + 1
+                      
+        else:
+            self.HP_ACC_Factor['HP_ACC_Factor'] = 0
+            self.HP_Costs['HP_Costs'] = 0     
+            self.COP_HP['COP_HP']  = 3            
             
     def fill_beta_Parameters(self):
         """
