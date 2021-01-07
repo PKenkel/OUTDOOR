@@ -15,15 +15,15 @@ import outdoor
 
 Excel_Path = "Test_Excel.xlsm"
 
-Results_Path = a + '/examples/results/'
+Results_Path = os.path.dirname(a) + '/outdoor_examples/results/'
 
-# ts = outdoor.get_DataFromExcel(Excel_Path)
+ts = outdoor.get_DataFromExcel(Excel_Path)
 
-# (Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'gurobi', 'local')
+(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'gurobi', 'local')
 
 
-# # outdoor.Save_CaseStudy(Opt, Info, Results_Path)
+outdoor.Save_CaseStudy(Opt, Info, Results_Path)
 
-# outdoor.displayHeatBalanceResults(Opt,Info)
-# outdoor.displayBasicResults(Opt)
+outdoor.displayHeatBalanceResults(Opt,Info)
+outdoor.displayBasicResults(Opt)
 
