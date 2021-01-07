@@ -10,14 +10,17 @@ class Superstructure():
         
         super().__init__()
         
+        
         # Lists
+        # -----
+        
         self.Objective_dic = {'NPE' : 'NPE', 'NPC': 'NPC'}
         self.Data_File = {None: {}}
         self.ModelName = ModelName
         
         
+        # Unit Operations
         self.UnitsList = []
-        
         self.UnitsNumberList = {'U': []}    
         self.UnitsNumberList2 = {'UU': []}   
         self.StoichRNumberList = {'U_STOICH_REACTOR': []}
@@ -26,48 +29,31 @@ class Superstructure():
         self.HeatGeneratorList = {'U_FUR' : []}
         self.ElectricityGeneratorList = {'U_TUR': []}
         self.ProductPoolList = {'U_PP': []}
-        
-        self.HeatIntervalList =  {'HI': []}
-        self.LinPointsList = {'J': []}
-        self.LinIntervalsList = {'JI': []} 
-        
         self.CostUnitsList = {'U_C':[]}
         
-        
+        # Heat Balance
+        self.HeatIntervalList =  {'HI': []}
+        self.HeatUtilitiesList = {'H_UT': []}
+
+        # Others
         self.ComponentsList = {'I': []}
         self.ReactionsList = {'R': []}
         self.ReactantsList ={'M': []}
         self.UtilitiesList = {'UT' :[]}
-        
-        self.HeatUtilitiesList = {'H_UT': []}
-        
+        self.LinPointsList = {'J': []}
+        self.LinIntervalsList = {'JI': []} 
+        self.UnitNames = {'Names': {}}
+        self.Heat_Temperatures = []
+        self.HeatIntervals = {}
         
         # ParameterList
         self.NI_ParameterList =[]
         self.I_ParameterList =[]
-        self.Heat_Temperatures = []
-        
-        self.UnitNames = {'Names': {}}
-        
-        
-        self.hourly_wage = {'hourly_wage': 41}
-        self.working_hours = {'working_hours': 8322}
-        self.capacity_flow = {'capacity_flow': None}
-        self.process_steps = {'process_steps': 4}
-        
-        
-        
-# NEW ---
-
-        self.HeatIntervals = {}
         
 
-        
-
-# -----
-        
         
         # Non-indexed Attributes
+        # ----------------------
         
         try: 
             self.Objective = self.Objective_dic[Objective]
@@ -87,36 +73,18 @@ class Superstructure():
         self.K_O = {'K_OM' : 2.06875}
         self.CECPI = {'CECPI': 0}
         
-        
-        
-        
-        
-
-        
-        
+        self.hourly_wage = {'hourly_wage': 41}
+        self.working_hours = {'working_hours': 8322}
+        self.capacity_flow = {'capacity_flow': None}
+        self.process_steps = {'process_steps': 4}
         
         self.HP_Costs = {'HP_Costs': 0}
         self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
         self.COP_HP = {'COP_HP': 3}
-        
         self.HP_LT = None
         self.HP_T_IN = {}
         self.HP_T_OUT = {}
-        
-        
         self.HP_active = False
-        
-    
-    
-        
-        
-        
-
-
-        
-        
-        
-        # ---------
         
         self.linearizationDetail = 'average'
 
@@ -124,6 +92,7 @@ class Superstructure():
         
         
         # Indexed Attributes
+        # ------------------
         
         self.CECPI_dic = {1994: 368.1, 1995: 381.1, 1996: 381.7, 1997: 386.5,
                           1998: 389.5, 1999: 390.6, 2000: 394.1, 2001: 394.3,
@@ -135,7 +104,6 @@ class Superstructure():
         
         
         self.delta_rm = {'delta_rm': {}}
-        
         self.delta_el = {'delta_el': 50}
         self.delta_q = {'delta_q': {}}
         self.delta_cool = {'delta_cool': 14}
@@ -152,12 +120,6 @@ class Superstructure():
         
    
 
-
-
-
-                  
-    
-    
 
 
      
@@ -831,12 +793,10 @@ class Superstructure():
         self.NI_ParameterList.append(self.IR)
         self.NI_ParameterList.append(self.CECPI)
         self.NI_ParameterList.append(self.delta_el)
-        self.NI_ParameterList.append(self.delta_cool)
-        
+        self.NI_ParameterList.append(self.delta_cool)  
         self.NI_ParameterList.append(self.COP_HP)
         self.NI_ParameterList.append(self.HP_ACC_Factor)
         self.NI_ParameterList.append(self.HP_Costs)
-        
         self.NI_ParameterList.append(self.capacity_flow)
         self.NI_ParameterList.append(self.hourly_wage)
         self.NI_ParameterList.append(self.working_hours)
