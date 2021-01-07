@@ -93,7 +93,7 @@ class Superstructure():
         
 
         
-        # Heat Pump Procedures 
+        
         
         self.HP_Costs = {'HP_Costs': 0}
         self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
@@ -154,25 +154,7 @@ class Superstructure():
 
 
 
-    def set_HeatPump(self, 
-                     SpecificCosts,
-                     LifeTime,
-                     COP,
-                     T_IN,
-                     T_OUT
-                     ):
-        try:
-            self.HP_active = True
-            self.HP_Costs['HP_Costs'] = SpecificCosts
-            self.COP_HP['COP_HP']  = COP
-            self.HP_LT = LifeTime
-            self.HP_T_IN['Temperature'] = T_IN
-            self.HP_T_OUT['Temperature'] = T_OUT
-            self.add_HeatTemperatures(T_IN, T_OUT)
- 
-        except:
-            print('Please chose for State either On or Off, a non-negative \
-                  lifetime and for COP a value > 1')
+
                   
     
     
@@ -224,31 +206,75 @@ class Superstructure():
         
             
 
-    def set_COP(self, COP=0, LT=15, Costs = 450, TIN = 65, TOUT = 130):
+    # def set_COP(self, COP=0, LT=15, Costs = 450, TIN = 65, TOUT = 130):
+    #     """
+    #     Parameters
+    #     ----------
+    #     COP : Float, optional
+    #         DESCRIPTION. The default is 0, describes the Coefficient of Performance
+    #     LT : Integer, optional
+    #         DESCRIPTION. The default is 15, describes the lifetime of the HP
+    #     Costs : Float, optional
+    #         DESCRIPTION. The default is 450, describs the linear Costs of the HP
+    #                         in €/kW-Installed
+
+    #     Description
+    #     -----------
+    #     Takes Values for COP, LT and Costs and calculated annualized costs for
+    #     the Heatpump. These costs are later used and multiplied with the utilzed
+    #     heat in the Superstructure Model
+
+    #     """
+    #     self.COP_HP['COP_HP'] = COP
+    #     self.HP_Costs['HP_Costs'] = Costs
+    #     ir = self.IR['IR']
+    #     lt = LT
+    #     self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1))   
+
+    def set_HeatPump(self, 
+                     SpecificCosts,
+                     LifeTime,
+                     COP,
+                     T_IN,
+                     T_OUT
+                     ):
         """
+
         Parameters
         ----------
-        COP : Float, optional
-            DESCRIPTION. The default is 0, describes the Coefficient of Performance
-        LT : Integer, optional
-            DESCRIPTION. The default is 15, describes the lifetime of the HP
-        Costs : Float, optional
-            DESCRIPTION. The default is 450, describs the linear Costs of the HP
-                            in €/kW-Installed
+        SpecificCosts : Float
+            Specific Costs of Heat Pump in €/kW_installed Heat supply.
+        LifeTime : Integer
+            Lifetime of Heatpump in full years.
+        COP : Float
+            Coefficient of performance of heat pump, should be higher than 1.
+        T_IN : Integer
+            Inlettemperature of heat pump (low-ex temperature).
+        T_OUT :Integer
+            Goal Temperature of Heat Pumpt (e.g. low pressure steam).
 
         Description
-        -----------
-        Takes Values for COP, LT and Costs and calculated annualized costs for
-        the Heatpump. These costs are later used and multiplied with the utilzed
-        heat in the Superstructure Model
+        -------
+        If "HP_active" == true, this method sets the values of the heat pump. 
+        These values are used while initiating the superstructure to find the 
+        Temperatureintervals in the Heatbalance as well as supplied heat and costs.
+        If "HP_active" == false, this method will be skipped, and the model will
+        not regard a heat pump in the heat balances.
 
         """
-        self.COP_HP['COP_HP'] = COP
-        self.HP_Costs['HP_Costs'] = Costs
-        ir = self.IR['IR']
-        lt = LT
-        self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1))   
-      
+        try:
+            self.HP_active = True
+            self.HP_Costs['HP_Costs'] = SpecificCosts
+            self.COP_HP['COP_HP']  = COP
+            self.HP_LT = LifeTime
+            self.HP_T_IN['Temperature'] = T_IN
+            self.HP_T_OUT['Temperature'] = T_OUT
+            self.add_HeatTemperatures(T_IN, T_OUT)
+ 
+        except:
+            print('Please chose for State either On or Off, a non-negative \
+                  lifetime and for COP a value > 1')        
+
     def set_linearizationDetail(self, Detail):
         """
         Parameters

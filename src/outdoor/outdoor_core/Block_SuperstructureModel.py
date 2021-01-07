@@ -969,7 +969,7 @@ class SuperstructureModel(AbstractModel):
         # self.TestCon4 = Constraint(rule=TestRule4)
         # self.TestCon5 = Constraint(rule=TestRule6)
         # self.TestCon6 = Constraint(self.HI, rule=TestRule6)
-        self.TestCon7 = Constraint(rule=Test7)  
+        # self.TestCon7 = Constraint(rule=Test7)  
      
         
         
