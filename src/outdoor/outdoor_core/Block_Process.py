@@ -922,16 +922,37 @@ class Source(VirtualProcess):
 
         super().__init__(Name, UnitNumber, Parent)
         
-        self.Composition = {}
+        self.Composition = {'phi': {}}
+        self.MaterialCosts  = {'MaterialCosts': {self.Number: 0}}
+        self.UpperLimit = {'ul': {self.Number: None}}
+    
+    
+    
+    def set_data_source(self, 
+                        Costs,
+                        UpperLimit,
+                        Composition_dictionary):
         
+        
+        self.set_MaterialCosts(Costs)
+        self.set_upperlimit(UpperLimit)
+        self.set_composistion(Composition_dictionary)
+    
+    def set_MaterialCosts(self, Costs):
+        self.MaterialCosts['MaterialCosts'][self.Number] = Costs
         
         
     def set_composition(self, composition_dic):
         for i,k in composition_dic.items():
-            self.Composition[self.Number][i] = k
+            self.Composition['phi'][self.Number][i] = k
+        
+    def set_upperlimit(self, UpperLimit):
+        self.UpperLimit['ul'][self.Number] = UpperLimit
         
     
     def fill_ParameterList(self):
         super().fill_ParameterList()
         self.ParameterList.append(self.Composition)
+        self.ParameterList.append(self.MaterialCosts)
+        
         
