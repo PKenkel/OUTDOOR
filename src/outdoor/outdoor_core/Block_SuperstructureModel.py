@@ -343,9 +343,10 @@ class SuperstructureModel(AbstractModel):
 
         
         # Constraints
+        # -----------
         
-        # Electrictiy Balance
-        # --------------------
+        
+        # Electrictiy Balance (Demand, Production, Total)
         
         def ElectricityBalance_1_rule(self,u):
             if self.kappa_2_ut[u,'Electricity'] == 1:
@@ -376,8 +377,8 @@ class SuperstructureModel(AbstractModel):
         
         
         
-        # Heat and Cooling Balance
-        # -------------------------
+        # Heat and Cooling Balance (Demand)
+
 
         def HeatBalance_11_rule(self,u):
             if self.kappa_2_ut[u,'Heat'] == 1:
@@ -400,14 +401,14 @@ class SuperstructureModel(AbstractModel):
                 sum(self.beta[u,ut,hi] * self.tau_h[ut,u] \
                     * self.REF_FLOW_HEAT[u] for ut in self.H_UT) 
         
-        
+        # Heating anc Cooling Balance (Either with or without Heat pump)
+        # Rigorous HEN Optimization approach
+         
         if self.SS.HP_active == True:
             hp_tin = self.SS.HP_T_IN['Interval']
             hp_tout = self.SS.HP_T_OUT['Interval']
         
-            def HeatBalance_3_rule(self,u,hi):
-
-                
+            def HeatBalance_3_rule(self,u,hi):                
                 k = len(self.HI)
                 if hi == 1:
                     return sum(self.ENERGY_DEMAND_HEAT[u,hi] * self.flh[u] for u in self.U) \
@@ -427,7 +428,6 @@ class SuperstructureModel(AbstractModel):
                             - self.ENERGY_DEMAND_HEAT_RESI[hi]  == 0
                  
             def HeatBalance_4_rule(self,u,hi):
-                k = len(self.HI)
                 if hi == 1:
                     return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
                         - self.ENERGY_EXCHANGE[hi] - self.ENERGY_DEMAND_HEAT_DEFI[hi] == 0
@@ -439,8 +439,7 @@ class SuperstructureModel(AbstractModel):
                 else:
                     return sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U) \
                         - self.ENERGY_EXCHANGE[hi] - self.ENERGY_DEMAND_HEAT_DEFI[hi] == 0  
-         
-                    
+                           
             def HeatBalance_8_rule(self):
                 return self.ENERGY_DEMAND_HP_USE == self.ENERGY_DEMAND_HP / (1-(1/self.COP_HP))
             
@@ -449,6 +448,7 @@ class SuperstructureModel(AbstractModel):
             
             self.HeatBalance_8 = Constraint(rule = HeatBalance_8_rule)
             self.HeatBalance_9 = Constraint(rule = HeatBalance_9_rule)
+        
         
         else:
             
@@ -483,6 +483,7 @@ class SuperstructureModel(AbstractModel):
          
 
     
+        #  Exchange Constraints, Production and Sell etc.
         def HeatBalance_5_rule(self,hi):
             return self.ENERGY_EXCHANGE[hi] <= sum(self.ENERGY_DEMAND_COOL[u,hi] * self.flh[u] for u in self.U)
 
@@ -498,20 +499,6 @@ class SuperstructureModel(AbstractModel):
         def HeatBalance_7_rule(self):
             return self.EXCHANGE_TOT == sum(self.ENERGY_EXCHANGE[hi] for hi in self.HI)
     
-    
-    
-    
-    
-    
-    
-
-        
-        
-        
-        
-        
-        
-        
         def HeatBalance_12_rule(self,hi):
             return self.ENERGY_EXCHANGE[hi] <= self.Y_HEX[hi] * self.alpha_hex
         
@@ -533,8 +520,6 @@ class SuperstructureModel(AbstractModel):
                     - self.ENERGY_DEMAND_HEAT_PROD_SELL
         
         
-        
-        
         self.HeatBalance_1 = Constraint(self.U, self.HI, rule = HeatBalance_1_rule)
         self.HeatBalance_2 = Constraint(self.U, self.HI, rule = HeatBalance_2_rule) 
         self.HeatBalance_3 = Constraint(self.U, self.HI, rule = HeatBalance_3_rule)    
@@ -542,7 +527,6 @@ class SuperstructureModel(AbstractModel):
         self.HeatBalance_5 = Constraint(self.HI, rule = HeatBalance_5_rule)
         self.HeatBalance_6 = Constraint(self.HI, rule = HeatBalance_6_rule)
         self.HeatBalance_7 = Constraint(rule = HeatBalance_7_rule)
-
         self.HeatBalance_11 = Constraint(self.U, rule=HeatBalance_11_rule)
         self.HeatBalance_12 = Constraint(self.HI, rule= HeatBalance_12_rule)
         self.HeatBalance_13 = Constraint(self.U_FUR, rule=HeatBalance_13_rule)
@@ -570,10 +554,6 @@ class SuperstructureModel(AbstractModel):
         """
     
 
-
-
-        
-
         # Parameter
         # ---------
         
@@ -591,7 +571,6 @@ class SuperstructureModel(AbstractModel):
         self.K_M = Param(self.U_C, initialize = 0.044875)      
         self.HP_ACC_Factor = Param(initialize=1)
         self.HP_Costs = Param(initialize = 1)
-        
         
         # Piecewise Linear CAPEX
         self.lin_CAPEX_x = Param(self.U_C, self.J, initialize=0)
@@ -614,8 +593,6 @@ class SuperstructureModel(AbstractModel):
         # Variables
         # ---------
         
-
-        
         # Utilitiy Costs ( El, Heat, El-TOT, HEN)
         self.COST_EL = Var()
         self.COST_HEAT = Var(self.HI)
@@ -631,7 +608,6 @@ class SuperstructureModel(AbstractModel):
         self.lin_CAPEX_z = Var(self.U_C, self.JI, within=Binary)
         self.lin_CAPEX_lambda = Var(self.U_C, self.J, bounds=(0,1))
         self.REF_FLOW_CAPEX = Var(self.U_C, within=NonNegativeReals)
-        
         
         # CAPEX (Units, Returning costs, Heat Pump, Total)
         self.EC = Var(self.U_C, within=NonNegativeReals)
@@ -665,9 +641,7 @@ class SuperstructureModel(AbstractModel):
         # Constraints
         # ----------- 
         
-        # CAPEX Calculation
-        # ------------------
-        
+        # CAPEX Calculation (Reference Flow, Piece-Wise linear Lambda Constraints)        
         
         def CapexEquation_1_rule(self,u):
             if self.kappa_2_capex[u] == 1:
@@ -710,6 +684,7 @@ class SuperstructureModel(AbstractModel):
                     - self.lin_CAPEX_s[u,j] + self.lin_CAPEX_s[u,j-1]
         
         
+        # Fixed Capital investment, Annual capital costs, Heat Pump, Returning costs, Total
         def CapexEquation_7_rule(self,u):
             return self.FCI[u] == self.EC[u] * (1+self.DC[u] + self.IDC[u])
         
@@ -719,15 +694,15 @@ class SuperstructureModel(AbstractModel):
         def CapexEquation_9_rule(self):
             return self.ACC_HP  == self.HP_ACC_Factor * self.HP_Costs * self.ENERGY_DEMAND_HP_USE * 1000 / self.H
         
-        def CapexEquation_10_rule(self):
-            return self.CAPEX == sum(self.ACC[u] for u in self.U_C) *1000000 + \
-                self.ACC_HP + self.TO_CAPEX_TOT * 1000000
-        
         def CapexEquation_11_rule(self,u):
             return self.TO_CAPEX[u] == self.to_acc[u] * self.EC[u] 
         
         def CapexEquation_12_rule(self):
             return self.TO_CAPEX_TOT  == sum(self.TO_CAPEX[u] for u in self.U_C)
+        
+        def CapexEquation_10_rule(self):
+            return self.CAPEX == sum(self.ACC[u] for u in self.U_C) *1000000 + \
+                self.ACC_HP + self.TO_CAPEX_TOT * 1000000
         
         self.CapexEquation_1 = Constraint(self.U_C,rule=CapexEquation_1_rule)
         self.CapexEquation_2 = Constraint(self.U_C,rule=CapexEquation_2_rule)
@@ -739,15 +714,14 @@ class SuperstructureModel(AbstractModel):
         self.CapexEquation_8 = Constraint(self.U_C,rule=CapexEquation_8_rule)
         self.CapexEquation_9 = Constraint(rule=CapexEquation_9_rule)
         self.CapexEquation_10 = Constraint(rule=CapexEquation_10_rule)
-         
         self.CapexEquation_11 = Constraint(self.U_C, rule=CapexEquation_11_rule)
         self.CapexEquation_12 = Constraint(rule=CapexEquation_12_rule)   
         
-        # OPEX Calculation
-        # ----------------   
         
         
         
+        # OPEX Calculation (HEN Costs: Heating / Cooling, CAPEX)
+
         def HEN_CostBalance_1_rule(self,hi):
             return self.HEATCOST[hi] == self.ENERGY_DEMAND_HEAT_DEFI[hi] * self.delta_q[hi] 
         
@@ -773,7 +747,6 @@ class SuperstructureModel(AbstractModel):
             return self.C_TOT ==  self.UtCosts + sum(self.HENCOST[hi] for hi in self.HI)
         
 
-        
         self.HEN_CostBalance_1 = Constraint(self.HI, rule = HEN_CostBalance_1_rule)
         self.HEN_CostBalance_2 = Constraint(rule = HEN_CostBalance_2_rule)
         self.HEN_CostBalance_3= Constraint(rule = HEN_CostBalance_3_rule)
@@ -783,8 +756,7 @@ class SuperstructureModel(AbstractModel):
         self.HEN_CostBalance_6 = Constraint(rule = HEN_CostBalance_6_rule)
         
                     
-        # Utility Costs
-        # -------------
+        # Utility Costs (Electricity)
          
         def Ut_CostBalance_2_rule(self):
             return self.COST_EL == self.ENERGY_DEMAND_EL_TOT * self.delta_el 
@@ -799,7 +771,6 @@ class SuperstructureModel(AbstractModel):
 
         
         # Raw Materials and Operating and Maintenance
-        # -------------------------------------------
             
         def RM_CostBalance_1_rule(self,u):
             return self.RM_COST[u]  == sum(self.FLOW_ADD_TOT[u,i] \
@@ -825,6 +796,7 @@ class SuperstructureModel(AbstractModel):
         def OM_CostBalance_5_rule(self):
             return self.OM_COST == self.O_COST + self.M_COST_TOT *  1000000
         
+        # Total OPEX
         def Opex_1_rule(self):
             return self.OPEX == self.OM_COST + self.RM_COST_TOT + self.COST_UT + self.C_TOT
         
@@ -835,14 +807,8 @@ class SuperstructureModel(AbstractModel):
         self.OM_CostBalance_3 = Constraint(rule=OM_CostBalance_3_rule)
         self.OM_CostBalance_4 = Constraint(rule=OM_CostBalance_4_rule)
         self.OM_CostBalance_5 = Constraint(rule=OM_CostBalance_5_rule)
-        
-        
-        
         self.RM_CostBalance_1 = Constraint(self.U_C, rule= RM_CostBalance_1_rule)
         self.RM_CostBalance_2 = Constraint(rule= RM_CostBalance_2_rule)
-        
-        
-        
         self.OpexEquation = Constraint(rule=Opex_1_rule)
         
         
@@ -850,7 +816,6 @@ class SuperstructureModel(AbstractModel):
         
 
         # Profits
-        # --------
         
         def Profit_1_rule(self,u):
             return self.PROFITS[u] == sum(self.FLOW_IN[u,i] for i in self.I) * self.ProductPrice[u]
@@ -863,12 +828,10 @@ class SuperstructureModel(AbstractModel):
         
         
         
-        # Complete costs
-        # --------------
+        # Total Annualized Costs 
         
         def TAC_1_rule(self):
             return self.TAC == self.CAPEX + self.OPEX - self.PROFITS_TOT
-        
         
         self.TAC_Equation = Constraint(rule=TAC_1_rule)
         
@@ -881,43 +844,43 @@ class SuperstructureModel(AbstractModel):
     # -------------------------    
         
     def create_EnvironmentalEvaluation(self):
+        """
+        Description
+        -------
+        This method creates the PYOMO parameters and variables
+        that are necessary for the general CO2 Emissions (eg. emission factors etc.). 
+        Afterwards Emission equations are written as PYOMO Constraints.
+
+        """
         
         # Parameter
+        # --------
+        
+        # Emission factors (Utilities, Components, Products, Building of units)
         self.em_fac_ut = Param(self.UT, initialize=0)
         self.em_fac_comp = Param(self.I, initialize=0)
-        self.LT = Param(self.U, initialize=1)
-        
-        # NEW
         self.em_fac_prod = Param(self.U_PP, initialize=0)
         self.em_fac_unit = Param(self.U_C, initialize=0)
+        
+        # Lifetime of Units
+        self.LT = Param(self.U, initialize=1)
+        
+
+        # Variables
+        # ---------
+        
         self.GWP_UNITS = Var(self.U_C)
         self.GWP_CREDITS = Var(self.U_PP)
         self.GWP_CAPTURE = Var(self.U)
-        
-        def GWP_6_rule(self,u):
-            return self.GWP_UNITS[u] == self.em_fac_unit[u] / self.LT[u] * self.Y[u]
-        
-        def GWP_7_rule(self,u):
-            return self.GWP_CREDITS[u] == self.em_fac_prod[u] \
-                * sum(self.FLOW_IN[u,i] for i in self.I) * self.flh[u]
-        
-        def GWP_8_rule(self,u):
-            return self.GWP_CAPTURE[u] == sum(self.FLOW_ADD_TOT[u,i] \
-                                              * self.em_fac_comp[i] for i in self.I) * self.flh[u]
-    
-        self.EnvironmentalEquation6 = Constraint(self.U_C, rule=GWP_6_rule)
-        self.EnvironmentalEquation7 = Constraint(self.U_PP, rule=GWP_7_rule)
-        self.EnvironmentalEquation8 = Constraint(self.U, rule=GWP_8_rule)
-        
-    
-        # Variables
         self.GWP_U = Var(self.U)
         self.GWP_UT = Var(self.UT)
         self.GWP_TOT =Var()
         
         
         # Constraints
+        # -----------
         
+
         def GWP_1_rule(self,u):
             return self.GWP_U[u] == self.flh[u] \
                 * sum(self.FLOW_WASTE[u,i] * self.em_fac_comp[i] for i in self.I)
@@ -941,25 +904,55 @@ class SuperstructureModel(AbstractModel):
         def GWP_5_rule(self):
             return self.GWP_UT['Heat2'] == 0
         
+        def GWP_6_rule(self,u):
+            return self.GWP_UNITS[u] == self.em_fac_unit[u] / self.LT[u] * self.Y[u]
+        
+        def GWP_7_rule(self,u):
+            return self.GWP_CREDITS[u] == self.em_fac_prod[u] \
+                * sum(self.FLOW_IN[u,i] for i in self.I) * self.flh[u]
+        
+        def GWP_8_rule(self,u):
+            return self.GWP_CAPTURE[u] == sum(self.FLOW_ADD_TOT[u,i] \
+                                              * self.em_fac_comp[i] for i in self.I) * self.flh[u]
+    
+
+        
         self.EnvironmentalEquation1 = Constraint(self.U, rule = GWP_1_rule)
         self.EnvironmentalEquation2 = Constraint(rule = GWP_2_rule)  
         self.EnvironmentalEquation3 = Constraint(rule = GWP_3_rule)
         self.EnvironmentalEquation4 = Constraint(rule = GWP_4_rule)
         self.EnvironmentalEquation5 = Constraint(rule = GWP_5_rule)
+        self.EnvironmentalEquation6 = Constraint(self.U_C, rule=GWP_6_rule)
+        self.EnvironmentalEquation7 = Constraint(self.U_PP, rule=GWP_7_rule)
+        self.EnvironmentalEquation8 = Constraint(self.U, rule=GWP_8_rule)
         
     # **** DECISION MAKING EQUATIONS *****
     # -------------------------
 
         
     def create_DecisionMaking(self):
+        """
+        
+
+        Description
+        -------
+        Here are test constraints which handle specific descion making. 
+        This will be corrected in the future.
+
+        """
         
         # Parameter
+        # --------
         
         
         # Variables
-
+        # ---------
+        
         
         # Constraints
+        # -----------
+        
+        # Test Constraints for specific case restriction 
         
         def TestRule(self):
             return self.Y[8000] == 1
@@ -999,18 +992,27 @@ class SuperstructureModel(AbstractModel):
     # -------------------------      
 
     def create_ObjectiveFunction(self):
+        """
+        
+
+        Description
+        -------
+        Defines the main product flow and the objetive function.
+
+        """
         
         # Parameter
+        # ---------
         
         
         # Variables
+        # ---------
         
         self.MainProductFlow = Var()
         
         
         # Constraints
-        
-
+        # -----------
         
         
         # Definition of Main Product and Product Load for NPC / NPE Calculation
@@ -1038,7 +1040,6 @@ class SuperstructureModel(AbstractModel):
 
 
         # Definition of the used Objective Function
-        # -----------------------------------------
         
         if self.SS.Objective == 'NPC':
             
