@@ -772,56 +772,7 @@ class YieldReactor(PhysicalProcess):
         super().fill_ParameterList()
         self.ParameterList.append(self.xi)
 
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-#--------------------------PRODUCT POOL ---------------------------------------
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
 
-
-
-class ProductPool(VirtualProcess):
-
-
-    def __init__(self, Name, 
-                 UnitNumber, 
-                 ProductType= "ByProduct", 
-                 ProductPrice = None, 
-                 ProductName= None, 
-                 Parent = None, 
-                 *args, 
-                 **kwargs):
-
-        super().__init__(Name, UnitNumber, Parent)
-
-        # Non-Indexed Parameters
-        self.Type = "ProductPool"
-        self.ProductName = ProductName
-        self.ProductPrice = {'ProductPrice': {self.Number: ProductPrice}}
-        self.em_credits = {'em_fac_prod': {self.Number: 0}}
-        
-        
-        if ProductType == 'MainProduct':
-            self.ProductType = ProductType
-        elif ProductType == 'WasteWaterTreatment':
-            self.ProductType = ProductType
-        else:
-            self.ProductType = 'ByProduct'
-        
-            
-            
-    def set_EmissionCredits(self, emissionfactor):
-        self.em_credits['em_fac_prod'][self.Number] = emissionfactor
-        
-            
-    def set_ProductPrice(self, Price):
-        self.ProductPrice['ProductPrice'][self.Number] = Price
-
-
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
-        self.ParameterList.append(self.ProductPrice)
-        self.ParameterList.append(self.em_credits)
 
 
 
@@ -899,3 +850,88 @@ class ElectricityGenerator(StoichReactor):
     def fill_ParameterList(self):
         super().fill_ParameterList()
         self.ParameterList.append(self.Efficiency_TUR)
+        
+        
+        
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#--------------------------PRODUCT POOL ---------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+
+
+class ProductPool(VirtualProcess):
+
+
+    def __init__(self, Name, 
+                 UnitNumber, 
+                 ProductType= "ByProduct", 
+                 ProductPrice = None, 
+                 ProductName= None, 
+                 Parent = None, 
+                 *args, 
+                 **kwargs):
+
+        super().__init__(Name, UnitNumber, Parent)
+
+        # Non-Indexed Parameters
+        self.Type = "ProductPool"
+        self.ProductName = ProductName
+        self.ProductPrice = {'ProductPrice': {self.Number: ProductPrice}}
+        self.em_credits = {'em_fac_prod': {self.Number: 0}}
+        
+        
+        if ProductType == 'MainProduct':
+            self.ProductType = ProductType
+        elif ProductType == 'WasteWaterTreatment':
+            self.ProductType = ProductType
+        else:
+            self.ProductType = 'ByProduct'
+        
+            
+            
+    def set_EmissionCredits(self, emissionfactor):
+        self.em_credits['em_fac_prod'][self.Number] = emissionfactor
+        
+            
+    def set_ProductPrice(self, Price):
+        self.ProductPrice['ProductPrice'][self.Number] = Price
+
+
+    def fill_ParameterList(self):
+        super().fill_ParameterList()
+        self.ParameterList.append(self.ProductPrice)
+        self.ParameterList.append(self.em_credits)
+
+
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#--------------------------RAW MATERIAL SOURCE --------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+
+class Source(VirtualProcess):
+    
+    def __init__(self, Name, 
+                 UnitNumber,
+                 Parent = None,
+                 *args, 
+                 **kwargs):
+
+        super().__init__(Name, UnitNumber, Parent)
+        
+        self.Composition = {}
+        
+        
+        
+    def set_composition(self, composition_dic):
+        for i,k in composition_dic.items():
+            self.Composition[self.Number][i] = k
+        
+    
+    def fill_ParameterList(self):
+        super().fill_ParameterList()
+        self.ParameterList.append(self.Composition)
+        
