@@ -334,7 +334,9 @@ def wrapp_EconomicData(obj, df, df2):
                           ReferenceFlowComponentList
                           )
     
-def wrapp_ProductpoolData (obj, df): 
+     
+ 
+def wrapp_ProductpoolData(obj, series): 
     
     """ 
     Description 
@@ -351,20 +353,20 @@ def wrapp_ProductpoolData (obj, df):
     df : Dataframe
     
     """
-    obj.ProductName= df.iloc[0,1]
-    obj.set_ProductPrice(df.iloc[4,1])  
-    obj.ProductType = df.iloc[5,1] 
-    obj.set_Group(df.iloc[3,1])
+            
+         
+        
+    obj.ProductName= series[4]
+    obj.set_ProductPrice(series[8])
+    obj.ProductType = series[9] 
+    obj.set_Group(series[7])
     
     EmissionCredits = 0
     
-    if not pd.isnull(df.iloc[6,1]):
-        EmissionCredits = df.iloc[6,1]
-    
-    obj.set_EmissionCredits(EmissionCredits)
-     
- 
-    
+    if not pd.isnull(series[10]):
+        EmissionCredits = series[10]
+
+    obj.set_EmissionCredits(EmissionCredits)    
  
     
     

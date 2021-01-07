@@ -10,6 +10,8 @@ Created on Thu Apr  2 11:25:35 2020
 import pandas as pd
 
 from .Wrapp_Processes import wrapp_ProcessUnits
+from .Wrapp_Processes import wrapp_PoolUnits
+
 
 from .Wrapp_System import wrapp_SystemData
 
@@ -62,6 +64,10 @@ def get_DataFromExcel(PathName=None):
             Superstructure_Object = wrapp_SystemData(datframe[i])
         elif i in Hidden_Tables:
             continue
+        elif i == "Pools":
+            pools = wrapp_PoolUnits(datframe[i])
+            for k in pools:
+                PU_ObjectList.append(k)
         else:
             PU_ObjectList.append(wrapp_ProcessUnits(datframe[i]))
             

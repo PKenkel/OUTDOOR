@@ -50,7 +50,7 @@ def wrapp_ProcessUnits(dfi):
     GammaDataRange = WF.convert_total2('H', 10,'J', 30)
     ThetaDataRange = WF.convert_total2('L', 10, 'N', 30)
     XiDataRange = WF.convert_total2('H', 10, 'I',30)
-    ProductpoolDataRange = WF.convert_total('D', 10, 'E', 16)
+
 
 
     process_class = dfi.iat[10,4]   
@@ -79,31 +79,37 @@ def wrapp_ProcessUnits(dfi):
         obj =  ElectricityGenerator(dfi.iat[8,4],dfi.iat[9,4], Efficiency = dfi.iat[19,4])
         wrapp_ReacionData(obj, dfi.iloc[GammaDataRange], dfi.iloc[ThetaDataRange])
 
-    elif process_class == "Productpool":
-        
-        obj = ProductPool(dfi.iat[8,4],dfi.iat[9,4]) 
-        wrapp_ProductpoolData(obj, dfi.iloc[ProductpoolDataRange]) 
-    
 
     # everything else is a splitter for now
     else:
         
         obj = PhysicalProcess(dfi.iat[8,4],dfi.iat[9,4]) 
         wrapp_EnergyData(obj, dfi.iloc[EnergyDataRange], dfi.iloc[KappaUtRange], dfi.iloc[GeneralDataRange])
+        
+    wrapp_GeneralData(obj, dfi.iloc[GeneralDataRange])
+    wrapp_EconomicData(obj, dfi.iloc[EconomicDataRange], dfi.iloc[GeneralDataRange])
+    wrapp_AdditivesData(obj, dfi.iloc[Add_FlowDataRange], dfi.iloc[ConcDataRange] ,dfi.iloc[BalanceDataRange])
 
-    if process_class != "Productpool":
-        
-        wrapp_GeneralData(obj, dfi.iloc[GeneralDataRange])
-        wrapp_EconomicData(obj, dfi.iloc[EconomicDataRange], dfi.iloc[GeneralDataRange])
-        wrapp_AdditivesData(obj, dfi.iloc[Add_FlowDataRange], dfi.iloc[ConcDataRange] ,dfi.iloc[BalanceDataRange])
-        
-    else:
-        pass 
-    
     return obj
 
 
+def wrapp_PoolUnits(dfi):
+    
+    DataRange = WF.convert_total ('D', 6, 'K', 12)
+    DataFrame = dfi.iloc[DataRange]
+    PoolList = []
+    
+    
+    for index, series in DataFrame.items():
+        if not pd.isnull(series[4]):
+            obj = ProductPool(series[4], series[5])
+            wrapp_ProductpoolData(obj, series)
+            PoolList.append(obj)
 
+    return PoolList
+    
+  
+    
 
 
 
