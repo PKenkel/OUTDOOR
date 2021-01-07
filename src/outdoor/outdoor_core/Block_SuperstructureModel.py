@@ -20,21 +20,24 @@ class SuperstructureModel(AbstractModel):
     Methods
     --------
     
-    create_Sets:
+    create_Sets: Creates all Sets required for the Model
     
-    create_MassBalances:
+    create_MassBalances: Creates Variables, Parameters and Mass Balance Constraints
         
-    create_EnergyBalances:
+    create_EnergyBalances: Creates Variables, Parameters and Energy Balance Constraints
         
-    create_DecisionMaking:
+    create_DecisionMaking: Creates Variables, Parameters and Descision Constraints
         
-    create_EconomicEvaluation:
+    create_EconomicEvaluation: Creates Variables, Parameters and Economic Constraints
               
-    create_EnvironmentalEvaluation:
+    create_EnvironmentalEvaluation: Creates Variables, Parameters and Environmental Constraints
         
-    create_Rest:
+    create_ObjectiveFunction: Creates the Objective as well as minimum Main Productload.
      
-    create_ModelEquations:
+    create_ModelEquations: Calls the methods above to create the model step by step
+    
+    populateModel:  Creates an instance of the created model using the Data_file from
+                    the Superstructure Object.
         
         
 
@@ -49,7 +52,6 @@ class SuperstructureModel(AbstractModel):
         
     def create_ModelEquations(self):
         self.create_Sets()
-
         self.create_MassBalances()
         self.create_EnergyBalances()
         self.create_EconomicEvaluation()
@@ -66,11 +68,20 @@ class SuperstructureModel(AbstractModel):
 # --------------------
 
 
-    # Set Method
-
+    # **** SETS  ****
+    # ----------------
+ 
     def create_Sets(self):
+        """
+        Description
+        -------
+        Creates all needed Sets for the model including, unit operations, components,
+        utilities, reactions, heat intervals etc.
+
+        """
         
-        # Process Units
+        # Process Unit operations
+        # -------------
         self.U = Set()
         self.UU = Set(within=self.U)
         self.U_STOICH_REACTOR = Set(within=self.U)
@@ -82,16 +93,19 @@ class SuperstructureModel(AbstractModel):
         self.U_C = Set(within=self.U)
         
         # Components
+        # ----------      
         self.I = Set()
         self.M = Set(within=self.I)
         
-        # Reactions, Utilities
+        # Reactions, Utilities, HEat intervals
+        # ------------------------------------
         self.R = Set()
         self.UT = Set() 
         self.H_UT = Set(within=self.UT)
         self.HI = Set()
         
-        # Linear CAPEX Set
+        # Piece-Wise Linear CAPEX
+        # -----------------------
         self.J =Set()
         self.JI = Set(within=self.J)
         
@@ -115,16 +129,21 @@ class SuperstructureModel(AbstractModel):
 
          
         # Parameter
+        # ---------
+        
+        # Flow parameters (Split factor, concentrations, full load hours)
         self.myu = Param(self.U, self.UU, self.I, initialize=0)
         self.phi1 = Param(self.U, self.I, initialize=0)
         self.phi2 = Param(self.U, self.I, initialize=0)
         self.conc = Param(self.U, initialize=0)
+        self.flh = Param(self.U)
+        
+        # Reaction parameters(Stoich. / Yield Coefficients)
         self.gamma = Param(self.U_STOICH_REACTOR, self.I, self.R,  initialize=0)
         self.theta = Param(self.U_STOICH_REACTOR, self.R, self.M, initialize=0)
         self.xi = Param(self.U_YIELD_REACTOR, self.I, initialize=0)
-        self.alpha = Param(self.U, initialize=120000) 
-
         
+        # Additional slack parameters (Flow choice, upper bounds, )
         self.kappa_1_lhs_conc = Param(self.U, self.I, initialize=0)
         self.kappa_1_rhs_conc = Param(self.U, self.I, initialize=0)
         self.kappa_2_lhs_conc = Param(self.U, initialize=3)
@@ -132,10 +151,12 @@ class SuperstructureModel(AbstractModel):
         self.Names = Param(self.U)     
         self.ul_1 = Param(self.U, initialize = 10000000)
         self.ul_2 = Param(self.U, initialize = 10000000)
+        self.alpha = Param(self.U, initialize=120000) 
         
-        self.flh = Param(self.U)
 
         # Variables
+        # --------
+        
         self.FLOW = Var(self.U, self.UU, self.I,  within=NonNegativeReals)
         self.FLOW_IN = Var(self.U, self.I,  within=NonNegativeReals)
         self.FLOW_OUT = Var(self.U, self.I, within=NonNegativeReals)
@@ -149,6 +170,8 @@ class SuperstructureModel(AbstractModel):
         
         
         # Constraints
+        # -----------
+        
          
         def MassBalance_1_rule(self,u,i):
             return self.FLOW_IN[u,i] == self.FLOW_ADD_TOT[u,i] \
@@ -260,24 +283,24 @@ class SuperstructureModel(AbstractModel):
 
         """
         
-        self.beta  = Param(self.U, self.H_UT, self.HI, initialize=0)
+        # Parameter
+        # ---------
+        
+        # Energy demand (El, Heating/Cooling, Interval H and C)
+        self.tau = Param(self.U, self.UT, initialize=0)
         self.tau_h = Param(self.H_UT, self.U, initialize=0)
         self.tau_c = Param(self.H_UT, self.U, initialize=0)
+        self.beta  = Param(self.U, self.H_UT, self.HI, initialize=0)
         
+        # Slack Parameters (Flow Choice, HEN, Upper bounds)
+        self.kappa_1_ut = Param(self.U, self.UT, self.I, initialize=0)
+        self.kappa_2_ut = Param(self.U, self.UT, initialize=3)
+        self.kappa_3_heat = Param(self.U, self.HI, initialize=0)
+        self.kappa_3_heat2 = Param(self.U, self.HI, initialize=0)
         self.alpha_hex  =  Param(initialize=10000000000)
         self.Y_HEX = Var(self.HI, within=Binary)
         
-        
-        # Parameter
-        self.tau = Param(self.U, self.UT, initialize=0)
-        self.kappa_1_ut = Param(self.U, self.UT, self.I, initialize=0)
-        self.kappa_2_ut = Param(self.U, self.UT, initialize=3)
-        
-        self.kappa_3_heat = Param(self.U, self.HI, initialize=0)
-        
-        self.kappa_3_heat2 = Param(self.U, self.HI, initialize=0)
-        
-        
+        # Additional unit operations (Heat Pump, EL / Heat Generator)
         self.COP_HP = Param(initialize=0)
         self.Efficiency_TUR = Param(self.U_TUR, initialize=0)
         self.Efficiency_FUR = Param(self.U_FUR, initialize=0)
@@ -286,36 +309,38 @@ class SuperstructureModel(AbstractModel):
         
         
         # Variables
+        # ---------
+        
+        # Reference Flows for Demand calculation 
         self.REF_FLOW_EL = Var(self.U, within = NonNegativeReals)
         self.REF_FLOW_HEAT = Var(self.U, within = NonNegativeReals)
         self.REF_FLOW_COOLING = Var(self.U, within = NonNegativeReals)
         
+        # Electricity Demand and Production, Heat Pump
         self.ENERGY_DEMAND_EL = Var(self.U)
         self.EL_PROD_1 = Var(self.U_TUR, within = NonNegativeReals)
         self.ENERGY_DEMAND_EL_TOT = Var()
+        self.ENERGY_DEMAND_HP_EL  = Var(within=NonNegativeReals)
         
-        
+        # Heating and cooling demand (Interval, Unit, Resi, Defi, Cooling, Exchange, Production , HP)
         self.ENERGY_DEMAND_HEAT = Var(self.U,self.HI, within= NonNegativeReals)
         self.ENERGY_DEMAND_COOL = Var(self.U,self.HI, within= NonNegativeReals)  
-        self.ENERGY_DEMAND_HP = Var(within=NonNegativeReals)
-        
         self.ENERGY_DEMAND_HEAT_UNIT = Var(self.U, within=NonNegativeReals)
         self.ENERGY_DEMAND_COOL_UNIT = Var(self.U, within=NonNegativeReals)
-        
-    
         self.ENERGY_DEMAND_HEAT_RESI = Var(self.HI, within=NonNegativeReals)
         self.ENERGY_DEMAND_HEAT_DEFI = Var(self.HI, within=NonNegativeReals)
-        
         self.ENERGY_DEMAND_COOLING = Var(within=NonNegativeReals)
-        self.ENERGY_DEMAND_HP_EL  = Var(within=NonNegativeReals)
+        self.ENERGY_EXCHANGE = Var(self.HI, within=NonNegativeReals)
+        self.EXCHANGE_TOT = Var()
+        self.ENERGY_DEMAND_HEAT_PROD_USE = Var(within=NonNegativeReals)
+        self.ENERGY_DEMAND_HEAT_PROD_SELL = Var(within=NonNegativeReals)  
+        self.ENERGY_DEMAND_HEAT_PROD = Var(self.U_FUR, within=NonNegativeReals)
+        self.ENERGY_DEMAND_HP = Var(within=NonNegativeReals)
         self.ENERGY_DEMAND_HP_USE = Var(within=NonNegativeReals)
 
-        self.EXCHANGE_TOT = Var()
-        self.ENERGY_EXCHANGE = Var(self.HI, within=NonNegativeReals)
-        self.ENERGY_DEMAND_HEAT_PROD_USE = Var(within=NonNegativeReals)
-        self.ENERGY_DEMAND_HEAT_PROD_SELL = Var(within=NonNegativeReals)
         
-        self.ENERGY_DEMAND_HEAT_PROD = Var(self.U_FUR, within=NonNegativeReals)
+        
+
         
         # Constraints
         
@@ -547,85 +572,98 @@ class SuperstructureModel(AbstractModel):
 
 
 
-        self.HEN_C = Param(initialize=100)
-        self.delta_cool = Param(initialize = 15)
+        
 
         # Parameter
+        # ---------
+        
+        # Specific costs (Utility, raw materials, Product prices)
         self.delta_el = Param(initialize=0)
         self.delta_q = Param(self.HI, initialize=30)
-        
+        self.delta_cool = Param(initialize = 15)
         self.delta_rm = Param(self.I, initialize=0)
-        
         self.ProductPrice =Param(self.U_PP, initialize=0)
         
+        # Cost factors (CAPEX, Heat Pump)
         self.DC = Param(self.U, initialize=0)
         self.IDC = Param(self.U, initialize=0)
         self.ACC_Factor = Param(self.U, initialize=0)
-        self.K_M = Param(self.U_C, initialize = 0.044875)
-        
+        self.K_M = Param(self.U_C, initialize = 0.044875)      
         self.HP_ACC_Factor = Param(initialize=1)
         self.HP_Costs = Param(initialize = 1)
         
         
-    
+        # Piecewise Linear CAPEX
         self.lin_CAPEX_x = Param(self.U_C, self.J, initialize=0)
         self.lin_CAPEX_y = Param(self.U_C, self.J, initialize=0)
         self.kappa_1_capex = Param(self.U_C, self.I, initialize= 0)
         self.kappa_2_capex = Param(self.U_C, initialize= 5)
         
+        # OPEX factors
         self.K_O = Param(initialize = 2.06875)
         self.working_hours = Param(initialize = 8322)
         self.process_steps = Param(initialize = 0)
         self.hourly_wage  = Param(initialize = 41)
-        self.M_COST = Var(self.U_C)
-        self.M_COST_TOT = Var(within=NonNegativeReals)
         self.capacity_flow = Param()
         
         
-        self.O_H = Var()
-        self.O_COST = Var()
+
 
 
         
         # Variables
-        self.COST_UT = Var()
-        self.COST_HEAT = Var(self.HI)
-        self.COST_EL = Var()
+        # ---------
         
-        self.lin_CAPEX_s = Var(self.U_C, self.JI, within=NonNegativeReals)
-        self.lin_CAPEX_z = Var(self.U_C, self.JI, within=Binary)
-        self.lin_CAPEX_lambda = Var(self.U_C, self.J, bounds=(0,1))
-        
-        
-        self.REF_FLOW_CAPEX = Var(self.U_C, within=NonNegativeReals)
-        self.FCI = Var(self.U_C, within=NonNegativeReals)
 
-        self.ACC = Var(self.U_C, within=NonNegativeReals)
-        self.EC = Var(self.U_C, within=NonNegativeReals)
         
-        self.ACC_HP = Var(within=NonNegativeReals)
-        self.TAC = Var()
-        self.OM_COST = Var(within=NonNegativeReals)
-        self.OPEX =Var()
-        self.CAPEX = Var() 
-        self.RM_COST = Var(self.U_C, within=NonNegativeReals)
-        self.RM_COST_TOT = Var(within=NonNegativeReals)
-        self.PROFITS = Var(self.U_PP)
-        self.PROFITS_TOT = Var()
-        
-        
+        # Utilitiy Costs ( El, Heat, El-TOT, HEN)
+        self.COST_EL = Var()
+        self.COST_HEAT = Var(self.HI)
+        self.COST_UT = Var()
         self.ELCOST = Var()
         self.HEATCOST = Var(self.HI)
         self.C_TOT = Var()
         self.HENCOST = Var(self.HI, within=NonNegativeReals)
         self.UtCosts = Var()
         
+        # Piece-Wise Linear CAPEX
+        self.lin_CAPEX_s = Var(self.U_C, self.JI, within=NonNegativeReals)
+        self.lin_CAPEX_z = Var(self.U_C, self.JI, within=Binary)
+        self.lin_CAPEX_lambda = Var(self.U_C, self.J, bounds=(0,1))
+        self.REF_FLOW_CAPEX = Var(self.U_C, within=NonNegativeReals)
+        
+        
+        # CAPEX (Units, Returning costs, Heat Pump, Total)
+        self.EC = Var(self.U_C, within=NonNegativeReals)
+        self.FCI = Var(self.U_C, within=NonNegativeReals)
+        self.ACC = Var(self.U_C, within=NonNegativeReals)
         self.to_acc = Param(self.U_C, initialize = 0)
         self.TO_CAPEX = Var(self.U_C, within=NonNegativeReals)
         self.TO_CAPEX_TOT = Var(within=NonNegativeReals)
+        self.ACC_HP = Var(within=NonNegativeReals)
+        self.TAC = Var()
+        self.CAPEX = Var() 
+        
+        # OPEX (Raw Materials, O&M, , UtilitiesTotal, Profits)
+        self.RM_COST = Var(self.U_C, within=NonNegativeReals)
+        self.RM_COST_TOT = Var(within=NonNegativeReals)
+        self.M_COST = Var(self.U_C)
+        self.M_COST_TOT = Var(within=NonNegativeReals)
+        self.O_H = Var()
+        self.O_COST = Var()
+        self.OM_COST = Var(within=NonNegativeReals)
+        self.OPEX =Var()
+        self.PROFITS = Var(self.U_PP)
+        self.PROFITS_TOT = Var()
+        
+        
+        
+        
+
         
         
         # Constraints
+        # ----------- 
         
         # CAPEX Calculation
         # ------------------
@@ -675,23 +713,15 @@ class SuperstructureModel(AbstractModel):
         def CapexEquation_7_rule(self,u):
             return self.FCI[u] == self.EC[u] * (1+self.DC[u] + self.IDC[u])
         
-        
         def CapexEquation_8_rule(self,u):
             return self.ACC[u] == self.FCI[u] * self.ACC_Factor[u]
-        
-        
-        
         
         def CapexEquation_9_rule(self):
             return self.ACC_HP  == self.HP_ACC_Factor * self.HP_Costs * self.ENERGY_DEMAND_HP_USE * 1000 / self.H
         
-        
-        
-
         def CapexEquation_10_rule(self):
             return self.CAPEX == sum(self.ACC[u] for u in self.U_C) *1000000 + \
                 self.ACC_HP + self.TO_CAPEX_TOT * 1000000
-        
         
         def CapexEquation_11_rule(self,u):
             return self.TO_CAPEX[u] == self.to_acc[u] * self.EC[u] 
@@ -738,11 +768,7 @@ class SuperstructureModel(AbstractModel):
         
         def HEN_CostBalance_4c_rule(self,hi):
             return self.HENCOST[hi]  <= self.Y_HEX[hi] * self.alpha_hex
-        
-        def HEN_CostBalance_5_rule(self):
-            return self.ACC_HP == self.HP_ACC_Factor * self.HP_Costs \
-                * self.ENERGY_DEMAND_HP_USE / self.H
-        
+               
         def HEN_CostBalance_6_rule(self):
             return self.C_TOT ==  self.UtCosts + sum(self.HENCOST[hi] for hi in self.HI)
         
@@ -754,7 +780,6 @@ class SuperstructureModel(AbstractModel):
         self.HEN_CostBalance_4 = Constraint(self.HI, rule=HEN_CostBalance_4_rule) 
         self.HEN_CostBalance_4b = Constraint(self.HI, rule=HEN_CostBalance_4b_rule)
         self.HEN_CostBalance_4c = Constraint(self.HI, rule=HEN_CostBalance_4c_rule)
-        # self.HEN_CostBalance_5 = Constraint(rule = HEN_CostBalance_5_rule)
         self.HEN_CostBalance_6 = Constraint(rule = HEN_CostBalance_6_rule)
         
                     
@@ -783,9 +808,6 @@ class SuperstructureModel(AbstractModel):
                    
         def RM_CostBalance_2_rule(self):
             return self.RM_COST_TOT == sum(self.RM_COST[u] for u in self.U_C)
-        
-        
-        
         
         
         def OM_CostBalance_1_rule(self,u):
