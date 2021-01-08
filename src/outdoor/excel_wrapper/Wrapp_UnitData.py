@@ -376,7 +376,7 @@ def wrapp_SourceData(obj, series, df, counter):
     
     dic = WF.read_type1(df, 0 , counter)
     
-    UpperLimit = 100000
+    UpperLimit = 10000000
     Costs = 0
     
     if not pd.isnull(series[7]):

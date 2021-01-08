@@ -93,7 +93,7 @@ class SuperstructureModel(AbstractModel):
         self.U_C = Set(within=self.U)
         
         self.U_S = Set(within=self.U)
-        self.U_SU = Set(within=self.U_S * self.U_C)
+        self.U_SU = Set(within=self.U_S * self.U)
 
         
         # Components
@@ -172,10 +172,12 @@ class SuperstructureModel(AbstractModel):
         self.FLOW_SUM = Var(self.U, within=NonNegativeReals) 
         self.Y = Var(self.U, within=Binary)
         
+        self.FLOW_ADD_TOT1 = Var(self.U, self.I, within=NonNegativeReals)
         self.FLOW_ADD = Var(self.U_SU, within =NonNegativeReals)
         self.ul = Param(self.U_S, initialize=10000000)
         self.phi = Param(self.U_S, self.I, initialize=0)
         self.materialcosts =Param(self.U_S, initialize = 0)
+        self.FLOW_SOURCE = Var(self.U_S, within=NonNegativeReals)
         
         # Constraints
         # -----------
@@ -184,6 +186,8 @@ class SuperstructureModel(AbstractModel):
         def MassBalance_1_rule(self,u,i):
             return self.FLOW_IN[u,i] == self.FLOW_ADD_TOT[u,i] \
                 + sum(self.flh[uu] / self.flh[u] *  self.FLOW[uu,u,i] for uu in self.UU) 
+                
+                
 
         def MassBalance_2_rule(self,u,i):
             return self.FLOW_ADD_TOT[u,i] <= self.alpha[u] * self.Y[u]
@@ -203,9 +207,28 @@ class SuperstructureModel(AbstractModel):
             return self.FLOW_ADD_2[u]  <= self.ul_2[u]
         
         
-        # def MassBalance_2_rule(u,i):
-        #     return self.FLOW_ADD_TOT[u,i] == sum(self.FLOW_ADD[u_s,u] * self.)
+        
+        
+        def MassBalance_2a_rule(self,u,i):
+            return self.FLOW_ADD_TOT[u,i] == sum(self.FLOW_ADD[u_s,u] * self.phi[u_s,i] for u_s in self.U_S if (u_s,u) in self.U_SU)
+        
+        def MassBalance_3a_rule(self,u_s, u):
+            return self.FLOW_ADD[u_s,u] <= self.alpha[u] * self.Y[u]
+        
+        def MassBalance_4a_rule(self,u_s):
+            return self.FLOW_SOURCE[u_s] == sum(self.FLOW_ADD[u_s,u] for u in self.U if (u_s,u) in self.U_SU)
+        
+        def MassBalance_5a_rule(self, u_s):
+            return self.FLOW_SOURCE[u_s] <= self.ul[u_s]
 
+        self.MassBalance_2a = Constraint(self.U, self.I, rule=MassBalance_2a_rule)
+        self.MassBalance_3a = Constraint(self.U_SU,  rule=MassBalance_3a_rule)
+        self.MassBalance_4a = Constraint(self.U_S,  rule=MassBalance_4a_rule)
+        self.MassBalance_5a = Constraint(self.U_S, rule=MassBalance_5a_rule)
+        
+        
+        
+        
         def MassBalance_5_rule(self,u,i):
             if u in self.U_YIELD_REACTOR:
                 return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I) * self.xi[u,i]
@@ -257,9 +280,11 @@ class SuperstructureModel(AbstractModel):
     
          
         self.MassBalance_1 = Constraint(self.U, self.I, rule=MassBalance_1_rule)
-        self.MassBalance_2 = Constraint(self.U, self.I, rule=MassBalance_2_rule)
-        self.MassBalance_3 = Constraint(self.U, self.I, rule=MassBalance_3_rule)
-        self.MassBalance_4 = Constraint(self.U, self.I, rule=MassBalance_4_rule)
+        
+        # self.MassBalance_2 = Constraint(self.U, self.I, rule=MassBalance_2_rule)
+        # self.MassBalance_3 = Constraint(self.U, self.I, rule=MassBalance_3_rule)
+        # self.MassBalance_4 = Constraint(self.U, self.I, rule=MassBalance_4_rule)
+        
         self.MassBalance_5 = Constraint(self.U, self.I, rule=MassBalance_5_rule)
         self.MassBalance_6 = Constraint(self.U, self.UU, self.I, rule=MassBalance_6_rule)
         self.MassBalance_7 = Constraint(self.U, self.UU, self.I, rule=MassBalance_7_rule)
@@ -268,8 +293,9 @@ class SuperstructureModel(AbstractModel):
         self.MassBalance_10 = Constraint(self.I, rule=MassBalance_10_rule)
         self.MassBalance_11 = Constraint(self.U, rule=MassBalance_11_rule)
         self.MassBalance_12 = Constraint(self.U, rule=MassBalance_12_rule)
-        self.MassBalance_13 = Constraint(self.U, rule=MassBalance_13_rule)
-        self.MassBalance_14 = Constraint(self.U, rule=MassBalance_14_rule)
+        
+        # self.MassBalance_13 = Constraint(self.U, rule=MassBalance_13_rule)
+        # self.MassBalance_14 = Constraint(self.U, rule=MassBalance_14_rule)
 
 
 
@@ -813,14 +839,19 @@ class SuperstructureModel(AbstractModel):
             return self.OPEX == self.OM_COST + self.RM_COST_TOT + self.COST_UT + self.C_TOT
         
         
+        def RM_CostBalance_1a_rule(self):
+            return self.RM_COST_TOT == sum(self.materialcosts[u_s] * self.FLOW_SOURCE[u_s] for u_s in self.U_S)
+        
+        
+        self.RM_CostBalance_1a = Constraint(self.U_S, rule=RM_CostBalance_1a_rule)
         
         self.OM_CostBalance_1 = Constraint(self.U_C, rule=OM_CostBalance_1_rule)
         self.OM_CostBalance_2 = Constraint(rule=OM_CostBalance_2_rule)
         self.OM_CostBalance_3 = Constraint(rule=OM_CostBalance_3_rule)
         self.OM_CostBalance_4 = Constraint(rule=OM_CostBalance_4_rule)
         self.OM_CostBalance_5 = Constraint(rule=OM_CostBalance_5_rule)
-        self.RM_CostBalance_1 = Constraint(self.U_C, rule= RM_CostBalance_1_rule)
-        self.RM_CostBalance_2 = Constraint(rule= RM_CostBalance_2_rule)
+        # self.RM_CostBalance_1 = Constraint(self.U_C, rule= RM_CostBalance_1_rule)
+        # self.RM_CostBalance_2 = Constraint(rule= RM_CostBalance_2_rule)
         self.OpexEquation = Constraint(rule=Opex_1_rule)
         
         
