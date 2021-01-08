@@ -11,7 +11,7 @@ import pandas as pd
 
 from .Wrapp_Processes import wrapp_ProcessUnits
 from .Wrapp_Processes import wrapp_PoolUnits
-
+from .Wrapp_Processes import wrapp_SourceUnits
 
 from .Wrapp_System import wrapp_SystemData
 
@@ -67,6 +67,10 @@ def get_DataFromExcel(PathName=None):
         elif i == "Pools":
             pools = wrapp_PoolUnits(datframe[i])
             for k in pools:
+                PU_ObjectList.append(k)
+        elif i == "Sources":
+            sources = wrapp_SourceUnits(datframe[i])
+            for k in sources:
                 PU_ObjectList.append(k)
         else:
             PU_ObjectList.append(wrapp_ProcessUnits(datframe[i]))

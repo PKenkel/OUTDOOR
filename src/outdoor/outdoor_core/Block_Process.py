@@ -33,6 +33,8 @@ class Process():
         self.Type = None
         self.Group = None
         
+        self.Possible_Sources = []
+        
 
         
 
@@ -238,7 +240,16 @@ class Process():
             self.kappa_2_rhs_conc['kappa_2_rhs_conc'][self.Number]  = 3
 
 
-
+    def add_PossibleSources(self, SourceList):
+        
+        if type(SourceList) == list:
+            for i in SourceList:
+                if i not in self.Possible_Sources:
+                    self.Possible_Sources.append(i)
+        else:
+            if SourceList not in self.Possible_Sources:
+                self.Possible_Sources.append(SourceList)
+                
 
 
 
@@ -922,8 +933,9 @@ class Source(VirtualProcess):
 
         super().__init__(Name, UnitNumber, Parent)
         
+        self.Type = 'Source'
         self.Composition = {'phi': {}}
-        self.MaterialCosts  = {'MaterialCosts': {self.Number: 0}}
+        self.MaterialCosts  = {'materialcosts': {self.Number: 0}}
         self.UpperLimit = {'ul': {self.Number: None}}
     
     
@@ -932,19 +944,18 @@ class Source(VirtualProcess):
                         Costs,
                         UpperLimit,
                         Composition_dictionary):
-        
-        
+
         self.set_MaterialCosts(Costs)
         self.set_upperlimit(UpperLimit)
-        self.set_composistion(Composition_dictionary)
-    
+        self.set_composition(Composition_dictionary)
+
     def set_MaterialCosts(self, Costs):
-        self.MaterialCosts['MaterialCosts'][self.Number] = Costs
+        self.MaterialCosts['materialcosts'][self.Number] = Costs
         
         
     def set_composition(self, composition_dic):
-        for i,k in composition_dic.items():
-            self.Composition['phi'][self.Number][i] = k
+        for i in composition_dic:       
+            self.Composition['phi'][(self.Number,i)] = composition_dic[i]
         
     def set_upperlimit(self, UpperLimit):
         self.UpperLimit['ul'][self.Number] = UpperLimit
@@ -954,5 +965,7 @@ class Source(VirtualProcess):
         super().fill_ParameterList()
         self.ParameterList.append(self.Composition)
         self.ParameterList.append(self.MaterialCosts)
+        self.ParameterList.append(self.UpperLimit)
+        
         
         

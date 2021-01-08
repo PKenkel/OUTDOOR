@@ -112,7 +112,28 @@ def wrapp_PoolUnits(dfi):
     
 
 
+def wrapp_SourceUnits(dfi):
+    GeneralDataRange = WF.convert_total('E',6,'O',10)
+    CompositionDataRange  = WF.convert_total('D', 12, 'O', 23)
+    SourcesList = []
+    
+    
+    df1 = dfi.iloc[GeneralDataRange]
+    df2 = dfi.iloc[CompositionDataRange]
+    counter = 1
+    
+    for index, series in df1.items():
+        if not pd.isnull(series[4]):
 
+            obj = Source(series[4], series[5])
+            wrapp_SourceData(obj, series, df2, counter)
+            SourcesList.append(obj)
+            counter += 1 
+            
+    return SourcesList
+
+            
+            
 
 
 

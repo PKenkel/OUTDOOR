@@ -30,6 +30,10 @@ class Superstructure():
         self.ElectricityGeneratorList = {'U_TUR': []}
         self.ProductPoolList = {'U_PP': []}
         self.CostUnitsList = {'U_C':[]}
+        self.SourceList = {'U_S': []}
+        self.SourceSet = {'U_SU': []}
+        
+        
         
         # Heat Balance
         self.HeatIntervalList =  {'HI': []}
@@ -262,9 +266,15 @@ class Superstructure():
                             self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
                         elif j.Type == 'ProductPool':
                             self.ProductPoolList['U_PP'].append(j.Number)
+                        elif j.Type == 'Source':
+                            self.SourceList['U_S'].append(j.Number)
                         else:
                             self.SplitterNumberList['U_SPLITTER'].append(j.Number)
                             self.CostUnitsList['U_C'].append(j.Number)
+                            
+                        if j.Number in self.CostUnitsList['U_C']:
+                            for k in j.Possible_Sources:
+                                self.SourceSet['U_SU'].append((k,j.Number))
             else:
                 if i not in self.UnitsList:
                     self.UnitsList.append(i)
@@ -286,9 +296,15 @@ class Superstructure():
                         self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
                     elif i.Type == 'ProductPool':
                         self.ProductPoolList['U_PP'].append(i.Number)
+                    elif i.Type == 'Source':
+                        self.SourceList['U_S'].append(i.Number)
                     else:
                         self.SplitterNumberList['U_SPLITTER'].append(i.Number)
                         self.CostUnitsList['U_C'].append(i.Number)
+                    if i.Number in self.CostUnitsList['U_C']:
+                        for k in i.Possible_Sources:
+                            self.SourceSet['U_SU'].append((k,i.Number))
+                        
 
     def add_UnitNames(self):
         for i in self.UnitsList:
@@ -754,8 +770,6 @@ class Superstructure():
                 x.FLH['flh'][x.Number] = self.H['H']        
         
 
-
-
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #--------------------------CREATE DATA-FILE METHODS ---------------------------
@@ -780,6 +794,10 @@ class Superstructure():
         self.NI_ParameterList.append(self.ElectricityGeneratorList)
         self.NI_ParameterList.append(self.ProductPoolList)
         self.NI_ParameterList.append(self.CostUnitsList)
+        
+        self.NI_ParameterList.append(self.SourceList)
+        self.NI_ParameterList.append(self.SourceSet)
+        
         self.NI_ParameterList.append(self.ComponentsList)
         self.NI_ParameterList.append(self.ReactantsList)
         self.NI_ParameterList.append(self.ReactionsList)
@@ -950,7 +968,6 @@ class Superstructure():
             
         self.fill_beta_Parameters()
     
-
 
                 
 

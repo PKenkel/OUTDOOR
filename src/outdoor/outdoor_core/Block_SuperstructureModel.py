@@ -92,6 +92,10 @@ class SuperstructureModel(AbstractModel):
         self.U_PP = Set(within=self.U)
         self.U_C = Set(within=self.U)
         
+        self.U_S = Set(within=self.U)
+        self.U_SU = Set(within=self.U_S * self.U_C)
+
+        
         # Components
         # ----------      
         self.I = Set()
@@ -168,6 +172,10 @@ class SuperstructureModel(AbstractModel):
         self.FLOW_SUM = Var(self.U, within=NonNegativeReals) 
         self.Y = Var(self.U, within=Binary)
         
+        self.FLOW_ADD = Var(self.U_SU, within =NonNegativeReals)
+        self.ul = Param(self.U_S, initialize=10000000)
+        self.phi = Param(self.U_S, self.I, initialize=0)
+        self.materialcosts =Param(self.U_S, initialize = 0)
         
         # Constraints
         # -----------
@@ -193,6 +201,10 @@ class SuperstructureModel(AbstractModel):
         
         def MassBalance_14_rule(self,u):
             return self.FLOW_ADD_2[u]  <= self.ul_2[u]
+        
+        
+        # def MassBalance_2_rule(u,i):
+        #     return self.FLOW_ADD_TOT[u,i] == sum(self.FLOW_ADD[u_s,u] * self.)
 
         def MassBalance_5_rule(self,u,i):
             if u in self.U_YIELD_REACTOR:

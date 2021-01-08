@@ -70,8 +70,9 @@ def wrapp_GeneralData(obj, df1):
                          cost_percentage, 
                          time_span, 
                          time_mode)
+    if not pd.isnull(df1.iloc[20,0]):
+        obj.add_PossibleSources(df1.iloc[20,0])
     
-
 def wrapp_ReacionData(obj, df1, df2 = None):
     
     """
@@ -369,5 +370,28 @@ def wrapp_ProductpoolData(obj, series):
     obj.set_EmissionCredits(EmissionCredits)    
  
     
+def wrapp_SourceData(obj, series, df, counter):
     
+    dic = {}
+    
+    dic = WF.read_type1(df, 0 , counter)
+    
+    UpperLimit = 100000
+    Costs = 0
+    
+    if not pd.isnull(series[7]):
+        UpperLimit = series[7]
+
+        
+    
+    if not pd.isnull(series[6]):
+        Costs = series[6]
+        
+        
+    obj.set_data_source(Costs,
+                        UpperLimit,
+                        Composition_dictionary  = dic
+                        )
+    
+
 
