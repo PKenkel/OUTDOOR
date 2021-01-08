@@ -840,7 +840,7 @@ class SuperstructureModel(AbstractModel):
         
         
         def RM_CostBalance_1a_rule(self):
-            return self.RM_COST_TOT == sum(self.materialcosts[u_s] * self.FLOW_SOURCE[u_s] for u_s in self.U_S)
+            return self.RM_COST_TOT == sum(self.materialcosts[u_s] * self.FLOW_SOURCE[u_s] * self.H  for u_s in self.U_S)
         
         
         self.RM_CostBalance_1a = Constraint(self.U_S, rule=RM_CostBalance_1a_rule)
