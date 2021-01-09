@@ -45,10 +45,16 @@ class Process():
         # Indexed Attributes 
         self.myu ={'myu': {}}
         self.conc  ={'conc': {self.Number: 0}}
-        self.ul1 = {'ul_1': {self.Number: 10000 }}
-        self.ul2 = {'ul_2': {self.Number: 10000 }}
         
-        self.add_flow = dict()
+        
+        
+        
+        # self.ul1 = {'ul_1': {self.Number: 10000 }}
+        # self.ul2 = {'ul_2': {self.Number: 10000 }}  
+        # self.add_flow = dict()
+        
+        
+        
         self.kappa_1_lhs_conc = {'kappa_1_lhs_conc': {}}
         self.kappa_2_lhs_conc = {'kappa_2_lhs_conc': {}}
         self.kappa_1_rhs_conc = {'kappa_1_rhs_conc': {}}
@@ -97,28 +103,17 @@ class Process():
 
     def set_data_flow(self,
                       RequiredConcentration = None,
-                      AdditionalFlowComposition1 = {},
-                      AdditionalFlowComposition2 = {},
                       RightHandSideReferenceFlow = None,
                       LeftHandSideReferenceFlow = None,
                       RightHandSideComponentList = [],
                       LeftHandSideComponentList = [],
                       SplitfactorDictionary = None,
-                      UpperLimitAdditionalFlow1 = None,
-                      UpperLimitAdditionalFlow2 = None
                       ):
-
-
-        dic1 = {'phi1': AdditionalFlowComposition1, 
-                'phi2': AdditionalFlowComposition2}
         
 
         self.set_conc(RequiredConcentration)
         self.add_myuFactors(SplitfactorDictionary)
-        self.add_addflowFactors(dic1)
-        
-        self.set_upperlimits(UpperLimitAdditionalFlow1,
-                             UpperLimitAdditionalFlow2)
+
 
         self.add_kappa_1_lhs_conc(LeftHandSideComponentList)
         self.add_kappa_1_rhs_conc(RightHandSideComponentList)
@@ -127,16 +122,6 @@ class Process():
 
     def set_conc(self, concentration):
         self.conc['conc'][self.Number] = concentration
-        
-
-        
-    def set_upperlimits(self, 
-                        upper_limit_1=None, 
-                        upper_limit_2=None):
-        
-        self.ul1['ul_1'][self.Number] = upper_limit_1
-        self.ul2['ul_2'][self.Number] = upper_limit_2
-  
         
   
     def add_myuFactors(self, myu_dic):
@@ -150,26 +135,6 @@ class Process():
         """
         for i in myu_dic:
             self.myu['myu'][self.Number,i] = myu_dic[i]
-
-
-
-    def add_addflowFactors(self, addflow_dic):
-        """
-
-        Parameters
-        ----------
-        addflow_dic : Dictionary
-            Example: dict = {'phi1' :{i1 : value1, i2: value2},
-            'phi2' : {i1 : value3 , i3: value4}}
-
-        """
-        for i in addflow_dic:
-            for j in addflow_dic[i]:
-                try: 
-                    self.add_flow[i].update({(self.Number,j) : addflow_dic[i][j]})
-                except:
-                    self.add_flow[i] = {(self.Number,j) : addflow_dic[i][j]}
-  
                 
   
     def add_kappa_1_lhs_conc(self, kappa_1_lhs_conc_list):
@@ -272,14 +237,15 @@ class Process():
         
         self.ParameterList.append(self.conc)
         self.ParameterList.append(self.myu)        
-        self.ParameterList.append(self.add_flow)       
+        # self.ParameterList.append(self.add_flow)       
         self.ParameterList.append(self.kappa_1_lhs_conc)
         self.ParameterList.append(self.kappa_2_lhs_conc)
         self.ParameterList.append(self.kappa_1_rhs_conc)
         self.ParameterList.append(self.kappa_2_rhs_conc)
         self.ParameterList.append(self.FLH)
-        self.ParameterList.append(self.ul1)
-        self.ParameterList.append(self.ul2)
+        
+        # self.ParameterList.append(self.ul1)
+        # self.ParameterList.append(self.ul2)
         
     
 

@@ -45,7 +45,9 @@ def wrapp_ProcessUnits(dfi):
     KappaUtRange = WF.convert_total('M', 10, 'P', 30)
     BalanceDataRange= WF.convert_total('S', 10, 'U', 30)
     EconomicDataRange= WF.convert_total('H', 11, 'I', 30)
-    Add_FlowDataRange = WF.convert_total('W', 10, 'Z', 30)
+    
+    PossibleSourcesRange = WF.convert_total('W', 10, 'W', 27)
+    
     ConcDataRange = WF.convert_total2('B', 10, 'F', 30)
     GammaDataRange = WF.convert_total2('H', 10,'J', 30)
     ThetaDataRange = WF.convert_total2('L', 10, 'N', 30)
@@ -88,7 +90,7 @@ def wrapp_ProcessUnits(dfi):
         
     wrapp_GeneralData(obj, dfi.iloc[GeneralDataRange])
     wrapp_EconomicData(obj, dfi.iloc[EconomicDataRange], dfi.iloc[GeneralDataRange])
-    wrapp_AdditivesData(obj, dfi.iloc[Add_FlowDataRange], dfi.iloc[ConcDataRange] ,dfi.iloc[BalanceDataRange])
+    wrapp_AdditivesData(obj,  dfi.iloc[PossibleSourcesRange], dfi.iloc[ConcDataRange] ,dfi.iloc[BalanceDataRange])
 
     return obj
 

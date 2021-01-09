@@ -70,8 +70,7 @@ def wrapp_GeneralData(obj, df1):
                          cost_percentage, 
                          time_span, 
                          time_mode)
-    if not pd.isnull(df1.iloc[20,0]):
-        obj.add_PossibleSources(df1.iloc[20,0])
+    
     
 def wrapp_ReacionData(obj, df1, df2 = None):
     
@@ -234,31 +233,7 @@ def wrapp_AdditivesData(obj,df1, df2, df3):
     
     """   
     
-    additional_flow_composition_1 = {}
-    additional_flow_composition_2 = {}
-
-    req_concentration = None
-    upper_limit_1 = 10000
-    upper_limit_2 = 10000
-    
-    
-    
-    for x in range(len(df1)):
-        if  df1.iloc[x,2] == 'phi1':
-            additional_flow_composition_1[df1.iloc[x,0]] = df1.iloc[x,3]
-
-        else:
-            if not pd.isnull(df1.iloc[x,0]):
-                additional_flow_composition_2[df1.iloc[x,0]] = df1.iloc[x,3]
-    
-    
-
-    if not pd.isnull(df1.iloc[0,1]): 
-        upper_limit_1 = df1.iloc[0,1]
-               
-    if not  pd.isnull(df1.iloc[1,1]): 
-        upper_limit_2 = df1.iloc[1,1]
-        
+    req_concentration = None        
 
     lhs_comp_list = WF.read_list (df2,1)
     
@@ -276,17 +251,16 @@ def wrapp_AdditivesData(obj,df1, df2, df3):
    
     
     obj.set_data_flow(req_concentration,
-                      additional_flow_composition_1,
-                      additional_flow_composition_2,
                       rhs_ref_flow,
                       lhs_ref_flow,
                       rhs_comp_list,
                       lhs_comp_list,
-                      myu_dict,
-                      upper_limit_1,
-                      upper_limit_2                     
+                      myu_dict,                   
                       )
-
+    
+    sourceslist = WF.read_list(df1,0)
+    obj.add_PossibleSources(sourceslist)
+    
 
 def wrapp_EconomicData(obj, df, df2):
     
