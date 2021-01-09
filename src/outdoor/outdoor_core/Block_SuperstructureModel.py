@@ -90,8 +90,7 @@ class SuperstructureModel(AbstractModel):
         self.U_TUR = Set(within=self.U)
         self.U_FUR = Set(within=self.U)
         self.U_PP = Set(within=self.U)
-        self.U_C = Set(within=self.U)
-        
+        self.U_C = Set(within=self.U)        
         self.U_S = Set(within=self.U)
         self.U_SU = Set(within=self.U_S * self.U)
 
@@ -152,11 +151,11 @@ class SuperstructureModel(AbstractModel):
         self.kappa_1_rhs_conc = Param(self.U, self.I, initialize=0)
         self.kappa_2_lhs_conc = Param(self.U, initialize=3)
         self.kappa_2_rhs_conc = Param(self.U, initialize=3)
-        self.Names = Param(self.U)     
-        self.ul_1 = Param(self.U, initialize = 10000000)
-        self.ul_2 = Param(self.U, initialize = 10000000)
+        self.Names = Param(self.U)
         self.alpha = Param(self.U, initialize=120000) 
-        
+        self.ul = Param(self.U_S, initialize=10000000)
+        self.phi = Param(self.U_S, self.I, initialize=0)
+        self.materialcosts =Param(self.U_S, initialize = 0)        
 
         # Variables
         # --------
@@ -166,17 +165,10 @@ class SuperstructureModel(AbstractModel):
         self.FLOW_OUT = Var(self.U, self.I, within=NonNegativeReals)
         self.FLOW_WASTE  = Var(self.U, self.I, within=NonNegativeReals)
         self.FLOW_WASTE_TOTAL  =Var(self.I, within=NonNegativeReals)
-        self.FLOW_ADD_1 = Var(self.U, within=NonNegativeReals)
-        self.FLOW_ADD_2 = Var(self.U, within=NonNegativeReals) 
+        self.FLOW_ADD = Var(self.U_SU, within =NonNegativeReals)
         self.FLOW_ADD_TOT = Var(self.U, self.I, within=NonNegativeReals)
         self.FLOW_SUM = Var(self.U, within=NonNegativeReals) 
         self.Y = Var(self.U, within=Binary)
-        
-        self.FLOW_ADD_TOT1 = Var(self.U, self.I, within=NonNegativeReals)
-        self.FLOW_ADD = Var(self.U_SU, within =NonNegativeReals)
-        self.ul = Param(self.U_S, initialize=10000000)
-        self.phi = Param(self.U_S, self.I, initialize=0)
-        self.materialcosts =Param(self.U_S, initialize = 0)
         self.FLOW_SOURCE = Var(self.U_S, within=NonNegativeReals)
         
         # Constraints
@@ -187,48 +179,19 @@ class SuperstructureModel(AbstractModel):
             return self.FLOW_IN[u,i] == self.FLOW_ADD_TOT[u,i] \
                 + sum(self.flh[uu] / self.flh[u] *  self.FLOW[uu,u,i] for uu in self.UU) 
                 
-                
-
+                       
         def MassBalance_2_rule(self,u,i):
-            return self.FLOW_ADD_TOT[u,i] <= self.alpha[u] * self.Y[u]
-        
-        def MassBalance_3_rule(self,u,i):
-            return self.FLOW_ADD_TOT[u,i] <= self.FLOW_ADD_1[u] * self.phi1[u,i] \
-                + self.FLOW_ADD_2[u] * self.phi2[u,i] + self.alpha[u] * (1-self.Y[u])
-
-        def MassBalance_4_rule(self,u,i):
-            return self.FLOW_ADD_TOT[u,i] >= self.FLOW_ADD_1[u] * self.phi1[u,i] \
-                + self.FLOW_ADD_2[u] * self.phi2[u,i] - self.alpha[u] * (1-self.Y[u]) 
-                
-        def MassBalance_13_rule(self,u):
-            return self.FLOW_ADD_1[u]  <= self.ul_1[u]
-        
-        def MassBalance_14_rule(self,u):
-            return self.FLOW_ADD_2[u]  <= self.ul_2[u]
-        
-        
-        
-        
-        def MassBalance_2a_rule(self,u,i):
             return self.FLOW_ADD_TOT[u,i] == sum(self.FLOW_ADD[u_s,u] * self.phi[u_s,i] for u_s in self.U_S if (u_s,u) in self.U_SU)
         
-        def MassBalance_3a_rule(self,u_s, u):
+        def MassBalance_3_rule(self,u_s, u):
             return self.FLOW_ADD[u_s,u] <= self.alpha[u] * self.Y[u]
         
-        def MassBalance_4a_rule(self,u_s):
-            return self.FLOW_SOURCE[u_s] == sum(self.FLOW_ADD[u_s,u] for u in self.U if (u_s,u) in self.U_SU)
+        def MassBalance_4_rule(self,u_s):
+            return self.FLOW_SOURCE[u_s] == sum(self.FLOW_ADD[u_s,u] * self.flh[u] for u in self.U if (u_s,u) in self.U_SU)
         
-        def MassBalance_5a_rule(self, u_s):
+        def MassBalance_13_rule(self, u_s):
             return self.FLOW_SOURCE[u_s] <= self.ul[u_s]
-
-        self.MassBalance_2a = Constraint(self.U, self.I, rule=MassBalance_2a_rule)
-        self.MassBalance_3a = Constraint(self.U_SU,  rule=MassBalance_3a_rule)
-        self.MassBalance_4a = Constraint(self.U_S,  rule=MassBalance_4a_rule)
-        self.MassBalance_5a = Constraint(self.U_S, rule=MassBalance_5a_rule)
-        
-        
-        
-        
+ 
         def MassBalance_5_rule(self,u,i):
             if u in self.U_YIELD_REACTOR:
                 return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I) * self.xi[u,i]
@@ -280,11 +243,10 @@ class SuperstructureModel(AbstractModel):
     
          
         self.MassBalance_1 = Constraint(self.U, self.I, rule=MassBalance_1_rule)
-        
-        # self.MassBalance_2 = Constraint(self.U, self.I, rule=MassBalance_2_rule)
-        # self.MassBalance_3 = Constraint(self.U, self.I, rule=MassBalance_3_rule)
-        # self.MassBalance_4 = Constraint(self.U, self.I, rule=MassBalance_4_rule)
-        
+        self.MassBalance_2 = Constraint(self.U, self.I, rule=MassBalance_2_rule)
+        self.MassBalance_3 = Constraint(self.U_SU,  rule=MassBalance_3_rule)
+        self.MassBalance_4 = Constraint(self.U_S,  rule=MassBalance_4_rule)
+        self.MassBalance_13 = Constraint(self.U_S, rule=MassBalance_13_rule)
         self.MassBalance_5 = Constraint(self.U, self.I, rule=MassBalance_5_rule)
         self.MassBalance_6 = Constraint(self.U, self.UU, self.I, rule=MassBalance_6_rule)
         self.MassBalance_7 = Constraint(self.U, self.UU, self.I, rule=MassBalance_7_rule)
@@ -293,9 +255,6 @@ class SuperstructureModel(AbstractModel):
         self.MassBalance_10 = Constraint(self.I, rule=MassBalance_10_rule)
         self.MassBalance_11 = Constraint(self.U, rule=MassBalance_11_rule)
         self.MassBalance_12 = Constraint(self.U, rule=MassBalance_12_rule)
-        
-        # self.MassBalance_13 = Constraint(self.U, rule=MassBalance_13_rule)
-        # self.MassBalance_14 = Constraint(self.U, rule=MassBalance_14_rule)
 
 
 
@@ -810,14 +769,8 @@ class SuperstructureModel(AbstractModel):
         
         # Raw Materials and Operating and Maintenance
             
-        def RM_CostBalance_1_rule(self,u):
-            return self.RM_COST[u]  == sum(self.FLOW_ADD_TOT[u,i] \
-                                        * self.delta_rm[i] for i in self.I) \
-                                        * self.flh[u]
-                   
-        def RM_CostBalance_2_rule(self):
-            return self.RM_COST_TOT == sum(self.RM_COST[u] for u in self.U_C)
-        
+        def RM_CostBalance_1_rule(self):
+            return self.RM_COST_TOT == sum(self.materialcosts[u_s] * self.FLOW_SOURCE[u_s]  for u_s in self.U_S)        
         
         def OM_CostBalance_1_rule(self,u):
             return self.M_COST[u] == self.K_M[u] * self.FCI[u]
@@ -839,19 +792,14 @@ class SuperstructureModel(AbstractModel):
             return self.OPEX == self.OM_COST + self.RM_COST_TOT + self.COST_UT + self.C_TOT
         
         
-        def RM_CostBalance_1a_rule(self):
-            return self.RM_COST_TOT == sum(self.materialcosts[u_s] * self.FLOW_SOURCE[u_s] * self.H  for u_s in self.U_S)
         
         
-        self.RM_CostBalance_1a = Constraint(self.U_S, rule=RM_CostBalance_1a_rule)
-        
+        self.RM_CostBalance_1 = Constraint(self.U_S, rule=RM_CostBalance_1_rule)
         self.OM_CostBalance_1 = Constraint(self.U_C, rule=OM_CostBalance_1_rule)
         self.OM_CostBalance_2 = Constraint(rule=OM_CostBalance_2_rule)
         self.OM_CostBalance_3 = Constraint(rule=OM_CostBalance_3_rule)
         self.OM_CostBalance_4 = Constraint(rule=OM_CostBalance_4_rule)
         self.OM_CostBalance_5 = Constraint(rule=OM_CostBalance_5_rule)
-        # self.RM_CostBalance_1 = Constraint(self.U_C, rule= RM_CostBalance_1_rule)
-        # self.RM_CostBalance_2 = Constraint(rule= RM_CostBalance_2_rule)
         self.OpexEquation = Constraint(rule=Opex_1_rule)
         
         
@@ -904,6 +852,7 @@ class SuperstructureModel(AbstractModel):
         self.em_fac_comp = Param(self.I, initialize=0)
         self.em_fac_prod = Param(self.U_PP, initialize=0)
         self.em_fac_unit = Param(self.U_C, initialize=0)
+        self.em_fac_source = Param(self.U_S, initialize=0)
         
         # Lifetime of Units
         self.LT = Param(self.U, initialize=1)
@@ -914,7 +863,7 @@ class SuperstructureModel(AbstractModel):
         
         self.GWP_UNITS = Var(self.U_C)
         self.GWP_CREDITS = Var(self.U_PP)
-        self.GWP_CAPTURE = Var(self.U)
+        self.GWP_CAPTURE = Var()
         self.GWP_U = Var(self.U)
         self.GWP_UT = Var(self.UT)
         self.GWP_TOT =Var()
@@ -940,10 +889,9 @@ class SuperstructureModel(AbstractModel):
         
         def GWP_4_rule(self):
             return self.GWP_TOT == sum(self.GWP_U[u] for u in self.U_C)   \
-                + sum(self.GWP_UT[ut] for ut in self.UT) - sum(self.GWP_CAPTURE[u] for u in self.U) \
-                    - sum(self.GWP_CREDITS[u] for u in self.U_PP) + sum(self.GWP_UNITS[u] for u in self.U_C)
- 
-        
+                + sum(self.GWP_UT[ut] for ut in self.UT) - self.GWP_CAPTURE \
+                    - sum(self.GWP_CREDITS[u] for u in self.U_PP) + sum(self.GWP_UNITS[u] for u in self.U_C)  
+                    
         def GWP_5_rule(self):
             return self.GWP_UT['Heat2'] == 0
         
@@ -953,10 +901,10 @@ class SuperstructureModel(AbstractModel):
         def GWP_7_rule(self,u):
             return self.GWP_CREDITS[u] == self.em_fac_prod[u] \
                 * sum(self.FLOW_IN[u,i] for i in self.I) * self.flh[u]
-        
-        def GWP_8_rule(self,u):
-            return self.GWP_CAPTURE[u] == sum(self.FLOW_ADD_TOT[u,i] \
-                                              * self.em_fac_comp[i] for i in self.I) * self.flh[u]
+                
+        def GWP_8_rule(self):
+            return self.GWP_CAPTURE == sum(self.FLOW_SOURCE[u_s] \
+                                              * self.em_fac_source[u_s] for u_s in self.U_S) 
     
 
         
@@ -967,7 +915,7 @@ class SuperstructureModel(AbstractModel):
         self.EnvironmentalEquation5 = Constraint(rule = GWP_5_rule)
         self.EnvironmentalEquation6 = Constraint(self.U_C, rule=GWP_6_rule)
         self.EnvironmentalEquation7 = Constraint(self.U_PP, rule=GWP_7_rule)
-        self.EnvironmentalEquation8 = Constraint(self.U, rule=GWP_8_rule)
+        self.EnvironmentalEquation8 = Constraint(rule=GWP_8_rule)
         
     # **** DECISION MAKING EQUATIONS *****
     # -------------------------

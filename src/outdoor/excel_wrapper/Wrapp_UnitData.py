@@ -378,10 +378,13 @@ def wrapp_SourceData(obj, series, df, counter):
     
     UpperLimit = 10000000
     Costs = 0
+    EmissionFactor = 0
     
     if not pd.isnull(series[7]):
         UpperLimit = series[7]
 
+    if not pd.isnull(series[8]):
+        EmissionFactor = series[8]
         
     
     if not pd.isnull(series[6]):
@@ -390,6 +393,7 @@ def wrapp_SourceData(obj, series, df, counter):
         
     obj.set_data_source(Costs,
                         UpperLimit,
+                        EmissionFactor,
                         Composition_dictionary  = dic
                         )
     

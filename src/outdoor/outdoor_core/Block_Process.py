@@ -937,16 +937,19 @@ class Source(VirtualProcess):
         self.Composition = {'phi': {}}
         self.MaterialCosts  = {'materialcosts': {self.Number: 0}}
         self.UpperLimit = {'ul': {self.Number: None}}
-    
+        self.EmissionFactor = {'em_fac_source': {self.Number: 0}}
+        
     
     
     def set_data_source(self, 
                         Costs,
                         UpperLimit,
+                        EmissionFactor,
                         Composition_dictionary):
 
         self.set_MaterialCosts(Costs)
         self.set_upperlimit(UpperLimit)
+        self.set_emissionfactor(EmissionFactor)
         self.set_composition(Composition_dictionary)
 
     def set_MaterialCosts(self, Costs):
@@ -960,12 +963,15 @@ class Source(VirtualProcess):
     def set_upperlimit(self, UpperLimit):
         self.UpperLimit['ul'][self.Number] = UpperLimit
         
+    def set_emissionfactor(self, EmissionFactor):
+        self.EmissionFactor['em_fac_source'][self.Number] = EmissionFactor
     
     def fill_ParameterList(self):
         super().fill_ParameterList()
         self.ParameterList.append(self.Composition)
         self.ParameterList.append(self.MaterialCosts)
         self.ParameterList.append(self.UpperLimit)
+        self.ParameterList.append(self.EmissionFactor)
         
         
         
