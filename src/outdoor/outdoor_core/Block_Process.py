@@ -47,14 +47,6 @@ class Process():
         self.conc  ={'conc': {self.Number: 0}}
         
         
-        
-        
-        # self.ul1 = {'ul_1': {self.Number: 10000 }}
-        # self.ul2 = {'ul_2': {self.Number: 10000 }}  
-        # self.add_flow = dict()
-        
-        
-        
         self.kappa_1_lhs_conc = {'kappa_1_lhs_conc': {}}
         self.kappa_2_lhs_conc = {'kappa_2_lhs_conc': {}}
         self.kappa_1_rhs_conc = {'kappa_1_rhs_conc': {}}

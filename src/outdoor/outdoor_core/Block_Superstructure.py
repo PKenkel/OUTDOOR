@@ -271,8 +271,7 @@ class Superstructure():
                         else:
                             self.SplitterNumberList['U_SPLITTER'].append(j.Number)
                             self.CostUnitsList['U_C'].append(j.Number)
-                            
-                        # if j.Number in self.CostUnitsList['U_C']:
+
                         for k in j.Possible_Sources:
                             if k != j.Number:
                                 self.SourceSet['U_SU'].append((k,j.Number))
@@ -302,7 +301,7 @@ class Superstructure():
                     else:
                         self.SplitterNumberList['U_SPLITTER'].append(i.Number)
                         self.CostUnitsList['U_C'].append(i.Number)
-                    # if i.Number in self.CostUnitsList['U_C']:
+
                     for k in i.Possible_Sources:
                         if k !=i.Number:
                             self.SourceSet['U_SU'].append((k,i.Number))
