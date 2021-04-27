@@ -62,23 +62,23 @@ class Process():
     # GENERAL DATA SETTING
     # --------------------
 
-    def set_data_general(self,
+    def set_generalData(self,
                          ProcessGroup,
                          lifetime  = None,
                          emissions = 0,
                          full_load_hours = None
                          ):
        
-        self.set_Group(ProcessGroup)
+        self.set_group(ProcessGroup)
         self.set_full_load_hours(full_load_hours)
 
-    def set_Name(self, Name):
+    def set_name(self, Name):
         self.Name = Name
         
-    def set_Number(self, Number):
+    def set_number(self, Number):
         self.Number = Number
         
-    def set_Group(self, processgroup):
+    def set_group(self, processgroup):
         self.Group = processgroup
 
     def set_full_load_hours(self, full_load_hours = None):
@@ -93,7 +93,7 @@ class Process():
     # FLOW DATA SETTING
     # -----------------
 
-    def set_data_flow(self,
+    def set_flowData(self,
                       RequiredConcentration = None,
                       RightHandSideReferenceFlow = None,
                       LeftHandSideReferenceFlow = None,
@@ -103,20 +103,21 @@ class Process():
                       ):
         
 
-        self.set_conc(RequiredConcentration)
-        self.add_myuFactors(SplitfactorDictionary)
+        self.__set_conc(RequiredConcentration)
+        self.__set_myuFactors(SplitfactorDictionary)
 
 
-        self.add_kappa_1_lhs_conc(LeftHandSideComponentList)
-        self.add_kappa_1_rhs_conc(RightHandSideComponentList)
-        self.add_kappa_2_lhs_conc(LeftHandSideReferenceFlow)
-        self.add_kappa_2_rhs_conc(RightHandSideReferenceFlow)
+        self.__set_kappa_1_lhs_conc(LeftHandSideComponentList)
+        self.__set_kappa_1_rhs_conc(RightHandSideComponentList)
+        self.__set_kappa_2_lhs_conc(LeftHandSideReferenceFlow)
+        self.__set_kappa_2_rhs_conc(RightHandSideReferenceFlow)
+        
 
-    def set_conc(self, concentration):
+    def __set_conc(self, concentration):
         self.conc['conc'][self.Number] = concentration
         
   
-    def add_myuFactors(self, myu_dic):
+    def __set_myuFactors(self, myu_dic):
         """
 
         Parameters
@@ -129,7 +130,7 @@ class Process():
             self.myu['myu'][self.Number,i] = myu_dic[i]
                 
   
-    def add_kappa_1_lhs_conc(self, kappa_1_lhs_conc_list):
+    def __set_kappa_1_lhs_conc(self, kappa_1_lhs_conc_list):
         """
         Parameters
         ----------
@@ -146,7 +147,7 @@ class Process():
 
 
 
-    def add_kappa_1_rhs_conc(self, kappa_1_rhs_conc_list):
+    def __set_kappa_1_rhs_conc(self, kappa_1_rhs_conc_list):
         """
         Parameters
         ----------
@@ -163,7 +164,7 @@ class Process():
 
 
 
-    def add_kappa_2_lhs_conc(self, kappa_2_lhs_conc_string):
+    def __set_kappa_2_lhs_conc(self, kappa_2_lhs_conc_string):
         """
         Parameters
         ----------
@@ -181,7 +182,7 @@ class Process():
 
 
 
-    def add_kappa_2_rhs_conc(self, kappa_2_rhs_conc_string):
+    def __set_kappa_2_rhs_conc(self, kappa_2_rhs_conc_string):
         """
         Parameters
         ----------
@@ -197,7 +198,7 @@ class Process():
             self.kappa_2_rhs_conc['kappa_2_rhs_conc'][self.Number]  = 3
 
 
-    def add_PossibleSources(self, SourceList):
+    def set_possibleSources(self, SourceList):
         
         if type(SourceList) == list:
             for i in SourceList:
@@ -219,7 +220,7 @@ class Process():
 
 
 
-    def fill_ParameterList(self):
+    def fill_parameterList(self):
         """
         Fills ParameterList of Process Unit u which is used to fill Data_File
         In Superstructure Class
@@ -328,7 +329,7 @@ class PhysicalProcess(Process):
     # ECONOMIC DATA SETTING
     # ---------------------
     
-    def set_data_general(self,
+    def set_generalData(self,
                          ProcessGroup,
                          lifetime,
                          emissions = 0,
@@ -339,27 +340,27 @@ class PhysicalProcess(Process):
                          TimeMode = None
                          ):
         
-        super().set_data_general(ProcessGroup,lifetime,emissions,full_load_hours)
-        self.set_lifeTime(lifetime)
-        self.set_em_fac_unit(emissions)
-        self.set_Maintenance_factor(maintenancefactor)
+        super().set_generalData(ProcessGroup,lifetime,emissions,full_load_hours)
+        self.__set_lifeTime(lifetime)
+        self.__set_unitoperationEmissionsFactor(emissions)
+        self.__set_maintenanceFactor(maintenancefactor)
         
-        self.set_turnover_factors(CostPercentage, 
+        self.__set_turnoverFactors(CostPercentage, 
                                   TimeSpan,
                                   TimeMode)
 
 
 
-    def set_em_fac_unit(self, emissionfactor):
+    def __set_unitoperationEmissionsFactor(self, emissionfactor):
         self.em_fac_unit['em_fac_unit'][self.Number] = emissionfactor
     
-    def set_lifeTime(self, lifetime):
+    def __set_lifeTime(self, lifetime):
         self.LT['LT'][self.Number] = lifetime
         
-    def set_Maintenance_factor(self, factor=0.044875):
+    def __set_maintenanceFactor(self, factor=0.044875):
         self.K_M['K_M'][self.Number] = factor
 
-    def set_data_economic(self,
+    def set_economicData(self,
                           DirectCostFactor,
                           IndirectCostFactor,
                           ReferenceCosts,
@@ -371,30 +372,30 @@ class PhysicalProcess(Process):
                           ):
         
         
-        self.set_DCFactor(DirectCostFactor)
-        self.set_IDCFactor(IndirectCostFactor)
+        self.__set_dcFactor(DirectCostFactor)
+        self.__set_idcFactor(IndirectCostFactor)
         
-        self.add_capexFactors(ReferenceCosts,
-                              ReferenceFlow,
-                              CostExponent,
-                              ReferenceYear)
+        self.__set_capexFactors(ReferenceCosts,
+                                ReferenceFlow,
+                                CostExponent,
+                                ReferenceYear)
         
-        self.add_kappa_2_capex(ReferenceFlowType)
-        self.add_kappa_1_capex(ReferenceFlowComponentList)
-    
+        self.__set_kappa_2_capex(ReferenceFlowType)
+        self.__set_kappa_1_capex(ReferenceFlowComponentList)
 
 
-    def set_DCFactor(self, DC):
+
+    def __set_dcFactor(self, DC):
         self.DC_factor['DC'][self.Number] = DC
 
 
 
-    def set_IDCFactor(self, IDC):
+    def __set_idcFactor(self, IDC):
         self.IDC_factor['IDC'][self.Number] = IDC
 
 
 
-    def add_capexFactors(self, CREF, MREF, F, YEAR_REF):
+    def __set_capexFactors(self, CREF, MREF, F, YEAR_REF):
         
         self.CAPEX_factors['C_Ref'] = {self.Number: CREF}
         self.CAPEX_factors['m_Ref'] = {self.Number: MREF}
@@ -402,7 +403,7 @@ class PhysicalProcess(Process):
         self.CAPEX_factors['CECPI_ref'] = {self.Number: self.CECPI_dic[YEAR_REF]}
         
         
-    def set_turnover_factors(self, CostPercentage, TimeSpan = None, TimeMode = 'No Mode'):
+    def __set_turnoverFactors(self, CostPercentage, TimeSpan = None, TimeMode = 'No Mode'):
         
         self.turnover_factors['CostPercentage'] = CostPercentage
         
@@ -419,7 +420,7 @@ class PhysicalProcess(Process):
          
 
         
-    def add_kappa_1_capex(self, kappa_1_list):
+    def __set_kappa_1_capex(self, kappa_1_list):
         """
         Parameters
         ----------
@@ -436,7 +437,7 @@ class PhysicalProcess(Process):
 
 
 
-    def add_kappa_2_capex(self, kappa_2_capex_string):  
+    def __set_kappa_2_capex(self, kappa_2_capex_string):  
         """
         Parameters
         ----------
@@ -461,11 +462,12 @@ class PhysicalProcess(Process):
          IR = IR['IR']
          lt = self.LT['LT'][self.Number]
          fac= ((IR *(1 + IR)**lt)/((1 + IR)**lt -1))
-
+         
+         "Public"
          return fac
      
         
-    def calc_TurnOver_ACC(self, IR):
+    def calc_turnoverACC(self, IR):
         h = self.FLH['flh'][self.Number]
         lt = self.LT['LT'][self.Number]
         
@@ -492,7 +494,7 @@ class PhysicalProcess(Process):
         total_turnover_costs = number_of_turnovers * to_c
         annual_factor = self.calc_ACCFactor(IR)
         annual_turnover_costs = annual_factor * total_turnover_costs
-        
+        "Public"
         return annual_turnover_costs
 
 
@@ -500,7 +502,7 @@ class PhysicalProcess(Process):
     # ENERGY DATA SETTING
     # -------------------
 
-    def set_data_energy(self,
+    def set_energyData(self,
                         Temperature1 = None,
                         Temperature2 = None,
                         ElectricityDemand = None,
@@ -526,13 +528,13 @@ class PhysicalProcess(Process):
                 'Heat': HeatReferenceFlow,
                 'Heat2': Heat2ReferenceFlow}
         
-        self.add_tauFactors(dic1)
-        self.add_kappa_1_ut(dic2)
-        self.add_kappa_2_ut(dic3)
+        self.__set_tauFactors(dic1)
+        self.__set_kappa_1_ut(dic2)
+        self.__set_kappa_2_ut(dic3)
         
         
 
-    def add_tauFactors(self, tau_dic):
+    def __set_tauFactors(self, tau_dic):
         """
 
         Parameters
@@ -547,7 +549,7 @@ class PhysicalProcess(Process):
 
 
 
-    def add_kappa_1_ut(self, kappa_1_ut_dic):
+    def __set_kappa_1_ut(self, kappa_1_ut_dic):
         """
         Parameters
         ----------
@@ -561,7 +563,7 @@ class PhysicalProcess(Process):
 
 
 
-    def add_kappa_2_ut(self, kappa_2_ut_dic):
+    def __set_kappa_2_ut(self, kappa_2_ut_dic):
         """
         Parameters
         ----------
@@ -598,14 +600,15 @@ class PhysicalProcess(Process):
         self.T_OUT['Heat'] = T_OUT_1
         self.T_OUT['Heat2'] = T_OUT_2
         
+        "Public"
         
 
 
     
 
-    def fill_ParameterList(self):
+    def fill_parameterList(self):
         
-        super().fill_ParameterList()
+        super().fill_parameterList()
         self.ParameterList.append(self.LT)
         self.ParameterList.append(self.DC_factor)
         self.ParameterList.append(self.IDC_factor)
@@ -651,7 +654,7 @@ class StoichReactor(PhysicalProcess):
     # ------------------------
 
 
-    def add_gammaFactors(self, gamma_dic):
+    def set_gammaFactors(self, gamma_dic):
        
         """
 
@@ -667,7 +670,7 @@ class StoichReactor(PhysicalProcess):
 
 
 
-    def add_thetaFactors(self, theta_dic):
+    def set_thetaFactors(self, theta_dic):
         """
 
         Parameters
@@ -679,7 +682,7 @@ class StoichReactor(PhysicalProcess):
             self.theta['theta'][self.Number, i] = theta_dic[i]
 
 
-    def set_data_reaction(self,
+    def set_reactionData(self,
                           StoichiometricFactors,
                           ConversionFactors
                           ):
@@ -690,8 +693,8 @@ class StoichReactor(PhysicalProcess):
             self.add_thetaFactors(ConversionFactors)
  
 
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
+    def fill_parameterList(self):
+        super().fill_parameterList()
         # if self.Type == "Stoich-Reactor":
         self.ParameterList.append(self.gamma)
         self.ParameterList.append(self.theta)
@@ -723,7 +726,7 @@ class YieldReactor(PhysicalProcess):
     # ------------------------
 
 
-    def add_xiFactors(self, xi_dic):
+    def set_xiFactors(self, xi_dic):
         """
 
         Parameters
@@ -734,8 +737,9 @@ class YieldReactor(PhysicalProcess):
         """
         for i in xi_dic:
             self.xi['xi'][self.Number,i] = xi_dic[i]
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
+            
+    def fill_parameterList(self):
+        super().fill_parameterList()
         self.ParameterList.append(self.xi)
 
 
@@ -764,7 +768,7 @@ class HeatGenerator(StoichReactor):
 
 
 
-    def set_Efficiency(self, Efficiency):
+    def set_efficiency(self, Efficiency):
         """
         Parameters
         ----------
@@ -773,8 +777,8 @@ class HeatGenerator(StoichReactor):
         """
         self.Efficiency_FUR['Efficiency_FUR'][self.Number]  = Efficiency
         
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
+    def fill_parameterList(self):
+        super().fill_parameterList()
         self.ParameterList.append(self.Efficiency_FUR)
 
 
@@ -802,7 +806,7 @@ class ElectricityGenerator(StoichReactor):
 
 
 
-    def set_Efficiency(self, Efficiency):
+    def set_efficiency(self, Efficiency):
         """
         Parameters
         ----------
@@ -813,8 +817,8 @@ class ElectricityGenerator(StoichReactor):
         self.Efficiency_TUR['Efficiency_TUR'][self.Number]  = Efficiency
 
 
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
+    def fill_parameterList(self):
+        super().fill_parameterList()
         self.ParameterList.append(self.Efficiency_TUR)
         
         
@@ -857,16 +861,16 @@ class ProductPool(VirtualProcess):
         
             
             
-    def set_EmissionCredits(self, emissionfactor):
+    def set_emissionCredits(self, emissionfactor):
         self.em_credits['em_fac_prod'][self.Number] = emissionfactor
         
             
-    def set_ProductPrice(self, Price):
+    def set_productPrice(self, Price):
         self.ProductPrice['ProductPrice'][self.Number] = Price
 
 
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
+    def fill_parameterList(self):
+        super().fill_parameterList()
         self.ParameterList.append(self.ProductPrice)
         self.ParameterList.append(self.em_credits)
 
@@ -896,33 +900,33 @@ class Source(VirtualProcess):
         
     
     
-    def set_data_source(self, 
+    def set_sourceData(self, 
                         Costs,
                         UpperLimit,
                         EmissionFactor,
                         Composition_dictionary):
 
-        self.set_MaterialCosts(Costs)
-        self.set_upperlimit(UpperLimit)
-        self.set_emissionfactor(EmissionFactor)
-        self.set_composition(Composition_dictionary)
+        self.__set_materialCosts(Costs)
+        self.__set_upperlimit(UpperLimit)
+        self.__set_poolEmissionFactor(EmissionFactor)
+        self.__set_composition(Composition_dictionary)
 
-    def set_MaterialCosts(self, Costs):
+    def __set_materialCosts(self, Costs):
         self.MaterialCosts['materialcosts'][self.Number] = Costs
         
         
-    def set_composition(self, composition_dic):
+    def __set_composition(self, composition_dic):
         for i in composition_dic:       
             self.Composition['phi'][(self.Number,i)] = composition_dic[i]
         
-    def set_upperlimit(self, UpperLimit):
+    def __set_upperlimit(self, UpperLimit):
         self.UpperLimit['ul'][self.Number] = UpperLimit
         
-    def set_emissionfactor(self, EmissionFactor):
+    def __set_poolEmissionFactor(self, EmissionFactor):
         self.EmissionFactor['em_fac_source'][self.Number] = EmissionFactor
     
-    def fill_ParameterList(self):
-        super().fill_ParameterList()
+    def fill_parameterList(self):
+        super().fill_parameterList()
         self.ParameterList.append(self.Composition)
         self.ParameterList.append(self.MaterialCosts)
         self.ParameterList.append(self.UpperLimit)

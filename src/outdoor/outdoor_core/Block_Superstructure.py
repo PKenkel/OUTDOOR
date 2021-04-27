@@ -758,7 +758,7 @@ class Superstructure():
         
         for i in self.UnitsList:
             if i.Number in self.CostUnitsList['U_C']:
-                i.turn_over_acc['to_acc'][i.Number] = i.calc_TurnOver_ACC(self.IR)
+                i.turn_over_acc['to_acc'][i.Number] = i.calc_turnoverACC(self.IR)
                 
                 
 
@@ -896,7 +896,7 @@ class Superstructure():
         """
         
         for z in self.UnitsList:
-            z.fill_ParameterList()
+            z.fill_parameterList()
             x = z.ParameterList
             for i in x:
                 for j,k in i.items():
