@@ -205,7 +205,25 @@ def write_EnergyBalanceResults(Instance, Resultspath, ModelInformation):
     
 
 
+def save_dict_to_file(path_name, ModelInformation):
+    case_time = datetime.datetime.now()   
+    case_time = str(case_time)
+    
+    if not  os.path.exists(path_name):
+        os.makedirs(path_name)
+        
+    path_name = path_name + case_time + '.txt'
+        
+    data = ModelInformation['Data File']
+    f = open(path_name,'w')
+    f.write(str(data))
+    f.close()
 
+def load_dict_from_file(path_name):
+    f = open(path_name,'r')
+    data=f.read()
+    f.close()
+    return eval(data)
 
 
 

@@ -55,7 +55,7 @@ class Process():
         self.FLH = {'flh': {self.Number: None}}
         
         if Parent is not None:
-            Parent.add_Units(self)
+            Parent.add_UnitOperations(self)
 
 
 
@@ -228,16 +228,13 @@ class Process():
 
         
         self.ParameterList.append(self.conc)
-        self.ParameterList.append(self.myu)        
-        # self.ParameterList.append(self.add_flow)       
+        self.ParameterList.append(self.myu)            
         self.ParameterList.append(self.kappa_1_lhs_conc)
         self.ParameterList.append(self.kappa_2_lhs_conc)
         self.ParameterList.append(self.kappa_1_rhs_conc)
         self.ParameterList.append(self.kappa_2_rhs_conc)
         self.ParameterList.append(self.FLH)
         
-        # self.ParameterList.append(self.ul1)
-        # self.ParameterList.append(self.ul2)
         
     
 

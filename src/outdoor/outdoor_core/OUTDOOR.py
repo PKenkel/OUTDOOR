@@ -22,6 +22,7 @@ def solve_OptimizationProblem(Superstructure, SolverName, SolverInterface = 'loc
         Gives back the Model Instance after Optimization
 
     """
+    st = time.time()
     
     ModelInformation = dict()
     
@@ -33,10 +34,16 @@ def solve_OptimizationProblem(Superstructure, SolverName, SolverInterface = 'loc
     S_Model.create_ModelEquations()
     
     
-    start_time = time.time()
+    
     ModelInstance = S_Model.populateModel(Model_Data)
     print('-----Starting optimization----')
+    et = time.time()
+    tt = et -st 
+    print('Population time was ')
+    print(tt)
+    print('-----')
     
+    start_time = time.time()
     if SolverInterface == 'local':
         try:
             if SolverName == 'gurobi':
