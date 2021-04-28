@@ -59,6 +59,17 @@ class Process():
 
 
 
+        
+
+    
+    def fill_unitOperationsList(self, superstructure):
+        superstructure.UnitsList.append(self)
+        superstructure.UnitsNumberList['U'].append(self.Number)
+        superstructure.UnitsNumberList2['UU'].append(self.Number)
+        
+        
+
+
     # GENERAL DATA SETTING
     # --------------------
 
@@ -324,6 +335,15 @@ class PhysicalProcess(Process):
                           2010: 550.8, 2011: 585.7, 2012: 584.6, 2013: 567.1,
                           2014: 576.1, 2015: 556.8, 2016: 541.7, 2017: 566.1,
                           2018: 603.1}
+
+
+
+
+    def fill_unitOperationsList(self, superstructure):
+        
+        super().fill_unitOperationsList(superstructure)
+        superstructure.CostUnitsList['U_C'].append(self.Number)
+        
 
 
     # ECONOMIC DATA SETTING
@@ -629,6 +649,28 @@ class PhysicalProcess(Process):
 
 
 
+
+
+
+class Splitter(PhysicalProcess):
+    
+    def __init__(self, Name, UnitNumber, Parent = None, *args, **kwargs):
+        
+        super().__init__(Name, UnitNumber,Parent)
+        
+        self.Type = "Splitter"
+        
+    def fill_unitOperationsList(self, superstructure):
+        
+        super().fill_unitOperationsList(superstructure)
+        superstructure.SplitterNumberList['U_SPLITTER'].append(self.Number)
+        
+        
+        
+
+
+
+
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #--------------------------STOICHIOMETRIC REACTOR------------------------------
@@ -653,6 +695,10 @@ class StoichReactor(PhysicalProcess):
     # REACTION SETTING METHODS
     # ------------------------
 
+    def fill_unitOperationsList(self, superstructure):
+        
+        super().fill_unitOperationsList(superstructure)
+        superstructure.StoichRNumberList['U_STOICH_REACTOR'].append(self.Number)
 
     def set_gammaFactors(self, gamma_dic):
        
@@ -725,6 +771,10 @@ class YieldReactor(PhysicalProcess):
     # REACTION SETTING METHODS
     # ------------------------
 
+    def fill_unitOperationsList(self, superstructure):
+        
+        super().fill_unitOperationsList(superstructure)
+        superstructure.YieldRNumberList['U_YIELD_REACTOR'].append(self.Number)
 
     def set_xiFactors(self, xi_dic):
         """
@@ -766,7 +816,9 @@ class HeatGenerator(StoichReactor):
         self.Type = "HeatGenerator"
         self.Efficiency_FUR = {'Efficiency_FUR': {self.Number: Efficiency}}
 
-
+    def fill_unitOperationsList(self, superstructure):
+        super().fill_unitOperationsList(superstructure)
+        superstructure.HeatGeneratorList['U_FUR'].append(self.Number)
 
     def set_efficiency(self, Efficiency):
         """
@@ -805,6 +857,9 @@ class ElectricityGenerator(StoichReactor):
         self.Efficiency_TUR = {'Efficiency_TUR': {self.Number: Efficiency}}
 
 
+    def fill_unitOperationsList(self, superstructure):
+        super().fill_unitOperationsList(superstructure)
+        superstructure.ElectricityGeneratorList['U_TUR'].append(self.Number)
 
     def set_efficiency(self, Efficiency):
         """
@@ -860,6 +915,11 @@ class ProductPool(VirtualProcess):
             self.ProductType = 'ByProduct'
         
             
+    def fill_unitOperationsList(self, superstructure):
+        
+        super().fill_unitOperationsList(superstructure)
+        superstructure.ProductPoolList['U_PP'].append(self.Number)
+        
             
     def set_emissionCredits(self, emissionfactor):
         self.em_credits['em_fac_prod'][self.Number] = emissionfactor
@@ -899,6 +959,10 @@ class Source(VirtualProcess):
         self.EmissionFactor = {'em_fac_source': {self.Number: 0}}
         
     
+    def fill_unitOperationsList(self, superstructure):
+        
+        super().fill_unitOperationsList(superstructure)
+        superstructure.SourceList['U_S'].append(self.Number)
     
     def set_sourceData(self, 
                         Costs,

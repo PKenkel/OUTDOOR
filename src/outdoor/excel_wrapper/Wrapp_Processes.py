@@ -18,7 +18,7 @@ import outdoor.excel_wrapper.Wrapping_Functions  as WF
 
 
 
-def wrapp_ProcessUnits(dfi):
+def wrapp_processUnits(dfi):
     
     """  
     Description 
@@ -95,7 +95,7 @@ def wrapp_ProcessUnits(dfi):
     return obj
 
 
-def wrapp_PoolUnits(dfi):
+def wrapp_productPoolUnits(dfi):
     
     DataRange = WF.convert_total ('D', 6, 'K', 12)
     DataFrame = dfi.iloc[DataRange]
@@ -114,7 +114,7 @@ def wrapp_PoolUnits(dfi):
     
 
 
-def wrapp_SourceUnits(dfi):
+def wrapp_sourceUnits(dfi):
     GeneralDataRange = WF.convert_total('E',6,'O',10)
     CompositionDataRange  = WF.convert_total('D', 12, 'O', 23)
     SourcesList = []

@@ -9,9 +9,9 @@ Created on Thu Apr  2 11:25:35 2020
 
 import pandas as pd
 
-from .Wrapp_Processes import wrapp_ProcessUnits
-from .Wrapp_Processes import wrapp_PoolUnits
-from .Wrapp_Processes import wrapp_SourceUnits
+from .Wrapp_Processes import wrapp_processUnits
+from .Wrapp_Processes import wrapp_productPoolUnits
+from .Wrapp_Processes import wrapp_sourceUnits
 
 from .Wrapp_System import wrapp_SystemData
 
@@ -65,19 +65,19 @@ def get_DataFromExcel(PathName=None):
         elif i in Hidden_Tables:
             continue
         elif i == "Pools":
-            pools = wrapp_PoolUnits(datframe[i])
+            pools = wrapp_productPoolUnits(datframe[i])
             for k in pools:
                 PU_ObjectList.append(k)
         elif i == "Sources":
-            sources = wrapp_SourceUnits(datframe[i])
+            sources = wrapp_sourceUnits(datframe[i])
             for k in sources:
                 PU_ObjectList.append(k)
         else:
-            PU_ObjectList.append(wrapp_ProcessUnits(datframe[i]))
+            PU_ObjectList.append(wrapp_processUnits(datframe[i]))
             
 
          
-    Superstructure_Object.add_Units(PU_ObjectList)
+    Superstructure_Object.add_UnitOperations(PU_ObjectList)
 
     return Superstructure_Object
 

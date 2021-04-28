@@ -62,7 +62,7 @@ def wrapp_GeneralData(obj, df1):
     else:
         full_load_hours = None
 
-    obj.set_data_general(ProcessGroup, 
+    obj.set_generalData(ProcessGroup, 
                          LifeTime, 
                          emissions,
                          full_load_hours,
@@ -93,15 +93,15 @@ def wrapp_ReacionData(obj, df1, df2 = None):
     if obj.Type == "Yield-Reactor":
 
         dict1  = WF.read_type1(df1,0,1)
-        obj.add_xiFactors(dict1)  
+        obj.set_xiFactors(dict1)  
         
     else:
 
         dict1 = WF.read_type2(df1,0,1,2)
-        obj.add_gammaFactors(dict1)
+        obj.set_gammaFactors(dict1)
         
         dict2 = WF.read_type2(df2,0,1,2)
-        obj.add_thetaFactors(dict2)
+        obj.set_thetaFactors(dict2)
         
 
 def wrapp_EnergyData(obj, df, df2, df3):
@@ -164,7 +164,7 @@ def wrapp_EnergyData(obj, df, df2, df3):
 
     wrapp_Temperatures(obj, df3, df)    
     
-    obj.set_data_energy(None,
+    obj.set_energyData(None,
                         None,
                         ProcessElectricityDemand,
                         ProcessHeatDemand,
@@ -250,7 +250,7 @@ def wrapp_AdditivesData(obj,df1, df2, df3):
     myu_dict = WF.read_type2 (df3,0,1,2)
    
     
-    obj.set_data_flow(req_concentration,
+    obj.set_flowData(req_concentration,
                       rhs_ref_flow,
                       lhs_ref_flow,
                       rhs_comp_list,
@@ -259,7 +259,7 @@ def wrapp_AdditivesData(obj,df1, df2, df3):
                       )
     
     sourceslist = WF.read_list(df1,0)
-    obj.add_PossibleSources(sourceslist)
+    obj.set_possibleSources(sourceslist)
     
 
 def wrapp_EconomicData(obj, df, df2):
@@ -299,7 +299,7 @@ def wrapp_EconomicData(obj, df, df2):
     
     # Set Economic Data in Process Unit Object
     
-    obj.set_data_economic(DirectCostFactor,
+    obj.set_economicData(DirectCostFactor,
                           IndirectCostFactor,
                           ReferenceCosts,
                           ReferenceFlow,
@@ -332,16 +332,16 @@ def wrapp_ProductpoolData(obj, series):
          
         
     obj.ProductName= series[4]
-    obj.set_ProductPrice(series[8])
+    obj.set_productPrice(series[8])
     obj.ProductType = series[9] 
-    obj.set_Group(series[7])
+    obj.set_group(series[7])
     
     EmissionCredits = 0
     
     if not pd.isnull(series[10]):
         EmissionCredits = series[10]
 
-    obj.set_EmissionCredits(EmissionCredits)    
+    obj.set_emissionCredits(EmissionCredits)    
  
     
 def wrapp_SourceData(obj, series, df, counter):
@@ -365,7 +365,7 @@ def wrapp_SourceData(obj, series, df, counter):
         Costs = series[6]
         
         
-    obj.set_data_source(Costs,
+    obj.set_sourceData(Costs,
                         UpperLimit,
                         EmissionFactor,
                         Composition_dictionary  = dic

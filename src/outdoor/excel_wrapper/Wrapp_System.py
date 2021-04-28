@@ -84,17 +84,17 @@ def wrapp_SystemData(dfi):
                          ProductLoad= df1.iloc[4,1])
     
     
-    obj.set_NumberProcessSteps(df1.iloc[5,1])
+    obj.set_numberProcessSteps(df1.iloc[5,1])
     obj.set_operatingHours(df1.iloc[6,1])
-    obj.set_CECPI(df1.iloc[7,1])
+    obj.set_cecpi(df1.iloc[7,1])
     
     
     obj.set_interestRate(df1.iloc[8,1])
     
     obj.set_linearizationDetail(df1.iloc[9,1])
-    obj.add_LinearisationIntervals 
+    obj.add_linearisationIntervals 
     
-    obj.set_OMFactor(df1.iloc[10,1])
+    obj.set_omFactor(df1.iloc[10,1])
     
     
     
@@ -107,7 +107,7 @@ def wrapp_SystemData(dfi):
         T_IN = df1.iloc[15,1]
         T_OUT = df1.iloc[16,1]
         
-        obj.set_HeatPump(Costs,
+        obj.set_heatPump(Costs,
                          Lifetime,
                          COP,
                          T_IN,
@@ -120,20 +120,20 @@ def wrapp_SystemData(dfi):
     # ADD LISTS OF COMPONENTS, ETC.
     # ----------------------------
     liste = WF.read_list(df2,0)
-    obj.add_Utilities(liste)
+    obj.add_utilities(liste)
 
     liste = WF.read_list(df3,0)
-    obj.add_Components(liste) 
+    obj.add_components(liste) 
     
 
     liste = WF.read_list(df6,0)
-    obj.add_Reactions(liste)
+    obj.add_reactions(liste)
 
     liste = WF.read_list(df7,0)
-    obj.add_Reactants(liste) 
+    obj.add_reactants(liste) 
     
     dict1 = WF.read_type1(df3,0,1)
-    obj.add_LHV(dict1)
+    obj.set_lhv(dict1)
 
 
 
@@ -141,25 +141,25 @@ def wrapp_SystemData(dfi):
     # ADD OTHER PARAMETERS
     # ---------------------
     
-    obj.add_deltaEL(df2.iloc[0,1])
+    obj.set_deltaEL(df2.iloc[0,1])
 
     dict1 = WF.read_type1(df2,0,2)
-    obj.add_em_fac_ut(dict1)
+    obj.set_utilityEmissionsFactor(dict1)
     
     dict1 = WF.read_type1(df3,0,4)
-    obj.add_deltaRM(dict1)
+    obj.set_deltaRM(dict1)
     
     liste = WF.read_type1(df3,0,5)
-    obj.add_em_fac_comp(liste) 
+    obj.set_componentEmissionsFactor(liste) 
     
-    obj.add_deltaCool(df8.iloc[4,1])
+    obj.set_deltaCool(df8.iloc[4,1])
 
 
     liste1 = WF.read_list(df8,0)
     liste2 = WF.read_list(df8,1)
 
   
-    obj.add_HeatUtilities(liste1, liste2)
+    obj.set_heatUtilities(liste1, liste2)
     
     
     

@@ -249,60 +249,16 @@ class Superstructure():
             if type(i) == list:
                 for j in i:
                     if j not in self.UnitsList:
-                        self.UnitsList.append(j)
-                        self.UnitsNumberList['U'].append(j.Number)
-                        self.UnitsNumberList2['UU'].append(j.Number)
-                        if j.Type == 'Stoich-Reactor':
-                            self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                        elif j.Type == 'Yield-Reactor':
-                            self.YieldRNumberList['U_YIELD_REACTOR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                        elif j.Type == 'HeatGenerator':
-                            self.HeatGeneratorList['U_FUR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                            self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
-                        elif j.Type == 'ElectricityGenerator':
-                            self.ElectricityGeneratorList['U_TUR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                            self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
-                        elif j.Type == 'ProductPool':
-                            self.ProductPoolList['U_PP'].append(j.Number)
-                        elif j.Type == 'Source':
-                            self.SourceList['U_S'].append(j.Number)
-                        else:
-                            self.SplitterNumberList['U_SPLITTER'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
+
+                        j.fill_unitOperationsList(self)
 
                         for k in j.Possible_Sources:
                             if k != j.Number:
                                 self.SourceSet['U_SU'].append((k,j.Number))
             else:
                 if i not in self.UnitsList:
-                    self.UnitsList.append(i)
-                    self.UnitsNumberList['U'].append(i.Number)
-                    self.UnitsNumberList2['UU'].append(i.Number)
-                    if i.Type == 'Stoich-Reactor':
-                        self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                    elif i.Type == 'Yield-Reactor':
-                        self.YieldRNumberList['U_YIELD_REACTOR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                    elif i.Type == 'HeatGenerator':
-                        self.HeatGeneratorList['U_FUR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                        self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
-                    elif i.Type == 'ElectricityGenerator':
-                        self.ElectricityGeneratorList['U_TUR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                        self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
-                    elif i.Type == 'ProductPool':
-                        self.ProductPoolList['U_PP'].append(i.Number)
-                    elif i.Type == 'Source':
-                        self.SourceList['U_S'].append(i.Number)
-                    else:
-                        self.SplitterNumberList['U_SPLITTER'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
+                    i.fill_unitOperationsList(self)
+
 
                     for k in i.Possible_Sources:
                         if k !=i.Number:
