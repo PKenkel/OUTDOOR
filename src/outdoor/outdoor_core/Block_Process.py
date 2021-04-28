@@ -67,6 +67,10 @@ class Process():
         superstructure.UnitsNumberList['U'].append(self.Number)
         superstructure.UnitsNumberList2['UU'].append(self.Number)
         
+        for i in self.Possible_Sources:
+            if i is not self.Number:
+                superstructure.SourceSet['U_SU'].append((i,self.Number))
+        
         
 
 
@@ -647,7 +651,11 @@ class PhysicalProcess(Process):
         self.ParameterList.append(self.turn_over_acc)
 
 
-
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#--------------------------SPLITTER PROCESS------------------------------------
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 
 
@@ -763,11 +771,18 @@ class YieldReactor(PhysicalProcess):
 
         # Non-indexed Attributes
         self.Type = "Yield-Reactor"
+        self.inert_components = []
+        self.ic_on_ = 0
+        self.ic_on = {'ic_on': {}}
+        
 
         # Indexed Attributes
         self.xi = {'xi': {}}
 
+        if self.Name == 'MeOH Reaktor':
+            self.set_inertComponents(['N2','O2'])
 
+            
     # REACTION SETTING METHODS
     # ------------------------
 
@@ -775,6 +790,23 @@ class YieldReactor(PhysicalProcess):
         
         super().fill_unitOperationsList(superstructure)
         superstructure.YieldRNumberList['U_YIELD_REACTOR'].append(self.Number)
+        
+        if self.ic_on_ == 1:
+            self.ic_on['ic_on'][self.Number] = 1
+            for i in self.inert_components:
+                superstructure.YieldSubSet['YC'].append((self.Number,i))
+                
+
+        
+    def set_inertComponents(self, inert_components_list):
+        for i in inert_components_list:
+            if i not in self.inert_components:
+                self.inert_components.append(i)
+            
+        if self.inert_components:
+            self.ic_on_ = 1
+            
+
 
     def set_xiFactors(self, xi_dic):
         """
@@ -791,6 +823,7 @@ class YieldReactor(PhysicalProcess):
     def fill_parameterList(self):
         super().fill_parameterList()
         self.ParameterList.append(self.xi)
+        self.ParameterList.append(self.ic_on)
 
 
 

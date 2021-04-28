@@ -174,6 +174,11 @@ class SuperstructureModel(AbstractModel):
         # Constraints
         # -----------
         
+        
+        self.ic_on = Param(self.U_YIELD_REACTOR, initialize = 0)
+        self.YC = Set(within=self.U_YIELD_REACTOR * self.I)
+        
+        
          
         def MassBalance_1_rule(self,u,i):
             return self.FLOW_IN[u,i] == self.FLOW_ADD_TOT[u,i] \
@@ -192,15 +197,35 @@ class SuperstructureModel(AbstractModel):
         def MassBalance_13_rule(self, u_s):
             return self.FLOW_SOURCE[u_s] <= self.ul[u_s]
  
+        # def MassBalance_5_rule(self,u,i):
+        #     if u in self.U_YIELD_REACTOR:
+        #         return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I) * self.xi[u,i]
+        #     elif u in self.U_STOICH_REACTOR:
+        #         return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i] \
+        #             + sum(self.gamma[u,i,r] * self.theta[u,r,m] * self.FLOW_IN[u,m] \
+        #                   for r in self.R for m in self.M)
+        #     else:
+        #         return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i]
+            
         def MassBalance_5_rule(self,u,i):
             if u in self.U_YIELD_REACTOR:
-                return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I) * self.xi[u,i]
+                if self.ic_on[u] == 1:
+                    if (u,i) in self.YC:    
+                        print('now')
+                        return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i] + sum(self.FLOW_IN[u,i] for i in self.I if (u,i) not in self.YC) * self.xi[u,i] 
+                    else:
+                        return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I  if (u,i) not in self.YC) * self.xi[u,i]           
+                else:
+                    return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I) * self.xi[u,i]
             elif u in self.U_STOICH_REACTOR:
                 return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i] \
                     + sum(self.gamma[u,i,r] * self.theta[u,r,m] * self.FLOW_IN[u,m] \
                           for r in self.R for m in self.M)
             else:
-                return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i]
+                return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i]            
+            
+            
+            
 
          
         def MassBalance_6_rule(self,u,uu,i):

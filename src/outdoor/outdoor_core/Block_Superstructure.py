@@ -33,6 +33,8 @@ class Superstructure():
         self.SourceList = {'U_S': []}
         self.SourceSet = {'U_SU': []}
         
+        self.YieldSubSet = {'YC': []}
+        
         
         
         # Heat Balance
@@ -234,7 +236,8 @@ class Superstructure():
 #------------------------------------------------------------------------------
 
 
-
+    
+    
         
     def add_UnitOperations(self, *args):
         """
@@ -252,17 +255,20 @@ class Superstructure():
 
                         j.fill_unitOperationsList(self)
 
-                        for k in j.Possible_Sources:
-                            if k != j.Number:
-                                self.SourceSet['U_SU'].append((k,j.Number))
+
             else:
                 if i not in self.UnitsList:
                     i.fill_unitOperationsList(self)
 
 
-                    for k in i.Possible_Sources:
-                        if k !=i.Number:
-                            self.SourceSet['U_SU'].append((k,i.Number))
+          
+            
+          
+            
+          
+            
+          
+            
           
 
     def __set_unitNames(self):
@@ -775,6 +781,8 @@ class Superstructure():
         self.NI_ParameterList.append(self.working_hours)
         self.NI_ParameterList.append(self.process_steps)
 
+        self.NI_ParameterList.append(self.YieldSubSet)
+        
         
     def __fill_indexedParameterList(self):
         """
