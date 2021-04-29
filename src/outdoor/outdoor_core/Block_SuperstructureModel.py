@@ -359,6 +359,8 @@ class SuperstructureModel(AbstractModel):
         self.ENERGY_DEMAND_HP = Var(within=NonNegativeReals)
         self.ENERGY_DEMAND_HP_USE = Var(within=NonNegativeReals)
 
+        self.MW = Param(self.I, initialize=1)
+        
         
         
 
@@ -376,6 +378,12 @@ class SuperstructureModel(AbstractModel):
             elif self.kappa_2_ut[u,'Electricity'] == 0:
               return self.REF_FLOW_EL[u] == sum(self.FLOW_OUT[u,i] \
                                 * self.kappa_1_ut[u,'Electricity',i] for i in self.I)
+            elif self.kappa_2_ut[u,'Electricity']== 4:
+                return self.REF_FLOW_EL[u]== sum (self.FLOW_OUT[u,i]/ self.MW[i] \
+                                * self.kappa_1_ut[u,'Electricity',i] for i in self.I) 
+            elif self.kappa_2_ut[u,'Electricity']== 2:
+                return self.REF_FLOW_EL[u]== sum (self.FLOW_IN[u,i]/ self.MW[i] \
+                                * self.kappa_1_ut[u,'Electricity',i] for i in self.I) 
             else:
               return self.REF_FLOW_EL[u] == 0
             

@@ -117,6 +117,7 @@ class Superstructure():
 
         
         self.lhv = {'LHV':{}}
+        self.mw = {'MW': {}}
         self.em_fac_ut = {'em_fac_ut': {}}
         self.em_fac_comp = {'em_fac_comp': {}}
         self.alpha = dict()
@@ -365,6 +366,18 @@ class Superstructure():
         for i,j in lhv_dic.items():
             self.lhv['LHV'][i] = j      
 
+
+    def set_mw(self, mw_dic): 
+        """
+        molecular weight
+        Parameters
+        ----------
+        mw_dic : Dictionary
+            Takes Dictionaries of Type {'Component1': MW_i, 'Component1': MW_i....}
+
+        """
+        for i,j in mw_dic.items():
+            self.mw['MW'][i] = j 
     
 
     def add_linearisationIntervals(self):
@@ -781,6 +794,7 @@ class Superstructure():
         self.NI_ParameterList.append(self.working_hours)
         self.NI_ParameterList.append(self.process_steps)
 
+    
         self.NI_ParameterList.append(self.YieldSubSet)
         
         
@@ -796,6 +810,7 @@ class Superstructure():
         self.I_ParameterList.append(self.em_fac_ut)
         self.I_ParameterList.append(self.em_fac_comp)
         self.I_ParameterList.append(self.lhv)
+        self.I_ParameterList.append(self.mw)
         self.I_ParameterList.append(self.UnitNames)
 
         

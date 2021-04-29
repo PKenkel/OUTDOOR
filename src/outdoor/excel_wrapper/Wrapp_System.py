@@ -135,6 +135,8 @@ def wrapp_SystemData(dfi):
     dict1 = WF.read_type1(df3,0,1)
     obj.set_lhv(dict1)
 
+    dict2  = WF.read_type1(df3,0,3)
+    obj.set_mw(dict2) 
 
 
 

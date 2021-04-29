@@ -95,8 +95,8 @@ def wrapp_ReacionData(obj, df1, df2 = None):
         dict1  = WF.read_type1(df1,0,1)
         obj.set_xiFactors(dict1)  
         
-        # list1 = WF.read_list_new(df1, 2, 0)
-        # obj.set_inertComponents(list1)
+        list1 = WF.read_list_new(df1, 2, 0)
+        obj.set_inertComponents(list1)
 
         
     else:

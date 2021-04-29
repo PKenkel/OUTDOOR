@@ -600,6 +600,10 @@ class PhysicalProcess(Process):
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 1
             elif kappa_2_ut_dic[i]  == 'FOUT':
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 0
+            elif kappa_2_ut_dic[i]  == 'FIN_M':
+                self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 2
+            elif kappa_2_ut_dic[i]  == 'FOUT_M':
+                self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 4                
             else:
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 3
 
@@ -779,8 +783,6 @@ class YieldReactor(PhysicalProcess):
         # Indexed Attributes
         self.xi = {'xi': {}}
 
-        # if self.Name == 'MeOH Reaktor':
-        #     self.set_inertComponents(['N2','O2'])
 
             
     # REACTION SETTING METHODS
