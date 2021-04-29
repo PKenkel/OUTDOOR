@@ -95,6 +95,10 @@ def wrapp_ReacionData(obj, df1, df2 = None):
         dict1  = WF.read_type1(df1,0,1)
         obj.set_xiFactors(dict1)  
         
+        # list1 = WF.read_list_new(df1, 2, 0)
+        # obj.set_inertComponents(list1)
+
+        
     else:
 
         dict1 = WF.read_type2(df1,0,1,2)
@@ -136,6 +140,7 @@ def wrapp_EnergyData(obj, df, df2, df3):
         ProcessElectricityReferenceFlow = df.iloc[1,1]
         
         ProcessElectricityReferenceComponentList = WF.read_list_new(df2, 1, 2)
+
     else:
         ProcessElectricityDemand = 0
         ProcessElectricityReferenceFlow = None

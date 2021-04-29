@@ -51,7 +51,7 @@ def wrapp_processUnits(dfi):
     ConcDataRange = WF.convert_total2('B', 10, 'F', 30)
     GammaDataRange = WF.convert_total2('H', 10,'J', 30)
     ThetaDataRange = WF.convert_total2('L', 10, 'N', 30)
-    XiDataRange = WF.convert_total2('H', 10, 'I',30)
+    XiDataRange = WF.convert_total2('H', 10, 'J',30)
 
 
 

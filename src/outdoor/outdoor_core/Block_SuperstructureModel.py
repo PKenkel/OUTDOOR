@@ -211,7 +211,6 @@ class SuperstructureModel(AbstractModel):
             if u in self.U_YIELD_REACTOR:
                 if self.ic_on[u] == 1:
                     if (u,i) in self.YC:    
-                        print('now')
                         return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i] + sum(self.FLOW_IN[u,i] for i in self.I if (u,i) not in self.YC) * self.xi[u,i] 
                     else:
                         return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I  if (u,i) not in self.YC) * self.xi[u,i]           

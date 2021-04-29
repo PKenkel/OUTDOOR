@@ -779,8 +779,8 @@ class YieldReactor(PhysicalProcess):
         # Indexed Attributes
         self.xi = {'xi': {}}
 
-        if self.Name == 'MeOH Reaktor':
-            self.set_inertComponents(['N2','O2'])
+        # if self.Name == 'MeOH Reaktor':
+        #     self.set_inertComponents(['N2','O2'])
 
             
     # REACTION SETTING METHODS
