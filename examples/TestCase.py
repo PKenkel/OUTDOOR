@@ -9,7 +9,7 @@ b= a + '/src'
 sys.path.append(b)
 
 
-'testneu'
+
 
 import outdoor
 
