@@ -12,6 +12,8 @@ import pandas as pd
 from .Wrapp_Processes import wrapp_processUnits
 from .Wrapp_Processes import wrapp_productPoolUnits
 from .Wrapp_Processes import wrapp_sourceUnits
+from .Wrapp_Processes import wrapp_distributors
+
 
 from .Wrapp_System import wrapp_SystemData
 
@@ -71,6 +73,10 @@ def get_DataFromExcel(PathName=None):
         elif i == "Sources":
             sources = wrapp_sourceUnits(datframe[i])
             for k in sources:
+                PU_ObjectList.append(k)
+        elif i == 'Distributor':
+            distributors = wrapp_distributors(datframe[i])
+            for k in distributors:
                 PU_ObjectList.append(k)
         else:
             PU_ObjectList.append(wrapp_processUnits(datframe[i]))

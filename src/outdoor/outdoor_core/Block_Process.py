@@ -242,7 +242,7 @@ class Process():
 
         """
 
-        
+    
         self.ParameterList.append(self.conc)
         self.ParameterList.append(self.myu)            
         self.ParameterList.append(self.kappa_1_lhs_conc)
@@ -250,8 +250,7 @@ class Process():
         self.ParameterList.append(self.kappa_1_rhs_conc)
         self.ParameterList.append(self.kappa_2_rhs_conc)
         self.ParameterList.append(self.FLH)
-        
-        
+
     
 
 
@@ -1089,15 +1088,17 @@ class Distributor (VirtualProcess):
         """
     
     
-    def __init__(self, Name, UnitNumber,  Targets= [], Decimal_place= None,  Parent= None, *args, **kwargs):
+    def __init__(self, Name, UnitNumber, Decimal_place= 3, Targets= None,
+                 Parent= None, *args, **kwargs):
 
         super().__init__(Name, UnitNumber,  Parent) 
+        
         self.Type = "Distributor"  
         self.Decimal_numbers = {'Decimal_numbers': {}}
         self.decimal_numbers = {'Decimal_numbers': {}}
         self.decimal_set = []
-        self.decimal_place = 2
-        self.targets = [3100]
+        self.decimal_place = Decimal_place
+        self.targets = []
         
         
         
@@ -1130,7 +1131,7 @@ class Distributor (VirtualProcess):
 
     def fill_unitOperationsList(self, superstructure):
         
-        # super().fill_unitOperationsList(superstructure)
+        super().fill_unitOperationsList(superstructure)
         
         if not hasattr(superstructure, 'distributor_list'):
             setattr(superstructure, 'distributor_subset', {'U_DIST_SUB': []})
@@ -1151,7 +1152,9 @@ class Distributor (VirtualProcess):
 
 
     def fill_parameterList(self):
-        super().fill_parameterList(self)
+
+        super().fill_parameterList()
+        
         self.ParameterList.append(self.decimal_numbers)
         
             

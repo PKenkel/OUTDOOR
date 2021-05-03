@@ -376,5 +376,9 @@ def wrapp_SourceData(obj, series, df, counter):
                         Composition_dictionary  = dic
                         )
     
-
+def wrapp_DistributorData(obj, series, df, counter) :
+        
+    targets_list = WF.read_list_new(df, 0, Start=counter)
+    obj.set_targets(targets_list)
+    
 

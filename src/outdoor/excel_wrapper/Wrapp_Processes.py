@@ -134,8 +134,25 @@ def wrapp_sourceUnits(dfi):
             
     return SourcesList
 
+
+def wrapp_distributors(dfi):
+    DataRange = WF.convert_total('E',6,'O',23)
+    distributor_list = []
+    
+    df1 = dfi.iloc[DataRange]
+    
+    counter = 3
+    
+    for index,series in df1.items():
+        if not pd.isnull(series[4]):
+            obj = Distributor(series[4], series[5])
+            wrapp_DistributorData(obj, series, df1, counter)
+            distributor_list.append(obj)
             
+    return distributor_list
             
+        
+    
 
 
 

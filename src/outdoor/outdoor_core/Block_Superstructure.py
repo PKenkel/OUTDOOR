@@ -741,7 +741,7 @@ class Superstructure():
     def __set_optionalFLH(self):
         for x in self.UnitsList:
             if x.FLH['flh'][x.Number] is None:
-                x.FLH['flh'][x.Number] = self.H['H']        
+                x.FLH['flh'][x.Number] = self.H['H']     
         
 
 #------------------------------------------------------------------------------
@@ -759,6 +759,7 @@ class Superstructure():
         Fills List with non-indexed Model-important parameters
 
         """
+
         self.NI_ParameterList.append(self.UnitsNumberList)
         self.NI_ParameterList.append(self.UnitsNumberList2)
         self.NI_ParameterList.append(self.StoichRNumberList)
@@ -767,11 +768,9 @@ class Superstructure():
         self.NI_ParameterList.append(self.HeatGeneratorList)
         self.NI_ParameterList.append(self.ElectricityGeneratorList)
         self.NI_ParameterList.append(self.ProductPoolList)
-        self.NI_ParameterList.append(self.CostUnitsList)
-        
+        self.NI_ParameterList.append(self.CostUnitsList)     
         self.NI_ParameterList.append(self.SourceList)
-        self.NI_ParameterList.append(self.SourceSet)
-        
+        self.NI_ParameterList.append(self.SourceSet) 
         self.NI_ParameterList.append(self.ComponentsList)
         self.NI_ParameterList.append(self.ReactantsList)
         self.NI_ParameterList.append(self.ReactionsList)
@@ -792,10 +791,9 @@ class Superstructure():
         self.NI_ParameterList.append(self.capacity_flow)
         self.NI_ParameterList.append(self.hourly_wage)
         self.NI_ParameterList.append(self.working_hours)
-        self.NI_ParameterList.append(self.process_steps)
-
-    
+        self.NI_ParameterList.append(self.process_steps)    
         self.NI_ParameterList.append(self.YieldSubSet)
+
         
         
     def __fill_indexedParameterList(self):
@@ -833,7 +831,7 @@ class Superstructure():
         for i in self.NI_ParameterList:
             for j in i:
                 self.Data_File[None][j] = {None: i[j]}
-                
+     
                 
                 
     # Indexed Parameters / Dictionaries 
@@ -859,7 +857,7 @@ class Superstructure():
                 except:
                     self.Data_File[None][j] = k
          
-                        
+                         
         
 
     # Parameters origin from Process Units
