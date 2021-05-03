@@ -193,6 +193,8 @@ class SuperstructureModel(AbstractModel):
         self.Decimal_numbers = Param(self.DC_SET)
         
         
+        self.MinProduction = Param(self.U_PP, initialize = 0)
+        self.MaxProduction = Param(self.U_PP, initialize = 10000000)
         
         
          
@@ -280,6 +282,15 @@ class SuperstructureModel(AbstractModel):
         def MassBalance_12_rule(self,u):
             return self.FLOW_SUM[u] == sum(self.FLOW_IN[u,i] for i in self.I)
         
+        
+        
+        def MassBalance_14a_rule(self,up):
+            return self.FLOW_SUM[up] >= self.MinProduction[up]
+        
+        def MassBalance_14b_rule(self,up):
+            return self.FLOW_SUM[up] <= self.MaxProduction[up]
+        
+        
     
          
         self.MassBalance_1 = Constraint(self.U, self.I, rule=MassBalance_1_rule)
@@ -295,6 +306,9 @@ class SuperstructureModel(AbstractModel):
         self.MassBalance_10 = Constraint(self.I, rule=MassBalance_10_rule)
         self.MassBalance_11 = Constraint(self.U, rule=MassBalance_11_rule)
         self.MassBalance_12 = Constraint(self.U, rule=MassBalance_12_rule)
+        
+        self.MassBalance_14a = Constraint(self.U_PP, rule = MassBalance_14a_rule)
+        self.MassBalance_14b = Constraint(self.U_PP, rule = MassBalance_14b_rule)
 
 
 

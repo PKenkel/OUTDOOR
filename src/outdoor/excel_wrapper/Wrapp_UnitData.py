@@ -345,6 +345,17 @@ def wrapp_ProductpoolData(obj, series):
     
     if not pd.isnull(series[10]):
         EmissionCredits = series[10]
+       
+    minp = 0
+    maxp = 10000000
+    
+    if not pd.isnull(series[11]):
+        minp = series[11]
+    if not pd.isnull(series[12]):
+        maxp = series[12]
+        
+    obj.set_productionLimits(minp,maxp)
+    
 
     obj.set_emissionCredits(EmissionCredits)    
  

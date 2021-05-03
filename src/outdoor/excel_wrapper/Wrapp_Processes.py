@@ -97,7 +97,7 @@ def wrapp_processUnits(dfi):
 
 def wrapp_productPoolUnits(dfi):
     
-    DataRange = WF.convert_total ('D', 6, 'K', 12)
+    DataRange = WF.convert_total ('D', 6, 'K', 14)
     DataFrame = dfi.iloc[DataRange]
     PoolList = []
     

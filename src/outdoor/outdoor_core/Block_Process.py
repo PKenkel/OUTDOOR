@@ -939,6 +939,9 @@ class ProductPool(VirtualProcess):
         self.ProductName = ProductName
         self.ProductPrice = {'ProductPrice': {self.Number: ProductPrice}}
         self.em_credits = {'em_fac_prod': {self.Number: 0}}
+        self.min_production = {'MinProduction': {self.Number: 0}}
+        self.max_production = {'MaxProduction': {self.Number: 10000000}}
+        
         
         
         if ProductType == 'MainProduct':
@@ -961,12 +964,17 @@ class ProductPool(VirtualProcess):
             
     def set_productPrice(self, Price):
         self.ProductPrice['ProductPrice'][self.Number] = Price
-
+        
+    def set_productionLimits(self, MinProduction = 0, MaxProduction = 10000000):
+        self.min_production['MinProduction'][self.Number] = MinProduction 
+        self.max_production['MaxProduction'][self.Number] = MaxProduction 
 
     def fill_parameterList(self):
         super().fill_parameterList()
         self.ParameterList.append(self.ProductPrice)
         self.ParameterList.append(self.em_credits)
+        self.ParameterList.append(self.min_production)
+        self.ParameterList.append(self.max_production)
 
 
 #------------------------------------------------------------------------------
