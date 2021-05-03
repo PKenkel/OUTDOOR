@@ -141,13 +141,15 @@ def wrapp_distributors(dfi):
     
     df1 = dfi.iloc[DataRange]
     
-    counter = 3
+    counter = 0
     
+
     for index,series in df1.items():
         if not pd.isnull(series[4]):
-            obj = Distributor(series[4], series[5])
+            obj = Distributor(series[4], series[5], series[6])
             wrapp_DistributorData(obj, series, df1, counter)
             distributor_list.append(obj)
+            counter += 1 
             
     return distributor_list
             

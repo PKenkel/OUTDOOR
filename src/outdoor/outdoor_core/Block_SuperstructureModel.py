@@ -179,6 +179,22 @@ class SuperstructureModel(AbstractModel):
         self.YC = Set(within=self.U_YIELD_REACTOR * self.I)
         
         
+        self.U_DIST = Set(within=self.U)
+        self.U_DIST_SUB = Set(within=self.U_DIST*self.U)
+        
+        def iterator(x):
+            nlist = []
+            for i in range(x):
+                nlist.append(i)
+            return nlist
+            
+        
+        self.DC_SET = Set(within = self.U_DIST*iterator(30))
+        self.Decimal_numbers = Param(self.DC_SET)
+        
+        
+        
+        
          
         def MassBalance_1_rule(self,u,i):
             return self.FLOW_IN[u,i] == self.FLOW_ADD_TOT[u,i] \

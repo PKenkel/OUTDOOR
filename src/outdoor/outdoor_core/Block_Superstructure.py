@@ -793,6 +793,11 @@ class Superstructure():
         self.NI_ParameterList.append(self.working_hours)
         self.NI_ParameterList.append(self.process_steps)    
         self.NI_ParameterList.append(self.YieldSubSet)
+        
+        self.NI_ParameterList.append(self.distributor_list)
+        self.NI_ParameterList.append(self.distributor_subset)
+        self.NI_ParameterList.append(self.decimal_set)
+        
 
         
         

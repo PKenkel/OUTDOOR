@@ -1092,12 +1092,11 @@ class Distributor (VirtualProcess):
                  Parent= None, *args, **kwargs):
 
         super().__init__(Name, UnitNumber,  Parent) 
-        
+
         self.Type = "Distributor"  
-        self.Decimal_numbers = {'Decimal_numbers': {}}
         self.decimal_numbers = {'Decimal_numbers': {}}
         self.decimal_set = []
-        self.decimal_place = Decimal_place
+        self.decimal_place = self.set_decimalPlace(Decimal_place)
         self.targets = []
         
         
@@ -1107,6 +1106,7 @@ class Distributor (VirtualProcess):
 
     def set_decimalPlace (self, decimal_place):
         self.decimal_place = decimal_place
+        self.calc_decimalNumbers()
         
             
         
@@ -1115,6 +1115,7 @@ class Distributor (VirtualProcess):
         X = [1, 2 ,3 ,4 ,8]
         XO = 0        
         self.decimal_numbers['Decimal_numbers'][self.Number,0] = XO
+        self.decimal_set.append((self.Number,0))
         
         for i in range(1,self.decimal_place+1):
             for j in X:
@@ -1141,7 +1142,7 @@ class Distributor (VirtualProcess):
         
  
         superstructure.distributor_list['U_DIST'].append(self.Number)
-        superstructure.decimal_set['DC_SET'].append(self.decimal_set)
+        superstructure.decimal_set['DC_SET'].extend(self.decimal_set)
         
             
         for i in self.targets:
@@ -1152,6 +1153,7 @@ class Distributor (VirtualProcess):
 
 
     def fill_parameterList(self):
+        
 
         super().fill_parameterList()
         
