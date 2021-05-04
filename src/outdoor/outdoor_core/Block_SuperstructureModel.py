@@ -189,12 +189,17 @@ class SuperstructureModel(AbstractModel):
             return nlist
             
         
-        self.DC_SET = Set(within = self.U_DIST*iterator(30))
+        self.DC_SET = Set(within = self.U_DIST*iterator(100))
         self.Decimal_numbers = Param(self.DC_SET)
         
         
         self.MinProduction = Param(self.U_PP, initialize = 0)
         self.MaxProduction = Param(self.U_PP, initialize = 10000000)
+        
+        self.FLOW_DIST = Var(self.U_DIST_SUB, self.I, self.DC_SET, within=NonNegativeReals)
+        self.Y_DIST = Var(self.U_DIST_SUB, self.DC_SET, within=Binary)
+        
+        
         
         
          
@@ -214,16 +219,7 @@ class SuperstructureModel(AbstractModel):
         
         def MassBalance_13_rule(self, u_s):
             return self.FLOW_SOURCE[u_s] <= self.ul[u_s]
- 
-        # def MassBalance_5_rule(self,u,i):
-        #     if u in self.U_YIELD_REACTOR:
-        #         return self.FLOW_OUT[u,i] == sum(self.FLOW_IN[u,i] for i in self.I) * self.xi[u,i]
-        #     elif u in self.U_STOICH_REACTOR:
-        #         return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i] \
-        #             + sum(self.gamma[u,i,r] * self.theta[u,r,m] * self.FLOW_IN[u,m] \
-        #                   for r in self.R for m in self.M)
-        #     else:
-        #         return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i]
+
             
         def MassBalance_5_rule(self,u,i):
             if u in self.U_YIELD_REACTOR:
@@ -243,18 +239,65 @@ class SuperstructureModel(AbstractModel):
             
             
             
-
-         
-        def MassBalance_6_rule(self,u,uu,i):
-            return self.FLOW[u,uu,i] <= self.myu[u,uu,i] * self.FLOW_OUT[u,i] \
-                + self.alpha[u] * (1-self.Y[uu])
+           
             
+        def MassBalance_6_rule(self,u,uu,i):
+            if (u,uu) not in self.U_DIST_SUB:
+                return self.FLOW[u,uu,i] <= self.myu[u,uu,i] * self.FLOW_OUT[u,i] + self.alpha[u] * (1-self.Y[uu])
+                    
+            else: 
+                return self.FLOW[u,uu,i] <= sum(self.FLOW_DIST[u,uu,i,k] for k in self.DC_SET) + self.alpha[u] * (1-self.Y[uu])
+                        
+
         def MassBalance_7_rule(self,u,uu,i):
             return self.FLOW[u,uu,i] <= self.alpha[u] * self.Y[uu]
         
         def MassBalance_8_rule(self,u,uu,i):
-            return self.FLOW[u,uu,i] >= self.myu[u,uu,i] * self.FLOW_OUT[u,i] \
-                - self.alpha[u] * (1-self.Y[uu])
+            if (u,uu) not in self.U_DIST_SUB:
+                return self.FLOW[u,uu,i] >= self.myu[u,uu,i] * self.FLOW_OUT[u,i]  - self.alpha[u] * (1-self.Y[uu])
+            else:
+                return self.FLOW[u,uu,i] >= sum(self.FLOW_DIST[u,uu,i,k] for k in self.DC_SET) - self.alpha[u] * (1-self.Y[uu])            
+
+
+
+
+
+
+     
+        def MassBalance_15a_rule(self,u,uu,i,uk,k):
+            return self.FLOW_DIST[u,uu,i,uk,k] <= self.Decimal_numbers[u,k] * self.FLOW_OUT[u,i] + self.alpha[u]* (1- self.Y_DIST[u,uu,uk,k]) 
+            
+        def MassBalance_15b_rule(self,u,uu,i,uk,k):
+            return self.FLOW_DIST[u,uu,i,uk,k] >= self.Decimal_numbers[u,k] * self.FLOW_OUT[u,i] - self.alpha[u]* (1- self.Y_DIST[u,uu,uk,k])                
+                
+        def MassBalance_15c_rule(self,u,uu,i,uk,k):
+            return self.FLOW_DIST[u,uu,i,uk,k] <= self.alpha[u] * self.Y_DIST[u,uu,uk,k]                  
+        
+        self.MassBalance_15a =  Constraint(self.U_DIST_SUB, self.I, self.DC_SET, rule = MassBalance_15a_rule)
+        self.MassBalance_15b =  Constraint(self.U_DIST_SUB, self.I, self.DC_SET, rule = MassBalance_15b_rule)
+        self.MassBalance_15c =  Constraint(self.U_DIST_SUB, self.I, self.DC_SET, rule = MassBalance_15c_rule)        
+
+    
+        def MassBalance_16_rule(self,u,i):
+            return self.FLOW_OUT[u,i] == sum(self.FLOW[u,uu,i] for uu in self.U if (u,uu) in self.U_DIST_SUB)
+
+        def MassBalance_17_rule(self,u,uu,i):
+            return self.FLOW[u,uu,i] == sum(self.FLOW_DIST[u,uu,i,uk,k] for (uk,k) in self.DC_SET)    
+
+        self.MassBalance_16 = Constraint(self.U_DIST, self.I, rule= MassBalance_16_rule)
+        self.MassBalance_17 = Constraint(self.U_DIST_SUB, self.I, rule = MassBalance_17_rule)            
+
+
+
+
+
+
+
+
+
+
+
+
 
         def MassBalance_9_rule(self,u,i):
             return self.FLOW_WASTE[u,i] == self.FLOW_OUT[u,i] \
