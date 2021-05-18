@@ -9,7 +9,11 @@ Created on Thu Apr  2 11:25:35 2020
 
 import pandas as pd
 
-from .Wrapp_Processes import wrapp_ProcessUnits
+from .Wrapp_Processes import wrapp_processUnits
+from .Wrapp_Processes import wrapp_productPoolUnits
+from .Wrapp_Processes import wrapp_sourceUnits
+from .Wrapp_Processes import wrapp_distributors
+
 
 from .Wrapp_System import wrapp_SystemData
 
@@ -47,18 +51,40 @@ def get_DataFromExcel(PathName=None):
     PU_ObjectList  =[]
 
     ## Hidden tables with specific names will be skipped:
-     
+    Hidden_Tables = []
+    Hidden_Tables.append('Template_PhysicalProcess')
+    Hidden_Tables.append('Template_StoichReactor')
+    Hidden_Tables.append('Template_YieldReactor')
+    Hidden_Tables.append('Template_SteamGenerator')
+    Hidden_Tables.append('Template_ElGenerator')
+    Hidden_Tables.append('Template_ProductPool')
+    Hidden_Tables.append('DataBank')
+        
+        
     for i in datframe.keys():
         if i == 'Systemblatt':
             Superstructure_Object = wrapp_SystemData(datframe[i])
-        elif i == 'Tabelle1' or i == 'Template_CC' or i =='Template_Stö' or i =='Template_Yield' or i =='Template_Heat' or i == 'Template_Produktpool':
+        elif i in Hidden_Tables:
             continue
+        elif i == "Pools":
+            pools = wrapp_productPoolUnits(datframe[i])
+            for k in pools:
+                PU_ObjectList.append(k)
+        elif i == "Sources":
+            sources = wrapp_sourceUnits(datframe[i])
+            for k in sources:
+                PU_ObjectList.append(k)
+        elif i == 'Distributor':
+            distributors = wrapp_distributors(datframe[i])
+            for k in distributors:
+                PU_ObjectList.append(k)
         else:
-            PU_ObjectList.append(wrapp_ProcessUnits(datframe[i]))
-            
+            PU_ObjectList.append(wrapp_processUnits(datframe[i]))
+
+              
 
          
-    Superstructure_Object.add_Units(PU_ObjectList)
+    Superstructure_Object.add_UnitOperations(PU_ObjectList)
 
     return Superstructure_Object
 

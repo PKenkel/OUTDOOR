@@ -10,14 +10,17 @@ class Superstructure():
         
         super().__init__()
         
+        
         # Lists
+        # -----
+        
         self.Objective_dic = {'NPE' : 'NPE', 'NPC': 'NPC'}
         self.Data_File = {None: {}}
         self.ModelName = ModelName
         
         
+        # Unit Operations
         self.UnitsList = []
-        
         self.UnitsNumberList = {'U': []}    
         self.UnitsNumberList2 = {'UU': []}   
         self.StoichRNumberList = {'U_STOICH_REACTOR': []}
@@ -26,45 +29,38 @@ class Superstructure():
         self.HeatGeneratorList = {'U_FUR' : []}
         self.ElectricityGeneratorList = {'U_TUR': []}
         self.ProductPoolList = {'U_PP': []}
-        
-        self.HeatIntervalList =  {'HI': []}
-        self.LinPointsList = {'J': []}
-        self.LinIntervalsList = {'JI': []} 
-        
         self.CostUnitsList = {'U_C':[]}
+        self.SourceList = {'U_S': []}
+        self.SourceSet = {'U_SU': []}
+        
+        self.YieldSubSet = {'YC': []}
         
         
+        
+        # Heat Balance
+        self.HeatIntervalList =  {'HI': []}
+        self.HeatUtilitiesList = {'H_UT': []}
+
+        # Others
         self.ComponentsList = {'I': []}
         self.ReactionsList = {'R': []}
         self.ReactantsList ={'M': []}
         self.UtilitiesList = {'UT' :[]}
-        
-        self.HeatUtilitiesList = {'H_UT': []}
-        
+        self.LinPointsList = {'J': []}
+        self.LinIntervalsList = {'JI': []} 
+        self.UnitNames = {'Names': {}}
+        self.Heat_Temperatures = []
+        self.HeatIntervals = {}
         
         # ParameterList
         self.NI_ParameterList =[]
         self.I_ParameterList =[]
-        self.Heat_Temperatures = []
+        self.Database = None
         
-        self.UnitNames = {'Names': {}}
-        
-        
-        self.hourly_wage = {'hourly_wage': 41}
-        self.working_hours = {'working_hours': 8322}
-        self.capacity_flow = {'capacity_flow': None}
-        self.process_steps = {'process_steps': 4}
-        
-        
-        
-# NEW ---
 
-        self.HeatIntervals = {}
-
-# -----
-        
         
         # Non-indexed Attributes
+        # ----------------------
         
         try: 
             self.Objective = self.Objective_dic[Objective]
@@ -83,10 +79,19 @@ class Superstructure():
         self.H = {'H': 0}
         self.K_O = {'K_OM' : 2.06875}
         self.CECPI = {'CECPI': 0}
-        self.COP_HP = {'COP_HP': 3}
-        self.HP_LT = {'HP_LT': 0}
-        self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
+        
+        self.hourly_wage = {'hourly_wage': 41}
+        self.working_hours = {'working_hours': 8322}
+        self.capacity_flow = {'capacity_flow': None}
+        self.process_steps = {'process_steps': 4}
+        
         self.HP_Costs = {'HP_Costs': 0}
+        self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
+        self.COP_HP = {'COP_HP': 3}
+        self.HP_LT = None
+        self.HP_T_IN = {}
+        self.HP_T_OUT = {}
+        self.HP_active = False
         
         self.linearizationDetail = 'average'
 
@@ -94,6 +99,7 @@ class Superstructure():
         
         
         # Indexed Attributes
+        # ------------------
         
         self.CECPI_dic = {1994: 368.1, 1995: 381.1, 1996: 381.7, 1997: 386.5,
                           1998: 389.5, 1999: 390.6, 2000: 394.1, 2001: 394.3,
@@ -105,13 +111,13 @@ class Superstructure():
         
         
         self.delta_rm = {'delta_rm': {}}
-        
         self.delta_el = {'delta_el': 50}
         self.delta_q = {'delta_q': {}}
         self.delta_cool = {'delta_cool': 14}
 
         
         self.lhv = {'LHV':{}}
+        self.mw = {'MW': {}}
         self.em_fac_ut = {'em_fac_ut': {}}
         self.em_fac_comp = {'em_fac_comp': {}}
         self.alpha = dict()
@@ -121,8 +127,6 @@ class Superstructure():
         
         
    
-
-
 
 
 
@@ -142,10 +146,10 @@ class Superstructure():
     def set_interestRate(self, IR):
         self.IR['IR'] = IR
         
-    def set_OMFactor(self, OM):
+    def set_omFactor(self, OM):
         self.K_O['K_OM'] = OM
         
-    def set_CECPI(self, year):
+    def set_cecpi(self, year):
         """
         Parameters
         ----------
@@ -154,33 +158,53 @@ class Superstructure():
             
         """
         self.CECPI['CECPI'] = self.CECPI_dic[year]
-       
-    def set_COP(self, COP=0, LT=15, Costs = 450):
+        
+            
+
+    def set_heatPump(self, 
+                     SpecificCosts,
+                     LifeTime,
+                     COP,
+                     T_IN,
+                     T_OUT
+                     ):
         """
+
         Parameters
         ----------
-        COP : Float, optional
-            DESCRIPTION. The default is 0, describes the Coefficient of Performance
-        LT : Integer, optional
-            DESCRIPTION. The default is 15, describes the lifetime of the HP
-        Costs : Float, optional
-            DESCRIPTION. The default is 450, describs the linear Costs of the HP
-                            in €/kW-Installed
+        SpecificCosts : Float
+            Specific Costs of Heat Pump in €/kW_installed Heat supply.
+        LifeTime : Integer
+            Lifetime of Heatpump in full years.
+        COP : Float
+            Coefficient of performance of heat pump, should be higher than 1.
+        T_IN : Integer
+            Inlettemperature of heat pump (low-ex temperature).
+        T_OUT :Integer
+            Goal Temperature of Heat Pumpt (e.g. low pressure steam).
 
         Description
-        -----------
-        Takes Values for COP, LT and Costs and calculated annualized costs for
-        the Heatpump. These costs are later used and multiplied with the utilzed
-        heat in the Superstructure Model
+        -------
+        If "HP_active" == true, this method sets the values of the heat pump. 
+        These values are used while initiating the superstructure to find the 
+        Temperatureintervals in the Heatbalance as well as supplied heat and costs.
+        If "HP_active" == false, this method will be skipped, and the model will
+        not regard a heat pump in the heat balances.
 
         """
-        self.COP_HP['COP_HP'] = COP
-        self.HP_LT['HP_LT'] = LT
-        self.HP_Costs['HP_Costs'] = Costs
-        ir = self.IR['IR']
-        lt = self.HP_LT['HP_LT']
-        self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1))   
-      
+        try:
+            self.HP_active = True
+            self.HP_Costs['HP_Costs'] = SpecificCosts
+            self.COP_HP['COP_HP']  = COP
+            self.HP_LT = LifeTime
+            self.HP_T_IN['Temperature'] = T_IN
+            self.HP_T_OUT['Temperature'] = T_OUT
+            self.__set_heatTemperatures(T_IN, T_OUT)
+ 
+        except:
+            print('Please chose for State either On or Off, a non-negative \
+                  lifetime and for COP a value > 1')        
+
     def set_linearizationDetail(self, Detail):
         """
         Parameters
@@ -201,7 +225,7 @@ class Superstructure():
         self.linearizationDetail = Detail
  
 
-    def set_NumberProcessSteps(self, Number):
+    def set_numberProcessSteps(self, Number):
         self.process_steps['process_steps']  = Number
 
         
@@ -213,9 +237,10 @@ class Superstructure():
 #------------------------------------------------------------------------------
 
 
-
+    
+    
         
-    def add_Units(self, *args):
+    def add_UnitOperations(self, *args):
         """
         Parameters
         ----------
@@ -223,63 +248,36 @@ class Superstructure():
             Takes a number of Process Objects and sorts them into the UnitLists
 
         """
+
         for i in args:
             if type(i) == list:
                 for j in i:
                     if j not in self.UnitsList:
-                        self.UnitsList.append(j)
-                        self.UnitsNumberList['U'].append(j.Number)
-                        self.UnitsNumberList2['UU'].append(j.Number)
-                        if j.Type == 'Stoich-Reactor':
-                            self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                        elif j.Type == 'Yield-Reactor':
-                            self.YieldRNumberList['U_YIELD_REACTOR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                        elif j.Type == 'HeatGenerator':
-                            self.HeatGeneratorList['U_FUR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                            self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
-                        elif j.Type == 'ElectricityGenerator':
-                            self.ElectricityGeneratorList['U_TUR'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
-                            self.StoichRNumberList['U_STOICH_REACTOR'].append(j.Number)
-                        elif j.Type == 'ProductPool':
-                            self.ProductPoolList['U_PP'].append(j.Number)
-                        else:
-                            self.SplitterNumberList['U_SPLITTER'].append(j.Number)
-                            self.CostUnitsList['U_C'].append(j.Number)
+
+                        j.fill_unitOperationsList(self)
+
+
             else:
                 if i not in self.UnitsList:
-                    self.UnitsList.append(i)
-                    self.UnitsNumberList['U'].append(i.Number)
-                    self.UnitsNumberList2['UU'].append(i.Number)
-                    if i.Type == 'Stoich-Reactor':
-                        self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                    elif i.Type == 'Yield-Reactor':
-                        self.YieldRNumberList['U_YIELD_REACTOR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                    elif i.Type == 'HeatGenerator':
-                        self.HeatGeneratorList['U_FUR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                        self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
-                    elif i.Type == 'ElectricityGenerator':
-                        self.ElectricityGeneratorList['U_TUR'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
-                        self.StoichRNumberList['U_STOICH_REACTOR'].append(i.Number)
-                    elif i.Type == 'ProductPool':
-                        self.ProductPoolList['U_PP'].append(i.Number)
-                    else:
-                        self.SplitterNumberList['U_SPLITTER'].append(i.Number)
-                        self.CostUnitsList['U_C'].append(i.Number)
+                    i.fill_unitOperationsList(self)
 
-    def add_UnitNames(self):
+
+          
+            
+          
+            
+          
+            
+          
+            
+          
+
+    def __set_unitNames(self):
         for i in self.UnitsList:
             self.UnitNames['Names'][i.Number] = i.Name
             
 
-    def add_Components(self, *args):
+    def add_components(self, *args):
         """
         Parameters
         ----------
@@ -298,7 +296,7 @@ class Superstructure():
             
         
                 
-    def add_Reactions(self,*args):
+    def add_reactions(self,*args):
         """
         Parameters
         ----------
@@ -316,7 +314,7 @@ class Superstructure():
                     
                     
         
-    def add_Reactants(self,*args):
+    def add_reactants(self,*args):
         """
         Parameters
         ----------
@@ -334,7 +332,7 @@ class Superstructure():
                     
                     
                 
-    def add_Utilities(self,*args):
+    def add_utilities(self,*args):
         """
         Parameters
         ----------
@@ -357,7 +355,7 @@ class Superstructure():
     
     
     
-    def add_LHV(self, lhv_dic):
+    def set_lhv(self, lhv_dic):
         """
         Parameters
         ----------
@@ -368,9 +366,21 @@ class Superstructure():
         for i,j in lhv_dic.items():
             self.lhv['LHV'][i] = j      
 
+
+    def set_mw(self, mw_dic): 
+        """
+        molecular weight
+        Parameters
+        ----------
+        mw_dic : Dictionary
+            Takes Dictionaries of Type {'Component1': MW_i, 'Component1': MW_i....}
+
+        """
+        for i,j in mw_dic.items():
+            self.mw['MW'][i] = j 
     
 
-    def add_LinearisationIntervals(self):
+    def add_linearisationIntervals(self):
         if self.linearizationDetail == "rough":
             n = 10
         elif self.linearizationDetail == "fine":
@@ -385,7 +395,7 @@ class Superstructure():
         self.LinPointsList['J'].append(n)
         
         
-    def add_TemperatureIntervals(self):     
+    def __add_temperatureIntervals(self):     
         """
         Description
         -----------
@@ -428,36 +438,36 @@ class Superstructure():
 
             
             
-    def add_deltaQ(self):
+    def __set_deltaQ(self):
         for i,j in self.heat_utilities.items():
             for k,t in self.HeatIntervals.items():
                 if t <= i and k<len(self.HeatIntervals)-1:
                     self.delta_q['delta_q'][k+1] = j
         
                     
-    def add_deltaEL(self, delta_el_value):
+    def set_deltaEL(self, delta_el_value):
         self.delta_el['delta_el'] = delta_el_value      
         
         
         
-    def add_deltaCool(self, delta_cool_value):
+    def set_deltaCool(self, delta_cool_value):
         self.delta_cool['delta_cool'] = delta_cool_value
             
             
             
-    def add_deltaRM(self, delta_rm_dic):
+    def set_deltaRM(self, delta_rm_dic):
         for i in delta_rm_dic:
             self.delta_rm['delta_rm'][i] = delta_rm_dic[i]
            
             
            
-    def add_em_fac_ut(self, em_fac_ut_dic):
+    def set_utilityEmissionsFactor(self, em_fac_ut_dic):
         for i in em_fac_ut_dic:
             self.em_fac_ut['em_fac_ut'][i]  =em_fac_ut_dic[i]
             
             
             
-    def add_em_fac_comp(self, em_fac_comp_dic):
+    def set_componentEmissionsFactor(self, em_fac_comp_dic):
         for i in em_fac_comp_dic:
             self.em_fac_comp['em_fac_comp'][i] = em_fac_comp_dic[i]
             
@@ -469,12 +479,12 @@ class Superstructure():
 #------------------------------------------------------------------------------        
             
          
-    def add_ProcessTemperatures(self, *args): 
+    def __set_processTemperatures(self, *args): 
         
         """
         Description
         -----------
-        Takes all Processes assigned to the Superstructur eObject and checks 
+        Takes all Processes assigned to the Superstructur Object and checks 
         their Process Temperatures (T) T_IN and T_OUT values. 
         From these values it calls
         
@@ -498,14 +508,12 @@ class Superstructure():
             if i.Number in self.CostUnitsList['U_C']:
                 for j in i.T_IN.values():
                         if j != {}:
-                            self.add_HeatTemperatures(j)
+                            self.__set_heatTemperatures(j)
                 for j in i.T_OUT.values():
                     if j!= {}:
-                            self.add_HeatTemperatures(j)
+                            self.__set_heatTemperatures(j)
  
-            
- 
-    def add_HeatTemperatures(self, *args):   
+    def __set_heatTemperatures(self, *args):   
         """
         Parameters
         ----------
@@ -528,7 +536,7 @@ class Superstructure():
         Is called from Methods:
                 
                 - add_ProcessTemperatures()
-                - add_HeatUtilities()
+                - add_heatUtilities()
         
         to fill all Temperatures to a Grid
         
@@ -544,9 +552,7 @@ class Superstructure():
                     self.Heat_Temperatures.append(i)
         self.Heat_Temperatures = sorted(self.Heat_Temperatures)
         
-
-
-    def add_HeatUtilities(self, TemperatureList, CostList):
+    def set_heatUtilities(self, TemperatureList, CostList):
         """
         Parameters
         ----------
@@ -561,7 +567,7 @@ class Superstructure():
         
         Also calls:
             
-            - add_HeatTemperatures(TemperatureList)
+            - __set_heatTemperatures(TemperatureList)
         
         in order to add Temperatures to the T-Grid
         
@@ -571,16 +577,48 @@ class Superstructure():
         -------
         Is called as adding Method to add Utilities. Also Provides Cost Dictionary
         which is used later to calculate Costs of Heat Intervals
+        
+        PUBLIC
 
 
         """
         for i in range(len(TemperatureList)):
             self.heat_utilities[TemperatureList[i]] = CostList[i] 
-            self.add_HeatTemperatures(TemperatureList[i])
+            self.__set_heatTemperatures(TemperatureList[i])
             
+    def __calc_heatPump(self):
+        """
+        
+
+        Description
+        -------
+        This method is called via preparation of the heat balances.
+        If "HP_active" == True, than yearly costs for the heat pump are calculated
+        using Lifetime and Interest Rate. 
+        Afterwards, TIN and TOUT are compared to the HeatIntervals and and the
+        corresponding intervals are marked up for the heat balances inside the model.
+        If "HP_active" == False Costs, Yearly Factor and COP are set to dummy values 
+        (This is probably unnessacery).
+        
+
+        """
+        if self.HP_active == True:
+            ir = self.IR['IR']
+            lt = self.HP_LT
+            self.HP_ACC_Factor['HP_ACC_Factor'] = ((ir *(1 + ir)**lt)/((1 + ir)**lt -1)) 
             
+            for i,j in self.HeatIntervals.items():
+                if j == self.HP_T_IN['Temperature']:
+                    self.HP_T_IN['Interval'] = i + 1
+                elif j == self.HP_T_OUT['Temperature']:
+                    self.HP_T_OUT['Interval'] = i + 1
+                      
+        else:
+            self.HP_ACC_Factor['HP_ACC_Factor'] = 0
+            self.HP_Costs['HP_Costs'] = 0     
+            self.COP_HP['COP_HP']  = 3            
             
-    def fill_beta_Parameters(self):
+    def __fill_betaParameters(self):
         """
         Parameters
         ----------
@@ -658,9 +696,7 @@ class Superstructure():
                                                 i.beta['beta'][i.Number,k,t] = 0
                 i.ParameterList.append(i.beta)    
 
-
-
-    def fill_CapexLinearizationParameters(self):
+    def __calc_capexLinearizationParameters(self):
         """
         Description
         -----------
@@ -679,7 +715,7 @@ class Superstructure():
 
                 
 
-    def fill_ACCFactorParameter(self):
+    def __calc_accFactorParameter(self):
         """
         Description
         -----------
@@ -693,19 +729,20 @@ class Superstructure():
 
 
 
-    def fill_TurnOverParameter(self):
+    def __set_turnoverParameter(self):
         
         for i in self.UnitsList:
             if i.Number in self.CostUnitsList['U_C']:
-                i.turn_over_acc['to_acc'][i.Number] = i.calc_TurnOver_ACC(self.H, self.IR)
+                i.turn_over_acc['to_acc'][i.Number] = i.calc_turnoverACC(self.IR)
                 
                 
 
                 
+    def __set_optionalFLH(self):
+        for x in self.UnitsList:
+            if x.FLH['flh'][x.Number] is None:
+                x.FLH['flh'][x.Number] = self.H['H']     
         
-        
-
-
 
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -717,11 +754,12 @@ class Superstructure():
      
     # Fill Parameter List of Superstructure
 
-    def fill_NIP_List(self):
+    def __fill_nonIndexedParameterList(self):
         """
         Fills List with non-indexed Model-important parameters
 
         """
+
         self.NI_ParameterList.append(self.UnitsNumberList)
         self.NI_ParameterList.append(self.UnitsNumberList2)
         self.NI_ParameterList.append(self.StoichRNumberList)
@@ -730,7 +768,9 @@ class Superstructure():
         self.NI_ParameterList.append(self.HeatGeneratorList)
         self.NI_ParameterList.append(self.ElectricityGeneratorList)
         self.NI_ParameterList.append(self.ProductPoolList)
-        self.NI_ParameterList.append(self.CostUnitsList)
+        self.NI_ParameterList.append(self.CostUnitsList)     
+        self.NI_ParameterList.append(self.SourceList)
+        self.NI_ParameterList.append(self.SourceSet) 
         self.NI_ParameterList.append(self.ComponentsList)
         self.NI_ParameterList.append(self.ReactantsList)
         self.NI_ParameterList.append(self.ReactionsList)
@@ -744,18 +784,24 @@ class Superstructure():
         self.NI_ParameterList.append(self.IR)
         self.NI_ParameterList.append(self.CECPI)
         self.NI_ParameterList.append(self.delta_el)
-        self.NI_ParameterList.append(self.delta_cool)
+        self.NI_ParameterList.append(self.delta_cool)  
         self.NI_ParameterList.append(self.COP_HP)
         self.NI_ParameterList.append(self.HP_ACC_Factor)
         self.NI_ParameterList.append(self.HP_Costs)
-        
         self.NI_ParameterList.append(self.capacity_flow)
         self.NI_ParameterList.append(self.hourly_wage)
         self.NI_ParameterList.append(self.working_hours)
-        self.NI_ParameterList.append(self.process_steps)
+        self.NI_ParameterList.append(self.process_steps)    
+        self.NI_ParameterList.append(self.YieldSubSet)
+        
+        self.NI_ParameterList.append(self.distributor_list)
+        self.NI_ParameterList.append(self.distributor_subset)
+        self.NI_ParameterList.append(self.decimal_set)
+        
 
         
-    def fill_IP_List(self):
+        
+    def __fill_indexedParameterList(self):
         """
         
         Fills List with indexed Model-important parameters
@@ -767,6 +813,7 @@ class Superstructure():
         self.I_ParameterList.append(self.em_fac_ut)
         self.I_ParameterList.append(self.em_fac_comp)
         self.I_ParameterList.append(self.lhv)
+        self.I_ParameterList.append(self.mw)
         self.I_ParameterList.append(self.UnitNames)
 
         
@@ -776,7 +823,7 @@ class Superstructure():
     # ---------------
     
         
-    def add_NonIndexedParameters(self):
+    def __fill_nonIndexedParameters(self):
         """
         Description
         -----------
@@ -785,28 +832,28 @@ class Superstructure():
         for initialization of the AbstractModel
 
         """
-        self.fill_NIP_List() 
+        self.__fill_nonIndexedParameterList() 
         for i in self.NI_ParameterList:
             for j in i:
                 self.Data_File[None][j] = {None: i[j]}
-                
+     
                 
                 
     # Indexed Parameters / Dictionaries 
                 
-    def add_IndexedParameters(self):
+    def __fill_indexedParameters(self):
         """
         Description
         -----------
         
-        First calls fill_IP_List to fill indexed parameters from Superstructure
+        First calls __fill_indexedParameterList to fill indexed parameters from Superstructure
         Parameters, then fills Data_File with these Parameters.
 
         """
         
-        self.add_UnitNames()
+        self.__set_unitNames()
         
-        self.fill_IP_List()
+        self.__fill_indexedParameterList()
         x = self.I_ParameterList
         for i in x:
             for j,k in i.items():
@@ -815,12 +862,12 @@ class Superstructure():
                 except:
                     self.Data_File[None][j] = k
          
-                        
+                         
         
 
     # Parameters origin from Process Units
  
-    def add_ProcessParameters(self):
+    def __fill_processParameterList(self):
         """
         Description
         -----------
@@ -831,7 +878,7 @@ class Superstructure():
         """
         
         for z in self.UnitsList:
-            z.fill_ParameterList()
+            z.fill_parameterList()
             x = z.ParameterList
             for i in x:
                 for j,k in i.items():
@@ -842,14 +889,16 @@ class Superstructure():
    
 
 
-    def calculate_capacityflow(self):
+    def __calc_capacityFlow(self):
         cap = self.ProductLoad / self.H['H'] * 1000
         cap =cap**0.242
         self.capacity_flow['capacity_flow'] = cap
         
 
 
-    def prepare_CapexEquations(self):
+        
+
+    def __prepare_capexEquations(self):
         """
         Description
         ----------
@@ -862,20 +911,22 @@ class Superstructure():
 
         """
         
-        self.add_LinearisationIntervals()
+        self.add_linearisationIntervals()
         
-        self.fill_CapexLinearizationParameters() 
+        self.__calc_capexLinearizationParameters() 
       
-        self.fill_ACCFactorParameter()
+        self.__calc_accFactorParameter()
         
-        self.fill_TurnOverParameter()
+        self.__set_optionalFLH()
         
-        self.calculate_capacityflow()
+        self.__set_turnoverParameter()
+        
+        self.__calc_capacityFlow()
 
-
+        
 
     
-    def prepare_HeatBalances(self):
+    def __prepare_heatEquations(self):
         """
         Description
         -----------
@@ -883,25 +934,39 @@ class Superstructure():
         Heat intervals by calling:
             
             - add_ProcessTemperatures()
-            - add_TemperatureIntervals()
-            - add_deltaQ()
+            - __add_temperatureIntervals()
+            - __set_deltaQ()
             
 
 
         """
         
-        self.add_ProcessTemperatures()
+        self.__set_processTemperatures()
         
-        self.add_TemperatureIntervals()
+        self.__add_temperatureIntervals()
         
-        self.add_deltaQ()
+        self.__calc_heatPump()
+        
+        self.__set_deltaQ()
             
-        self.fill_beta_Parameters()
+        self.__fill_betaParameters()
     
 
+    # UNDER CONSTRUCTION --> Later input via predefined databases
+         
+    def load_data_from_txt(self,txt_name=None):
+        try:
+            f = open(txt_name,'r')
+            data=f.read()
+            f.close()
+            self.Data_File = eval(data)
+        except:
+            pass
+        
+    def add_DataBase(self, txt_file):
+        self.Database = txt_file
 
-                
-
+    # ------
 
 
     # Create Data File
@@ -920,13 +985,13 @@ class Superstructure():
         Afterwards prepares Data for Cost equation (Lin Intervals, Piece-wise
         linear costs...) by callingcalling:
             
-            - prepare_CapexEquations()
+            - __prepare_capexEquations()
             
         At last creates the Data File for the Superstructure Model by calling:
             
-            - add_NonIndexedParameters()
-            - add_IndexedParameters()
-            - add_ProcessParameters()
+            - __fill_nonIndexedParameters()
+            - __fill_indexedParameters()
+            - __fill_processParameterList()
             # 
         
 
@@ -936,18 +1001,26 @@ class Superstructure():
 
         """
 
-      
-        self.prepare_HeatBalances()
+        self.load_data_from_txt(self.Database)
         
-        self.prepare_CapexEquations()
-
-        self.add_NonIndexedParameters()
-
-        self.add_IndexedParameters()
-        
-        self.add_ProcessParameters()
-        
-        return self.Data_File
+        try:
+            self.__prepare_heatEquations()
+        except:
+            print('No heat balance prepared')
+        finally:
+            try:
+                self.__prepare_capexEquations()
+            except:
+                print('no Capex prepared')
+            finally:
+                try:
+                    self.__fill_nonIndexedParameters()
+                    self.__fill_indexedParameters()
+                    self.__fill_processParameterList()
+                except:
+                    print('Something wrong in parameter init')
+                finally:
+                    return self.Data_File
         
     
         

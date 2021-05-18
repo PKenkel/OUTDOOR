@@ -56,17 +56,22 @@ def wrapp_GeneralData(obj, df1):
             time_mode = 'Yearly'
         else:
             time_mode = 'Hourly'
+            
+    if not pd.isnull(df1.iloc[17,0]):
+        full_load_hours = df1.iloc[17,0]
+    else:
+        full_load_hours = None
 
-
-    obj.set_data_general(ProcessGroup, 
+    obj.set_generalData(ProcessGroup, 
                          LifeTime, 
                          emissions,
+                         full_load_hours,
                          maintenance_factor, 
                          cost_percentage, 
                          time_span, 
                          time_mode)
     
-
+    
 def wrapp_ReacionData(obj, df1, df2 = None):
     
     """
@@ -88,15 +93,19 @@ def wrapp_ReacionData(obj, df1, df2 = None):
     if obj.Type == "Yield-Reactor":
 
         dict1  = WF.read_type1(df1,0,1)
-        obj.add_xiFactors(dict1)  
+        obj.set_xiFactors(dict1)  
+        
+        list1 = WF.read_list_new(df1, 2, 0)
+        obj.set_inertComponents(list1)
+
         
     else:
 
         dict1 = WF.read_type2(df1,0,1,2)
-        obj.add_gammaFactors(dict1)
+        obj.set_gammaFactors(dict1)
         
         dict2 = WF.read_type2(df2,0,1,2)
-        obj.add_thetaFactors(dict2)
+        obj.set_thetaFactors(dict2)
         
 
 def wrapp_EnergyData(obj, df, df2, df3):
@@ -131,6 +140,7 @@ def wrapp_EnergyData(obj, df, df2, df3):
         ProcessElectricityReferenceFlow = df.iloc[1,1]
         
         ProcessElectricityReferenceComponentList = WF.read_list_new(df2, 1, 2)
+
     else:
         ProcessElectricityDemand = 0
         ProcessElectricityReferenceFlow = None
@@ -159,7 +169,7 @@ def wrapp_EnergyData(obj, df, df2, df3):
 
     wrapp_Temperatures(obj, df3, df)    
     
-    obj.set_data_energy(None,
+    obj.set_energyData(None,
                         None,
                         ProcessElectricityDemand,
                         ProcessHeatDemand,
@@ -207,29 +217,9 @@ def wrapp_Temperatures(obj, df1, df2):
         TIN2 = df1.iloc[9,0]
         TOUT2 = df1.iloc[10,0]       
         obj.set_Temperatures(TIN1, TOUT1, tau1, TIN2, TOUT2, tau2)
+   
  
-def wrapp_BalanceData(obj, df):
-    
-    """
-    Description 
-    -----------     
-    Define specific columns from the spreadsheet to set myu factors
-
-    Context 
-    ----------
-    function is called in Wrapp_ProcessUnits
-    
-
-    Parameters
-    ----------
-    df : Dataframe
-    
-    """
-    
-    dict1 = WF.read_type2 (df,0,1,2)
-    obj.add_myuFactors(dict1)     
- 
-def wrapp_AdditivesData(obj,df1, df2):
+def wrapp_AdditivesData(obj,df1, df2, df3):
     
     """
     Description 
@@ -248,59 +238,34 @@ def wrapp_AdditivesData(obj,df1, df2):
     
     """   
     
-    dict1 = {}
-    pylist1= {}
-    pylist2 = {}
-    pylist4 = []
-    
-    for x in range(len(df1)):
-        if  df1.iloc[x,2] == 'phi1':
-            pylist1[df1.iloc[x,0]] = df1.iloc[x,3]
+    req_concentration = None        
 
-        else:
-            if not pd.isnull(df1.iloc[x,0]):
-                pylist2[df1.iloc[x,0]] = df1.iloc[x,3]
+    lhs_comp_list = WF.read_list (df2,1)
     
-    dict1['phi1'] = pylist1 
-    dict1['phi2'] = pylist2 
-    
-             
-    obj.add_addflowFactors(dict1) 
-    
-    
-    if not pd.isnull(df1.iloc[0,1]): 
-        pylist4.append(df1.iloc[0,1])
-        
-        
-    if not  pd.isnull(df1.iloc[0,2]): 
-        pylist4.append(df1.iloc[0,2])
-    obj.set_upperlimits(pylist4)
+    rhs_comp_list = WF.read_list (df2,3)
 
-    
- 
-    pylist3 = WF.read_list (df2,1)
-    obj.add_kappa_1_lhs_conc(pylist3)
-    
-    
-    pylist3 = WF.read_list (df2,3)
-    obj.add_kappa_1_rhs_conc(pylist3)
-    
+    lhs_ref_flow = df2.iloc[0,0]
 
-    pylist3 = df2.iloc[0,0]
-    obj.add_kappa_2_lhs_conc(pylist3)
-    
-    
-    pylist3 = df2.iloc[0,2]
-    obj.add_kappa_2_rhs_conc(pylist3)
-    
-    
-    pylist3 = df2.iloc[0,4]
+    rhs_ref_flow = df2.iloc[0,2]
+
 
     if not pd.isnull(df2.iloc[0,4]):
-        obj.set_conc(pylist3)
+        req_concentration = df2.iloc[0,4]
+        
+    myu_dict = WF.read_type2 (df3,0,1,2)
+   
     
+    obj.set_flowData(req_concentration,
+                      rhs_ref_flow,
+                      lhs_ref_flow,
+                      rhs_comp_list,
+                      lhs_comp_list,
+                      myu_dict,                   
+                      )
     
-
+    sourceslist = WF.read_list(df1,0)
+    obj.set_possibleSources(sourceslist)
+    
 
 def wrapp_EconomicData(obj, df, df2):
     
@@ -339,7 +304,7 @@ def wrapp_EconomicData(obj, df, df2):
     
     # Set Economic Data in Process Unit Object
     
-    obj.set_data_economic(DirectCostFactor,
+    obj.set_economicData(DirectCostFactor,
                           IndirectCostFactor,
                           ReferenceCosts,
                           ReferenceFlow,
@@ -349,7 +314,9 @@ def wrapp_EconomicData(obj, df, df2):
                           ReferenceFlowComponentList
                           )
     
-def wrapp_ProductpoolData (obj, df): 
+     
+ 
+def wrapp_ProductpoolData(obj, series): 
     
     """ 
     Description 
@@ -366,21 +333,67 @@ def wrapp_ProductpoolData (obj, df):
     df : Dataframe
     
     """
-    obj.ProductName= df.iloc[0,1]
-    obj.set_ProductPrice(df.iloc[4,1])  
-    obj.ProductType = df.iloc[5,1] 
-    obj.set_Group(df.iloc[3,1])
+            
+         
+        
+    obj.ProductName= series[4]
+    obj.set_productPrice(series[8])
+    obj.ProductType = series[9] 
+    obj.set_group(series[7])
     
     EmissionCredits = 0
     
-    if not pd.isnull(df.iloc[6,1]):
-        EmissionCredits = df.iloc[6,1]
+    if not pd.isnull(series[10]):
+        EmissionCredits = series[10]
+       
+    minp = 0
+    maxp = 10000000
     
-    obj.set_EmissionCredits(EmissionCredits)
-     
+    if not pd.isnull(series[11]):
+        minp = series[11]
+    if not pd.isnull(series[12]):
+        maxp = series[12]
+        
+    obj.set_productionLimits(minp,maxp)
+    
+
+    obj.set_emissionCredits(EmissionCredits)    
  
     
- 
+def wrapp_SourceData(obj, series, df, counter):
     
+    dic = {}
+    
+    dic = WF.read_type1(df, 0 , counter)
+    
+    UpperLimit = 10000000
+    Costs = 0
+    EmissionFactor = 0
+    
+    if not pd.isnull(series[7]):
+        UpperLimit = series[7]
+
+    if not pd.isnull(series[8]):
+        EmissionFactor = series[8]
+        
+    
+    if not pd.isnull(series[6]):
+        Costs = series[6]
+        
+        
+    obj.set_sourceData(Costs,
+                        UpperLimit,
+                        EmissionFactor,
+                        Composition_dictionary  = dic
+                        )
+    
+def wrapp_DistributorData(obj, series, df, counter) :
+
+    
+        
+    
+    targets_list = WF.read_list_new(df, counter, Start=3, )
+    
+    obj.set_targets(targets_list)
     
 

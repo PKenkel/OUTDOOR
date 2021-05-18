@@ -8,6 +8,7 @@ Contents
    readme
    installation
    outdoorclasses/index
+   outdoorprogramme/index
    usage
    reference/index
    contributing
