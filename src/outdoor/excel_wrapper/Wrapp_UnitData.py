@@ -98,6 +98,7 @@ def wrapp_ReacionData(obj, df1, df2 = None):
         list1 = WF.read_list_new(df1, 2, 0)
         obj.set_inertComponents(list1)
 
+
         
     else:
 
@@ -107,6 +108,7 @@ def wrapp_ReacionData(obj, df1, df2 = None):
         dict2 = WF.read_type2(df2,0,1,2)
         obj.set_thetaFactors(dict2)
         
+
 
 def wrapp_EnergyData(obj, df, df2, df3):
     
@@ -138,7 +140,6 @@ def wrapp_EnergyData(obj, df, df2, df3):
     if not pd.isnull(df.iloc[0,1]):
         ProcessElectricityDemand = df.iloc[0,1] 
         ProcessElectricityReferenceFlow = df.iloc[1,1]
-        
         ProcessElectricityReferenceComponentList = WF.read_list_new(df2, 1, 2)
 
     else:
@@ -166,6 +167,15 @@ def wrapp_EnergyData(obj, df, df2, df3):
         ProcessHeat2ReferenceFlow = None
         ProcessHeat2ReferenceComponentList = []
         
+    if not pd.isnull(df.iloc[0,4]):
+        ChillingDemand = df.iloc[0,4]
+        ChillingReferenceFlow = df.iloc[1,4]
+        ChillingReferenceComponentList = WF.read_list_new(df2, 4, 2)
+    else:
+        ChillingDemand = 0
+        ChillingReferenceFlow = None
+        ChillingReferenceComponentList = []
+        
 
     wrapp_Temperatures(obj, df3, df)    
     
@@ -179,7 +189,10 @@ def wrapp_EnergyData(obj, df, df2, df3):
                         ProcessHeatReferenceFlow,
                         ProcessHeatReferenceComponentList,
                         ProcessHeat2ReferenceFlow,
-                        ProcessHeat2ReferenceComponentList
+                        ProcessHeat2ReferenceComponentList,
+                        ChillingDemand,
+                        ChillingReferenceFlow,
+                        ChillingReferenceComponentList
                         )
     
 def wrapp_Temperatures(obj, df1, df2): 

@@ -71,8 +71,8 @@ def displayHeatBalanceResults(Instance,Info):
     printFormatting('Energy provided by high temperature heat pumpt is:')
     Instance.ENERGY_DEMAND_HP_USE.pprint()
     
-    printFormatting('Used Electricity:')
-    Instance.ENERGY_DEMAND_EL.pprint()
+    # printFormatting('Used Electricity:')
+    # Instance.ENERGY_DEMAND_EL.pprint()
     
     print('')
     print('')

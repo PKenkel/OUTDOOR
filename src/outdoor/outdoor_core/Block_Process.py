@@ -525,6 +525,8 @@ class PhysicalProcess(Process):
     # ENERGY DATA SETTING
     # -------------------
 
+        
+        
     def set_energyData(self,
                         Temperature1 = None,
                         Temperature2 = None,
@@ -536,25 +538,31 @@ class PhysicalProcess(Process):
                         HeatReferenceFlow = None,
                         HeatReferenceComponentList = [],
                         Heat2ReferenceFlow = None,
-                        Heat2ReferenceComponentList = []
+                        Heat2ReferenceComponentList = [],
+                        ChillingDemand = None,
+                        ChillingReferenceFlow = None,
+                        ChillingReferenceComponentsList = []
                         ):
 
         
-        dic1 = {'Electricity': ElectricityDemand, 'Heat':  HeatDemand,
-                'Heat2': Heat2Demand}
+        dic1 = {'Electricity': ElectricityDemand, 
+                'Heat':  HeatDemand,
+                'Heat2': Heat2Demand,
+                'Chilling': ChillingDemand}
 
         dic2= {'Electricity': ElectricityReferenceComponentList,
-               'Heat': HeatReferenceComponentList,
-               'Heat2': Heat2ReferenceComponentList}
+                'Heat': HeatReferenceComponentList,
+                'Heat2': Heat2ReferenceComponentList,
+                'Chilling': ChillingReferenceComponentsList}
 
         dic3 = {'Electricity': ElectricityReferenceFlow,
                 'Heat': HeatReferenceFlow,
-                'Heat2': Heat2ReferenceFlow}
+                'Heat2': Heat2ReferenceFlow,
+                'Chilling': ChillingReferenceFlow}
         
         self.__set_tauFactors(dic1)
         self.__set_kappa_1_ut(dic2)
-        self.__set_kappa_2_ut(dic3)
-        
+        self.__set_kappa_2_ut(dic3)        
         
 
     def __set_tauFactors(self, tau_dic):
@@ -605,7 +613,6 @@ class PhysicalProcess(Process):
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 4                
             else:
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 3
-
 
 
     def set_Temperatures(self,

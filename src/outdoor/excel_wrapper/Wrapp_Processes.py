@@ -37,12 +37,12 @@ def wrapp_processUnits(dfi):
     dfi : Dataframe 
     
     """
-
+    
 
     # Set the Excel Ranges
     GeneralDataRange = WF.convert_total ('E', 10, 'E', 30)
-    EnergyDataRange = WF.convert_total('M', 10, 'P', 30)
-    KappaUtRange = WF.convert_total('M', 10, 'P', 30)
+    EnergyDataRange = WF.convert_total('M', 10, 'Q', 30)
+    KappaUtRange = WF.convert_total('M', 10, 'Q', 30)
     BalanceDataRange= WF.convert_total('S', 10, 'U', 30)
     EconomicDataRange= WF.convert_total('H', 11, 'I', 30)
     
@@ -116,7 +116,7 @@ def wrapp_productPoolUnits(dfi):
 
 def wrapp_sourceUnits(dfi):
     GeneralDataRange = WF.convert_total('E',6,'O',10)
-    CompositionDataRange  = WF.convert_total('D', 12, 'O', 23)
+    CompositionDataRange  = WF.convert_total('D', 12, 'O', 24)
     SourcesList = []
     
     

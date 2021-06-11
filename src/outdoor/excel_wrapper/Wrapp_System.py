@@ -46,7 +46,7 @@ def wrapp_SystemData(dfi):
     # Setting the Ranges
 
     GeneralDataRange = WF.convert_total('B', 4, 'C', 20)
-    UtitilylistRange = WF.convert_total('S', 5, 'U', 8)
+    UtilitylistRange = WF.convert_total('S', 5, 'U', 8)
     ComponentlistRange = WF.convert_total('E', 5, 'K', 30)
     TemperatureIntervals = WF.convert_total('B', 34, 'B', 39)
     ReactionsListRange = WF.convert_total('N', 5, 'N', 15)
@@ -60,7 +60,7 @@ def wrapp_SystemData(dfi):
     df1 = dfi.iloc[GeneralDataRange]
 
 
-    df2 = dfi.iloc[UtitilylistRange ] 
+    df2 = dfi.iloc[UtilitylistRange] 
 
     df3 = dfi.iloc[ComponentlistRange]
 
@@ -140,6 +140,7 @@ def wrapp_SystemData(dfi):
 
 
 
+
     # ADD OTHER PARAMETERS
     # ---------------------
     
@@ -163,7 +164,9 @@ def wrapp_SystemData(dfi):
   
     obj.set_heatUtilities(liste1, liste2)
     
-    
+    dict3 = WF.read_type1(df2,0,1)
+    obj.set_deltaUt(dict3)
+
     
     
     return obj

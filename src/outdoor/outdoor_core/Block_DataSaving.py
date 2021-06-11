@@ -132,7 +132,7 @@ def write_EnergyBalanceResults(Instance, Resultspath, ModelInformation):
     
     heat_demand_tot = Instance.ENERGY_DEMAND_HEAT_DEFI.extract_values()
     hp_use =  value(Instance.ENERGY_DEMAND_HP_USE)
-    el_demand = Instance.ENERGY_DEMAND_EL.extract_values()
+    # el_demand = Instance.ENERGY_DEMAND['Electricity'].extract_values()
     heat_exchange = searchEnergyExchange(Instance, Superstructure)
     
     try:
@@ -177,9 +177,9 @@ def write_EnergyBalanceResults(Instance, Resultspath, ModelInformation):
         writeFormatting('The produced heat used is',nf)
         nf.write(f' {heat_prod_use} \n')
 
-        writeFormatting('The electricity demand for different untis is ',nf)
-        for k in el_demand.keys():
-            nf.write(f'{k} : {el_demand[k]} \n')
+        # writeFormatting('The electricity demand for different untis is ',nf)
+        # for k in el_demand.keys():
+        #     nf.write(f'{k} : {el_demand[k]} \n')
             
             
         nf.write('------------- \n')     
@@ -218,6 +218,7 @@ def save_dict_to_file(path_name, ModelInformation):
     f = open(path_name,'w')
     f.write(str(data))
     f.close()
+
 
 def load_dict_from_file(path_name):
     f = open(path_name,'r')

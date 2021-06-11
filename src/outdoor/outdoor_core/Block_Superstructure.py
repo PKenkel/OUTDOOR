@@ -35,11 +35,22 @@ class Superstructure():
         
         self.YieldSubSet = {'YC': []}
         
+        self.distributor_subset =  {'U_DIST_SUB': []}
+        self.distributor_list = {'U_DIST': []}
+        self.decimal_set = {'DC_SET': []}
         
+
         
+
         # Heat Balance
         self.HeatIntervalList =  {'HI': []}
         self.HeatUtilitiesList = {'H_UT': []}
+        
+        
+        ##### 
+        self.OtherUtilitiesList = {'U_UT': []}
+         
+         #####
 
         # Others
         self.ComponentsList = {'I': []}
@@ -125,7 +136,9 @@ class Superstructure():
         self.heat_utilities = {}
         
         
-        
+        ###
+        ###
+        self.delta_ut = {'delta_ut': {}}
    
 
 
@@ -345,13 +358,21 @@ class Superstructure():
                 for j in i:
                     if j not in self.UtilitiesList['UT']:
                         self.UtilitiesList['UT'].append(j)
-                        if j == 'Heat' or j =='Heat2':
+                        if j == 'Heat':
+                            self.HeatUtilitiesList['H_UT'].append('Heat2')
                             self.HeatUtilitiesList['H_UT'].append(j)
+                            self.UtilitiesList['UT'].append('Heat2')
+                        else:
+                            self.OtherUtilitiesList['U_UT'].append(j)
             else:
                 if i not in self.UtilitiesList['UT']:
                     self.UtilitiesList['UT'].append(i)
-                    if i == 'Heat' or i =='Heat2':
+                    if i == 'Heat':
                         self.HeatUtilitiesList['H_UT'].append(i)
+                        self.HeatUtilitiesList['H_UT'].append('Heat2')
+                        self.UtilitiesList['UT'].append('Heat2')
+                    else:
+                        self.OtherUtilitiesList['U_UT'].append(i)
     
     
     
@@ -448,7 +469,9 @@ class Superstructure():
     def set_deltaEL(self, delta_el_value):
         self.delta_el['delta_el'] = delta_el_value      
         
-        
+    def set_deltaUt(self, delta_ut_dic):
+        for j,k in delta_ut_dic.items():
+            self.delta_ut['delta_ut'][j] = k 
         
     def set_deltaCool(self, delta_cool_value):
         self.delta_cool['delta_cool'] = delta_cool_value
@@ -463,7 +486,7 @@ class Superstructure():
            
     def set_utilityEmissionsFactor(self, em_fac_ut_dic):
         for i in em_fac_ut_dic:
-            self.em_fac_ut['em_fac_ut'][i]  =em_fac_ut_dic[i]
+            self.em_fac_ut['em_fac_ut'][i]  = em_fac_ut_dic[i]
             
             
             
@@ -793,12 +816,13 @@ class Superstructure():
         self.NI_ParameterList.append(self.working_hours)
         self.NI_ParameterList.append(self.process_steps)    
         self.NI_ParameterList.append(self.YieldSubSet)
-        
+
         self.NI_ParameterList.append(self.distributor_list)
         self.NI_ParameterList.append(self.distributor_subset)
         self.NI_ParameterList.append(self.decimal_set)
         
-
+        self.NI_ParameterList.append(self.OtherUtilitiesList)
+        
         
         
     def __fill_indexedParameterList(self):
@@ -815,6 +839,9 @@ class Superstructure():
         self.I_ParameterList.append(self.lhv)
         self.I_ParameterList.append(self.mw)
         self.I_ParameterList.append(self.UnitNames)
+        
+        self.I_ParameterList.append(self.delta_ut)
+        
 
         
     

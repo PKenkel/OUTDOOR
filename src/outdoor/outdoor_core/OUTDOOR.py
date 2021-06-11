@@ -78,5 +78,4 @@ def solve_OptimizationProblem(Superstructure, SolverName, SolverInterface = 'loc
     return (ModelInstance, ModelInformation)
 
 
-    
 
