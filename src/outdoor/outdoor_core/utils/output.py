@@ -1,8 +1,8 @@
 from pyomo.environ import *
 
-from .Block_Processing import searchTechnologies
-from .Block_Processing import searchEnergyExchange
-from .Block_Processing import printFormatting
+from .post_processor  import searchTechnologies
+from .post_processor  import searchEnergyExchange
+from .post_processor  import printFormatting
 
 
 

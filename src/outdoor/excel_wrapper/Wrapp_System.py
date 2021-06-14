@@ -11,9 +11,8 @@ import sys
 
 import pandas as pd
 
-from ..outdoor_core.Block_Superstructure import Superstructure
-import outdoor.excel_wrapper.Wrapping_Functions  as WF
-
+from ..outdoor_core.superstructure_sytem.superstructure import Superstructure
+from . import wrapping_functions as WF
 
 
 

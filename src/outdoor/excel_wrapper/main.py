@@ -9,13 +9,13 @@ Created on Thu Apr  2 11:25:35 2020
 
 import pandas as pd
 
-from .Wrapp_Processes import wrapp_processUnits
-from .Wrapp_Processes import wrapp_productPoolUnits
-from .Wrapp_Processes import wrapp_sourceUnits
-from .Wrapp_Processes import wrapp_distributors
+from .wrapp_processes import wrapp_processUnits
+from .wrapp_processes import wrapp_productPoolUnits
+from .wrapp_processes import wrapp_sourceUnits
+from .wrapp_processes import wrapp_distributors
 
 
-from .Wrapp_System import wrapp_SystemData
+from .wrapp_system import wrapp_SystemData
 
 # function for Pandafunction to read an excelfile:
 

@@ -1,6 +1,6 @@
 
 import copy
-from .Block_Capex import capex_calculator
+from ..utils.linearizer import capex_calculator
 
 
 class Superstructure():  

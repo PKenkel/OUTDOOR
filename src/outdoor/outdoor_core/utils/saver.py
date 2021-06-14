@@ -4,9 +4,9 @@ import datetime
 import os
 
 
-from .Block_Processing import searchTechnologies
-from .Block_Processing import searchEnergyExchange
-from .Block_Processing import writeFormatting
+from .post_processor import searchTechnologies
+from .post_processor  import searchEnergyExchange
+from .post_processor import writeFormatting
 
 
 def write_Case(ModelInformation, Resultspath, Inputpath, case_time):    

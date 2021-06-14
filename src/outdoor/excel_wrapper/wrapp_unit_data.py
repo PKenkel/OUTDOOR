@@ -7,7 +7,7 @@ Created on Thu Mar 26 10:52:43 2020
 
 
 import pandas as pd
-import outdoor.excel_wrapper.Wrapping_Functions  as WF
+from . import wrapping_functions as WF
 
 
 def wrapp_GeneralData(obj, df1):   
