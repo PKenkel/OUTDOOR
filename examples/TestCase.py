@@ -21,7 +21,7 @@ Data_Path =os.path.dirname(a) + '/outdoor_examples/data/'
 
 ts = outdoor.get_DataFromExcel(Excel_Path)
 
-(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'gurobi', 'local')
+(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'single', 'gurobi', 'local')
 
 
 outdoor.Save_CaseStudy(Opt, Info, Results_Path)
@@ -32,11 +32,3 @@ outdoor.displayBasicResults(Opt)
 outdoor.save_dict_to_file(Data_Path, Info)
 
 
-# a=ts.UnitsList[6]
-
-# b=ts.UnitsList[7]
-
-
-# print(ts.decimal_set)
-# Opt.DC_SET.pprint()
-# Opt.U_DIST_SUB.pprint()
