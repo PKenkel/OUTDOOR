@@ -7,7 +7,7 @@ import os
 from .post_processor import searchTechnologies
 from .post_processor  import searchEnergyExchange
 from .post_processor import writeFormatting
-
+import cloudpickle as pic
 
 def write_Case(ModelInformation, Resultspath, Inputpath, case_time):    
     
@@ -244,5 +244,15 @@ def Save_CaseStudy(Instance, ModelInformation, Resultspath):
     write_EnergyBalanceResults(Instance, Resultspath, ModelInformation)
 
   
+    
+
+def save_instanceAsFile(Instance, path_name):
+    case_time = datetime.datetime.now()   
+    case_time = str(case_time)
+    path_name = path_name + case_time + '.pkl'
+    
+    with open(path_name, 'wb') as output:
+        pic.dump(Instance, output)
+        
     
 

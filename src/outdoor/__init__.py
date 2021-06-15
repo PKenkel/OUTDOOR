@@ -4,7 +4,7 @@ from .outdoor_core.outdoor_main import solve_OptimizationProblem
 
 from .outdoor_core.utils.output import displayBasicResults
 from .outdoor_core.utils.output import displayHeatBalanceResults
-from .outdoor_core.utils.saver import Save_CaseStudy, save_dict_to_file, load_dict_from_file
+from .outdoor_core.utils.saver import Save_CaseStudy, save_dict_to_file, load_dict_from_file, save_instanceAsFile
 
 from .excel_wrapper.main import get_DataFromExcel
 
