@@ -149,8 +149,6 @@ class SuperstructureModel(AbstractModel):
         
         # Flow parameters (Split factor, concentrations, full load hours)
         self.myu = Param(self.U, self.UU, self.I, initialize=0)
-        self.phi1 = Param(self.U, self.I, initialize=0)
-        self.phi2 = Param(self.U, self.I, initialize=0)
         self.conc = Param(self.U, initialize=0)
         self.flh = Param(self.U)
         self.MinProduction = Param(self.U_PP, initialize = 0)

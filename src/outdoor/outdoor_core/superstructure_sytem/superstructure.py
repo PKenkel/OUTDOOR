@@ -106,7 +106,10 @@ class Superstructure():
         
         self.linearizationDetail = 'average'
 
+        self.VALID_SET = {'electricity_price', 'heat_price', 'capital_costs', 
+                          'heating_demand', 'component_concentration'}
         
+        self.SensiParameters = []
         
         
         # Indexed Attributes
@@ -1048,6 +1051,23 @@ class Superstructure():
                     print('Something wrong in parameter init')
                 finally:
                     return self.Data_File
-        
+                
     
+    
+        
+        
+        
+    def add_sensi_parameters(self, parameter_name = None, min_value = 0, max_value = 0, steps = 0, index = None):
+
+        if parameter_name in self.VALID_SET:
+            if index is None:
+                self.SensiParameters.append((parameter_name,min_value,max_value,steps))
+            else:
+                self.SensiParameters.append((parameter_name,min_value,max_value,steps,index))
+        else:
+            raise ValueError('Parameter Name is not valid for sensitivity analyis')
+
+        
+        
+        
         

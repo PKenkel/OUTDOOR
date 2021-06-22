@@ -1,6 +1,6 @@
 __version__ = '0.0.0'
 
-from .outdoor_core.outdoor_main import solve_OptimizationProblem
+from .outdoor_core.main.outdoor_main import solve_OptimizationProblem
 
 from .outdoor_core.utils.output import displayBasicResults
 from .outdoor_core.utils.output import displayHeatBalanceResults
