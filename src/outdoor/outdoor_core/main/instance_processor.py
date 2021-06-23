@@ -9,7 +9,11 @@ Created on Tue Jun 15 11:54:16 2021
 import time
 from pyomo.environ import *
 
-from .helpers.utility_cost_changer import change_utility_costs
+from .variation_analysis_tools.utility_cost_changer import change_utility_costs
+from .variation_analysis_tools.capital_cost_changer import change_capital_costs
+from .variation_analysis_tools.concentration_demand_changer import change_concentration_demand
+from .variation_analysis_tools.heat_demand_changer import change_heat_demand
+
 
 
 
@@ -47,26 +51,26 @@ def create_initialInstance(S_Model, Model_Data):
 
 
 
-
-# TODO: 
-    # Change for all different parameter types
-
-# def change_singleInstance(Instance, parameter, value):
-
-
-#     if parameter == 'electricity_price':
-#         Instance.delta_ut['electricity'] = value
-#     return Instance
-
-
 def error_func(*args):
     raise ValueError('Parameter not in Variation Parameter set')
     
     
 
-def change_Instance(Instance,parameter,value,index=None):
-    {'electricity_price': change_utility_costs,
-     'chilling_price': change_utility_costs}.get(parameter, error_func)(Instance,parameter,value,index)
+def change_Instance(Instance,parameter,value,index=None, superstructure=None):
+    function_dictionary = {'electricity_price': change_utility_costs,
+                           'chilling_price': change_utility_costs,
+                           'capital_costs': change_capital_costs,
+                           'component_concentration': change_concentration_demand,
+                           'heating_demand': change_heat_demand}
+    
+    
+    
+    function_dictionary.get(parameter, error_func)(Instance,
+                                                   parameter,
+                                                   value,
+                                                   index,
+                                                   superstructure)
+    
     
     return Instance
 

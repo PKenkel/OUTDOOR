@@ -1,42 +1,27 @@
 from pyomo.environ import *
-import datetime
-
-import os
-
 
 from .post_processor import searchTechnologies
 from .post_processor  import searchEnergyExchange
 from .post_processor import writeFormatting
-import cloudpickle as pic
 
 
-def Save_CaseStudy(Instance, ModelInformation, Resultspath):
-    case_time = datetime.datetime.now()   
-    case_time = str(case_time)
-    
-    if not  os.path.exists(Resultspath):
-        os.makedirs(Resultspath)
-        
-    Resultspath = Resultspath + case_time + '.txt'
-    Inputpath = Resultspath + case_time + 'inputdata.txt'
-    
-    
-    write_Case(ModelInformation, Resultspath, Inputpath, case_time)
-    write_BasicResults(Instance, Resultspath)
-    write_EnergyBalanceResults(Instance, Resultspath, ModelInformation)
 
-
-def write_Case(ModelInformation, Resultspath, Inputpath, case_time):    
+def write_singleCase(ResultsFile, 
+                     ModelInformation, 
+                     Resultspath, 
+                     Inputpath,
+                     case_time):
     
     run_time = ModelInformation['Run Time']
     solver_name = ModelInformation['Solver']
     data_file = ModelInformation['Data File'][None]
     case_identifier = ModelInformation['Superstructure'].ModelName
     
-
     
-    try: 
-        
+    # WRITE THE BASE DATA OF THE SOLVED MODEL
+    # CASE NAME; TIME; RUNTIME; SOLVER NAME USED
+    
+    try:   
         nf = open(Resultspath, encoding='utf-8', mode='w')  
         nf.write('------------- \n')
         nf.write('------------- \n')
@@ -45,21 +30,22 @@ def write_Case(ModelInformation, Resultspath, Inputpath, case_time):
         nf.write(f'Identifier: {case_identifier} \n')
         nf.write('------------- \n')
         nf.write(f'Number: {case_time} \n')
-        nf.write('------------- \n \n')
-        nf.write(f'Runtime: {run_time} sec. \n')
-        nf.write('------------- \n \n')
-        nf.write(f'Solver Name: {solver_name} \n')
-        nf.write('------------- \n \n')
-        nf.write('END OF CASE STUDY \n')
         nf.write('------------- \n')
-        nf.write('------------- \n \n')
-    except IOError:
-        print('Es gab einen Fehler beim Schreiben der Model Informations')
+        nf.write(f'Runtime: {run_time} sec. \n')
+        nf.write('------------- \n')
+        nf.write(f'Solver Name: {solver_name} \n')
+        nf.write('------------- \n')
+        nf.write('------------- \n \n \n')
+        nf.close()
         
-    
+    except IOError:
+        print('There was an error in writing the results file')
+        
+    # WrITE THE INPUT FILE AS TXT FILE TO HAVE A WAY TO DOUBLE CHECK THE RAW DAtA
+
     try:
         nf2 = open(Inputpath, encoding='utf-8', mode='w')
-        nf.write('------------- \n')
+        nf2.write('------------- \n')
         nf2.write('CASE STUDY \n')
         nf2.write('------------- \n')
         nf2.write('------------- \n')
@@ -69,14 +55,13 @@ def write_Case(ModelInformation, Resultspath, Inputpath, case_time):
         for k in data_file.keys():
             nf2.write(f'{k}: {data_file[k]} \n \n')
         nf2.write('------------- \n \n')
-        nf2.write('END OF CASE STUDY \n')
-        nf2.write('------------- \n')
-        nf2.write('------------- \n \n ')
+        nf2.write('-------------')
     except IOError:
-        print('Es gab einen Fehler beim Schreiben der InputDaten')
+        print('There was an error in writing the input file')
+        
 
-
-
+    write_BasicResults(ResultsFile, Resultspath)
+    write_EnergyBalanceResults(ResultsFile, Resultspath, ModelInformation)
 
 
 
@@ -89,6 +74,7 @@ def write_BasicResults(Instance, Resultspath):
     opex = value(Instance.OPEX)/1000000
     profits = value(Instance.PROFITS_TOT)/1000000
     npc = value(Instance.TAC)/ value(Instance.MainProductFlow)
+    print(npc)
     npe = value(Instance.GWP_TOT) / value(Instance.MainProductFlow)
     
     
@@ -149,7 +135,7 @@ def write_EnergyBalanceResults(Instance, Resultspath, ModelInformation):
     
     heat_demand_tot = Instance.ENERGY_DEMAND_HEAT_DEFI.extract_values()
     hp_use =  value(Instance.ENERGY_DEMAND_HP_USE)
-    # el_demand = Instance.ENERGY_DEMAND['Electricity'].extract_values()
+    el_demand = Instance.ENERGY_DEMAND.extract_values()
     heat_exchange = searchEnergyExchange(Instance, Superstructure)
     
     try:
@@ -194,9 +180,10 @@ def write_EnergyBalanceResults(Instance, Resultspath, ModelInformation):
         writeFormatting('The produced heat used is',nf)
         nf.write(f' {heat_prod_use} \n')
 
-        # writeFormatting('The electricity demand for different untis is ',nf)
-        # for k in el_demand.keys():
-        #     nf.write(f'{k} : {el_demand[k]} \n')
+        writeFormatting('The electricity demand for different untis is ',nf)
+        for k,i in el_demand.items():
+            if 'Electricity' in k:
+                nf.write(f'{k[0]} : {i} \n')
             
             
         nf.write('------------- \n')     
@@ -221,42 +208,5 @@ def write_EnergyBalanceResults(Instance, Resultspath, ModelInformation):
         print('Es gab einen Fehler beim schreiben der Energy Balance Results')
     
 
-
-def save_dict_to_file(path_name, ModelInformation):
-    case_time = datetime.datetime.now()   
-    case_time = str(case_time)
-    
-    if not  os.path.exists(path_name):
-        os.makedirs(path_name)
-        
-    path_name = path_name + case_time + '.txt'
-        
-    data = ModelInformation['Data File']
-    f = open(path_name,'w')
-    f.write(str(data))
-    f.close()
-
-
-def load_dict_from_file(path_name):
-    f = open(path_name,'r')
-    data=f.read()
-    f.close()
-    return eval(data)
-
-
-
-
-
-  
-    
-
-def save_instanceAsFile(Instance, path_name):
-    case_time = datetime.datetime.now()   
-    case_time = str(case_time)
-    path_name = path_name + case_time + '.pkl'
-    
-    with open(path_name, 'wb') as output:
-        pic.dump(Instance, output)
-        
     
 

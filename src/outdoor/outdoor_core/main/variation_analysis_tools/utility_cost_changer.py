@@ -10,7 +10,7 @@ Created on Tue Jun 15 11:54:16 2021
 
 
 
-def change_utility_costs(Instance, Parameter, Value, Index = None):
+def change_utility_costs(Instance, Parameter, Value, *args):
     if Parameter =='electricity_price':
         Instance.delta_ut['Electricity'] = Value
     elif Parameter =='chilling_price':

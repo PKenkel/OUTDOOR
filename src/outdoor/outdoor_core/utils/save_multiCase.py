@@ -9,24 +9,7 @@ from .post_processor  import searchEnergyExchange
 from .post_processor import writeFormatting
 import cloudpickle as pic
 
-
-def Save_CaseStudy(Instance, ModelInformation, Resultspath):
-    case_time = datetime.datetime.now()   
-    case_time = str(case_time)
-    
-    if not  os.path.exists(Resultspath):
-        os.makedirs(Resultspath)
-        
-    Resultspath = Resultspath + case_time + '.txt'
-    Inputpath = Resultspath + case_time + 'inputdata.txt'
-    
-    
-    write_Case(ModelInformation, Resultspath, Inputpath, case_time)
-    write_BasicResults(Instance, Resultspath)
-    write_EnergyBalanceResults(Instance, Resultspath, ModelInformation)
-
-
-def write_Case(ModelInformation, Resultspath, Inputpath, case_time):    
+def write_multiCase(ModelInformation, Resultspath, Inputpath, case_time):    
     
     run_time = ModelInformation['Run Time']
     solver_name = ModelInformation['Solver']
@@ -245,7 +228,20 @@ def load_dict_from_file(path_name):
 
 
 
-
+def Save_CaseStudy(Instance, ModelInformation, Resultspath):
+    case_time = datetime.datetime.now()   
+    case_time = str(case_time)
+    
+    if not  os.path.exists(Resultspath):
+        os.makedirs(Resultspath)
+        
+    Resultspath = Resultspath + case_time + '.txt'
+    Inputpath = Resultspath + case_time + 'inputdata.txt'
+    
+    
+    write_Case(ModelInformation, Resultspath, Inputpath, case_time)
+    write_BasicResults(Instance, Resultspath)
+    write_EnergyBalanceResults(Instance, Resultspath, ModelInformation)
 
   
     

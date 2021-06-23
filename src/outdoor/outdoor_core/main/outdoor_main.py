@@ -6,8 +6,7 @@ from .optimizers import solve_singleRun
 from .optimizers import solve_multiRun
 
 from .instance_processor import create_initialInstance
-# from .instance_processor import prepare_mutableParameters
-# from .instance_processor import calculate_sensitiveParameters
+
 from ..utils.var_parameters import calculate_sensitiveParameters
 from ..utils.var_parameters import prepare_mutableParameters
 
@@ -114,7 +113,8 @@ def solve_OptimizationProblem(Superstructure,
         results = solve_multiRun(ModelInstance,
                                  SolverName,
                                  SolverInterface,
-                                 variations_parameters)
+                                 variations_parameters,
+                                 Superstructure)
         
         end_time = time.time()
         run_time = end_time - start_time
@@ -132,9 +132,10 @@ def solve_OptimizationProblem(Superstructure,
         ModelInformation['Run Time'] = total_time
         ModelInformation['Data File'] = Model_Data
         ModelInformation['Superstructure']  = Superstructure
+        ModelInformation['VariationParameters'] = variations_parameters 
         
         
-        return (results,ModelInformation,variations_parameters)
+        return (results,ModelInformation)
     else:
         pass
     

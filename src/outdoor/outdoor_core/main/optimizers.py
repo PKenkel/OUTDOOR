@@ -48,36 +48,13 @@ def solve_singleRun(ModelInstance,
 
 
 
-
-
-# TODO:
-    # durch die varations parameter gehen und alle bearbeiten
-    
-
-# def solve_multiRun(ModelInstance,
-#                    SolverName,
-#                    SolverInterface, 
-#                    variations_parameter):
-#     results = {}
-    
-#     for i in variations_parameter.keys():
-        
-#         if i == 'electricity_price':
-#             for j in variations_parameter[i]:
-#                 ModelInstance = copy.deepcopy(ModelInstance)
-#                 ModelInstance.delta_ut['Electricity'] = j
-#                 results[i,j] = solve_singleRun(ModelInstance,
-#                                                SolverName,
-#                                                SolverInterface)
-                
-#     return results
-
-
 def solve_multiRun(ModelInstance,
                    SolverName,
                    SolverInterface,
-                   variations_parameter):
+                   variations_parameter,
+                   Superstructure):
     
+    InitialModel = copy.deepcopy(ModelInstance)
     results ={}
     
     
@@ -93,10 +70,15 @@ def solve_multiRun(ModelInstance,
                     ModelInstance = change_Instance(ModelInstance,
                                                     i, 
                                                     l,
-                                                    k)
-                    results[i,l] = solve_singleRun(ModelInstance,
+                                                    j,
+                                                    Superstructure)
+                    
+                    results[i,l,j] = solve_singleRun(ModelInstance,
                                                    SolverName,
                                                    SolverInterface)
+                    
+                ModelInstance = copy.deepcopy(InitialModel)
+
         else:
             value_list = k
             for l in value_list:
@@ -110,6 +92,8 @@ def solve_multiRun(ModelInstance,
                 results[i,l] = solve_singleRun(ModelInstance,
                                                SolverName,
                                                SolverInterface)
+                
+            ModelInstance = copy.deepcopy(InitialModel)
     
     return results
 

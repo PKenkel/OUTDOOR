@@ -20,8 +20,12 @@ def calculate_sensitiveParameters(Superstructure):
         if len(i) == 4:
             value_dic[i[0]] = calc_points(i)
         elif len(i) == 5:
-            value_dic[i[0]] = {}
-            value_dic[i[0]][i[4]] = calc_points(i)
+            try: 
+                value_dic[i[0]][i[4]] = calc_points(i)
+            except:      
+                value_dic[i[0]] = {}
+                value_dic[i[0]][i[4]] = calc_points(i)
+            
             
     return value_dic
 
