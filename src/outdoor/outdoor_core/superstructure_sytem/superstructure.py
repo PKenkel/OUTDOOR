@@ -14,7 +14,7 @@ class Superstructure():
         # Lists
         # -----
         
-        self.Objective_dic = {'NPE' : 'NPE', 'NPC': 'NPC'}
+        self.Objective_dic = {'NPE' : 'NPE', 'NPC': 'NPC', 'FWD': 'FWD'}
         self.Data_File = {None: {}}
         self.ModelName = ModelName
         
@@ -88,14 +88,13 @@ class Superstructure():
         
         self.IR = {'IR': 0}
         self.H = {'H': 0}
-        self.K_O = {'K_OM' : 2.06875}
+        
+        
+        
         self.CECPI = {'CECPI': 0}
         
-        self.hourly_wage = {'hourly_wage': 41}
-        self.working_hours = {'working_hours': 8322}
-        self.capacity_flow = {'capacity_flow': None}
-        self.process_steps = {'process_steps': 4}
-        
+        self.K_OM = 0
+                                
         self.HP_Costs = {'HP_Costs': 0}
         self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
         self.COP_HP = {'COP_HP': 3}
@@ -107,7 +106,8 @@ class Superstructure():
         self.linearizationDetail = 'average'
 
         self.VALID_SET = {'electricity_price', 'heat_price', 'capital_costs', 
-                          'heating_demand', 'component_concentration'}
+                          'heating_demand', 'component_concentration', 
+                          'source_costs'}
         
         self.SensiParameters = []
         
@@ -132,8 +132,10 @@ class Superstructure():
         
         self.lhv = {'LHV':{}}
         self.mw = {'MW': {}}
+        self.cp = {'CP': {}}
         self.em_fac_ut = {'em_fac_ut': {}}
         self.em_fac_comp = {'em_fac_comp': {}}
+        self.fw_fac_ut = {'fw_fac_ut': {}}
         self.alpha = dict()
         
         self.heat_utilities = {}
@@ -161,9 +163,11 @@ class Superstructure():
         
     def set_interestRate(self, IR):
         self.IR['IR'] = IR
+                
+    def set_omFactor(self,OM):
+        self.K_OM = OM
         
-    def set_omFactor(self, OM):
-        self.K_O['K_OM'] = OM
+        
         
     def set_cecpi(self, year):
         """
@@ -235,14 +239,13 @@ class Superstructure():
             
             fine     :  300 
             average  :  20 
-            rough    :  10  
+            rough    :  10
+            real     : New Approach
             
         """
         self.linearizationDetail = Detail
  
 
-    def set_numberProcessSteps(self, Number):
-        self.process_steps['process_steps']  = Number
 
         
 
@@ -403,14 +406,22 @@ class Superstructure():
         for i,j in mw_dic.items():
             self.mw['MW'][i] = j 
     
+    
+    def set_cp(self,cp_dic):
+        for i,j in cp_dic.items():
+            self.cp['CP'][i] = j 
+            
+            
 
     def add_linearisationIntervals(self):
         if self.linearizationDetail == "rough":
             n = 10
         elif self.linearizationDetail == "fine":
             n = 301
-        else:        
+        elif self.linearizationDetail == 'average':        
             n = 20
+        else:
+            n = 13
             
         for i in range(1,n):
             self.LinPointsList['J'].append(i)
@@ -491,6 +502,9 @@ class Superstructure():
         for i in em_fac_ut_dic:
             self.em_fac_ut['em_fac_ut'][i]  = em_fac_ut_dic[i]
             
+    def set_utilityFreshWaterFator(self, fw_fac_ut_dic):
+        for i in fw_fac_ut_dic:
+            self.fw_fac_ut['fw_fac_ut'][i] = fw_fac_ut_dic[i]
             
             
     def set_componentEmissionsFactor(self, em_fac_comp_dic):
@@ -767,7 +781,15 @@ class Superstructure():
     def __set_optionalFLH(self):
         for x in self.UnitsList:
             if x.FLH['flh'][x.Number] is None:
-                x.FLH['flh'][x.Number] = self.H['H']     
+                x.FLH['flh'][x.Number] = self.H['H']   
+ 
+                
+    def __set_optionalKOM(self):
+        for x in self.UnitsList:
+            if x.Number in self.CostUnitsList['U_C']:
+                if x.K_OM['K_OM'][x.Number] is None:
+                    x.K_OM['K_OM'][x.Number] = self.K_OM
+                
         
 
 #------------------------------------------------------------------------------
@@ -806,18 +828,13 @@ class Superstructure():
         self.NI_ParameterList.append(self.LinPointsList)
         self.NI_ParameterList.append(self.LinIntervalsList)
         self.NI_ParameterList.append(self.H)
-        self.NI_ParameterList.append(self.K_O)
         self.NI_ParameterList.append(self.IR)
         self.NI_ParameterList.append(self.CECPI)
         self.NI_ParameterList.append(self.delta_el)
         self.NI_ParameterList.append(self.delta_cool)  
         self.NI_ParameterList.append(self.COP_HP)
         self.NI_ParameterList.append(self.HP_ACC_Factor)
-        self.NI_ParameterList.append(self.HP_Costs)
-        self.NI_ParameterList.append(self.capacity_flow)
-        self.NI_ParameterList.append(self.hourly_wage)
-        self.NI_ParameterList.append(self.working_hours)
-        self.NI_ParameterList.append(self.process_steps)    
+        self.NI_ParameterList.append(self.HP_Costs)   
         self.NI_ParameterList.append(self.YieldSubSet)
 
         self.NI_ParameterList.append(self.distributor_list)
@@ -839,10 +856,11 @@ class Superstructure():
         self.I_ParameterList.append(self.delta_rm)
         self.I_ParameterList.append(self.em_fac_ut)
         self.I_ParameterList.append(self.em_fac_comp)
+        self.I_ParameterList.append(self.fw_fac_ut)
         self.I_ParameterList.append(self.lhv)
         self.I_ParameterList.append(self.mw)
         self.I_ParameterList.append(self.UnitNames)
-        
+        self.I_ParameterList.append(self.cp)
         self.I_ParameterList.append(self.delta_ut)
         
 
@@ -917,12 +935,6 @@ class Superstructure():
                     except:
                         self.Data_File[None][j] = copy.copy(k)        
    
-
-
-    def __calc_capacityFlow(self):
-        cap = self.ProductLoad / self.H['H'] * 1000
-        cap =cap**0.242
-        self.capacity_flow['capacity_flow'] = cap
         
 
 
@@ -940,18 +952,19 @@ class Superstructure():
 
 
         """
-        
+
         self.add_linearisationIntervals()
-        
+ 
         self.__calc_capexLinearizationParameters() 
-      
+
         self.__calc_accFactorParameter()
         
         self.__set_optionalFLH()
         
+        self.__set_optionalKOM()
+        
         self.__set_turnoverParameter()
         
-        self.__calc_capacityFlow()
 
         
 
@@ -1068,6 +1081,11 @@ class Superstructure():
             raise ValueError('Parameter Name is not valid for sensitivity analyis')
 
         
+
+    def set_multiObjectives(self, Objectives_dictionary):
+        self.Objectives = Objectives_dictionary
         
+
+            
         
         
