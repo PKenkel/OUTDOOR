@@ -40,8 +40,10 @@ def wrapp_GeneralData(obj, df1):
     if not pd.isnull(df1.iloc[13,0]):
         
         maintenance_factor = df1.iloc[13,0]
-    else: 
-        maintenance_factor  = 0.044875
+    else:
+        maintenance_factor = None
+        
+
         
     cost_percentage  = None
     time_span  = None
@@ -61,6 +63,7 @@ def wrapp_GeneralData(obj, df1):
         full_load_hours = df1.iloc[17,0]
     else:
         full_load_hours = None
+
 
     obj.set_generalData(ProcessGroup, 
                          LifeTime, 
@@ -355,22 +358,28 @@ def wrapp_ProductpoolData(obj, series):
     obj.set_group(series[7])
     
     EmissionCredits = 0
+    FreshWaterCredits = 0
     
     if not pd.isnull(series[10]):
         EmissionCredits = series[10]
+        
+    if not pd.isnull(series[11]):
+        FreshWaterCredits = series[11]
        
     minp = 0
-    maxp = 10000000
+    maxp = 100000
     
-    if not pd.isnull(series[11]):
-        minp = series[11]
     if not pd.isnull(series[12]):
-        maxp = series[12]
+        minp = series[12]
+    if not pd.isnull(series[13]):
+        maxp = series[13]
         
     obj.set_productionLimits(minp,maxp)
     
 
-    obj.set_emissionCredits(EmissionCredits)    
+    obj.set_emissionCredits(EmissionCredits)  
+    
+    obj.set_freshwaterCredits(FreshWaterCredits)
  
     
 def wrapp_SourceData(obj, series, df, counter):
@@ -379,15 +388,20 @@ def wrapp_SourceData(obj, series, df, counter):
     
     dic = WF.read_type1(df, 0 , counter)
     
-    UpperLimit = 10000000
+    UpperLimit = 100000
     Costs = 0
     EmissionFactor = 0
+    FreshwaterFactor = 0
+    
     
     if not pd.isnull(series[7]):
         UpperLimit = series[7]
 
     if not pd.isnull(series[8]):
         EmissionFactor = series[8]
+        
+    if not pd.isnull(series[9]):
+        FreshwaterFactor = series[9]
         
     
     if not pd.isnull(series[6]):
@@ -397,6 +411,7 @@ def wrapp_SourceData(obj, series, df, counter):
     obj.set_sourceData(Costs,
                         UpperLimit,
                         EmissionFactor,
+                        FreshwaterFactor,
                         Composition_dictionary  = dic
                         )
     
