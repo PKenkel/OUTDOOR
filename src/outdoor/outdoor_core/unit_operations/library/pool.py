@@ -30,6 +30,7 @@ class ProductPool(VirtualProcess):
         self.ProductName = ProductName
         self.ProductPrice = {'ProductPrice': {self.Number: ProductPrice}}
         self.em_credits = {'em_fac_prod': {self.Number: 0}}
+        self.fw_credits = {'fw_fac_prod': {self.Number: 0}}
         self.min_production = {'MinProduction': {self.Number: 0}}
         self.max_production = {'MaxProduction': {self.Number: 10000000}}
         
@@ -52,6 +53,10 @@ class ProductPool(VirtualProcess):
     def set_emissionCredits(self, emissionfactor):
         self.em_credits['em_fac_prod'][self.Number] = emissionfactor
         
+    def set_freshwaterCredits(self, freshwaterfactor):
+        self.fw_credits['fw_fac_prod'][self.Number] = freshwaterfactor
+        
+        
             
     def set_productPrice(self, Price):
         self.ProductPrice['ProductPrice'][self.Number] = Price
@@ -66,5 +71,7 @@ class ProductPool(VirtualProcess):
         self.ParameterList.append(self.em_credits)
         self.ParameterList.append(self.min_production)
         self.ParameterList.append(self.max_production)
+        self.ParameterList.append(self.fw_credits)
+        
 
 

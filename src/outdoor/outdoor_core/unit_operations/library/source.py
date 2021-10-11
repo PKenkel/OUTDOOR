@@ -24,6 +24,8 @@ class Source(VirtualProcess):
         self.MaterialCosts  = {'materialcosts': {self.Number: 0}}
         self.UpperLimit = {'ul': {self.Number: None}}
         self.EmissionFactor = {'em_fac_source': {self.Number: 0}}
+        self.FreshWaterFactor = {'fw_fac_source': {self.Number: 0}}
+        
         
     
     def fill_unitOperationsList(self, superstructure):
@@ -35,11 +37,13 @@ class Source(VirtualProcess):
                         Costs,
                         UpperLimit,
                         EmissionFactor,
+                        FreshwaterFactor,
                         Composition_dictionary):
 
         self.__set_materialCosts(Costs)
         self.__set_upperlimit(UpperLimit)
-        self.__set_poolEmissionFactor(EmissionFactor)
+        self.__set_sourceEmissionFactor(EmissionFactor)
+        self.__set_sourceFreshWaterFactor(FreshwaterFactor)
         self.__set_composition(Composition_dictionary)
 
     def __set_materialCosts(self, Costs):
@@ -53,8 +57,12 @@ class Source(VirtualProcess):
     def __set_upperlimit(self, UpperLimit):
         self.UpperLimit['ul'][self.Number] = UpperLimit
         
-    def __set_poolEmissionFactor(self, EmissionFactor):
+    def __set_sourceEmissionFactor(self, EmissionFactor):
         self.EmissionFactor['em_fac_source'][self.Number] = EmissionFactor
+        
+    def __set_sourceFreshWaterFactor(self, FreshwaterFactor):
+        self.FreshWaterFactor['fw_fac_source'][self.Number] = FreshwaterFactor
+        
     
     def fill_parameterList(self):
         super().fill_parameterList()
@@ -62,6 +70,8 @@ class Source(VirtualProcess):
         self.ParameterList.append(self.MaterialCosts)
         self.ParameterList.append(self.UpperLimit)
         self.ParameterList.append(self.EmissionFactor)
+        self.ParameterList.append(self.FreshWaterFactor)
+        
    
         
    

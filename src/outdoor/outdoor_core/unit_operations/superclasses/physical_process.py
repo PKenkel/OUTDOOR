@@ -37,7 +37,7 @@ class PhysicalProcess(Process):
         self.kappa_1_capex = {'kappa_1_capex': {}}
         self.kappa_2_capex = {'kappa_2_capex': {}}
 
-        self.K_M = {'K_M': {}}
+        self.K_OM = {'K_OM': {self.Number: 0}}
         
         self.turn_over_acc = {'to_acc': {self.Number: 0}}
         self.turnover_factors = {'CostPercentage': None, 'TimeSpan': None, 'TimeMode': 'No Mode'}
@@ -91,7 +91,7 @@ class PhysicalProcess(Process):
                          lifetime,
                          emissions = 0,
                          full_load_hours = None,
-                         maintenancefactor = 0.044875,
+                         maintenancefactor = None,
                          CostPercentage = None,
                          TimeSpan = None,
                          TimeMode = None
@@ -114,8 +114,8 @@ class PhysicalProcess(Process):
     def __set_lifeTime(self, lifetime):
         self.LT['LT'][self.Number] = lifetime
         
-    def __set_maintenanceFactor(self, factor=0.044875):
-        self.K_M['K_M'][self.Number] = factor
+    def __set_maintenanceFactor(self, factor=None):
+        self.K_OM['K_OM'][self.Number] = factor
 
     def set_economicData(self,
                           DirectCostFactor,
@@ -344,7 +344,11 @@ class PhysicalProcess(Process):
             elif kappa_2_ut_dic[i]  == 'FIN_M':
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 2
             elif kappa_2_ut_dic[i]  == 'FOUT_M':
-                self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 4                
+                self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 4 
+            elif kappa_2_ut_dic[i]  == 'FIN_CP':   
+                self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 5 
+            elif kappa_2_ut_dic[i]  == 'FOUT_CP':   
+                self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 6               
             else:
                 self.kappa_2_ut['kappa_2_ut'][self.Number,i]  = 3
 
@@ -391,6 +395,6 @@ class PhysicalProcess(Process):
         self.ParameterList.append(self.kappa_2_capex)
         self.ParameterList.append(self.ACC_Factor)
         self.ParameterList.append(self.em_fac_unit)
-        self.ParameterList.append(self.K_M)
+        self.ParameterList.append(self.K_OM)
         self.ParameterList.append(self.turn_over_acc)
 
