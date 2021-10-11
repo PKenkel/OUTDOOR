@@ -22,24 +22,28 @@ def displayBasicResults(Instance):
         print(i, j)
         
     printFormatting('Total Costs are (in M€)')  
-    print(value(Instance.TAC)/1000000)
+    print(value(Instance.TAC))
 
     printFormatting('Total CAPEX are (in M€)')
-    print(value(Instance.CAPEX)/1000000)
+    print(value(Instance.CAPEX))
     
     printFormatting('Total OPEX are (in M€)')
-    print(value(Instance.OPEX)/1000000)
+    print(value(Instance.OPEX))
     
     printFormatting('Total PROFITS are (in M€)')
-    print(value(Instance.PROFITS_TOT)/1000000)
+    print(value(Instance.PROFITS_TOT))
     
     printFormatting('Net Production Costs are')
-    NPC  = value(Instance.TAC)/ value(Instance.MainProductFlow)
+    NPC  = value(Instance.TAC)*1000000/ value(Instance.MainProductFlow)
     print(NPC)
     
     printFormatting('Net Production Emissions are')
     NPE  = value(Instance.GWP_TOT)/ value(Instance.MainProductFlow)
     print(NPE)
+    
+    printFormatting('Net Production Fresh Water demand is')
+    FWD = value(Instance.FWD_TOT)/value(Instance.MainProductFlow)
+    print(FWD)
     
     print('')
     print('')

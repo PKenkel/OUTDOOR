@@ -237,14 +237,13 @@ def save_dict_to_file(path_name, ModelInformation):
     f.close()
 
 
+
+
 def load_dict_from_file(path_name):
     f = open(path_name,'r')
     data=f.read()
     f.close()
     return eval(data)
-
-
-
 
 
   

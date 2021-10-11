@@ -51,6 +51,8 @@ def prepare_mutableParameters(ModelInstance, Superstructure):
         elif parameter == 'heating_demand':
             instance.tau_h._mutable = True
             instance.tau_c._mutable = True
+        elif parameter == 'source_costs':
+            instance.materialcosts._mutable = True
         else:
             raise ValueError('Parameter to set mutable not existing')
         

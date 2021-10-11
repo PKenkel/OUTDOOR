@@ -8,7 +8,7 @@ def searchTechnologies(Instance):
         if value(Instance.Y[i]) == 0:
             CT[i] = 'Not Chosen'
         else:
-            if value(Instance.FLOW_SUM[i]) <= 0.000001 :
+            if value(Instance.FLOW_SUM[i]) <= 1e-06 :
                 CT[i] = 'Not Chosen'
             else:
                 CT[i] = 'Chosen'
