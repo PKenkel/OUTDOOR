@@ -84,7 +84,7 @@ class Distributor (VirtualProcess):
         
         
     def calc_decimalNumbers(self):
-        X = [1, 2 ,3 ,4 ,8]
+        X = [1, 2, 4 ,8]
         XO = 0        
         self.decimal_numbers['Decimal_numbers'][self.Number,0] = XO
         self.decimal_set.append((self.Number,0))
@@ -92,7 +92,7 @@ class Distributor (VirtualProcess):
         for i in range(1,self.decimal_place+1):
             for j in X:
                 idx = X.index(j)+1
-                idx = idx + (i-1) * 5
+                idx = idx + (i-1) * 4
                 entr = j / (10**i)
                 
                 self.decimal_numbers['Decimal_numbers'][self.Number,idx] = entr 
@@ -111,6 +111,7 @@ class Distributor (VirtualProcess):
             setattr(superstructure, 'distributor_list', {'U_DIST': []})
             setattr(superstructure, 'decimal_vector', {'D_VEC': []})
             setattr(superstructure, 'decimal_set', {'DC_SET': []})
+            setattr(superstructure, 'distributor_subset2', {'U_DIST_SUB2': []})
         
  
         superstructure.distributor_list['U_DIST'].append(self.Number)
@@ -123,6 +124,12 @@ class Distributor (VirtualProcess):
             if i not in superstructure.distributor_subset['U_DIST_SUB']:
                 superstructure.distributor_subset['U_DIST_SUB'].append(combi)
 
+        for i in self.targets:
+            for j in self.decimal_numbers['Decimal_numbers'].keys():
+                combi2 = (self.Number,i,self.Number,j[1])
+                
+                superstructure.distributor_subset2['U_DIST_SUB2'].append(combi2)
+                
 
     def fill_parameterList(self):
         

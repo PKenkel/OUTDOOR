@@ -13,7 +13,7 @@ class ProcessResults:
     
     # UNDER CONSTRUCTION
     
-    def __init__(self, model_instance=None, solver_name = None, run_time = None):
+    def __init__(self,model_instance=None, solver_name = None, run_time = None):
         self._data = {}
         self._solver = None
         self._run_time = None
@@ -28,12 +28,13 @@ class ProcessResults:
 # Private Methods ---- 
 # --------------------
     def _fill_data(self, instance):
+        
 
         for i in instance.component_objects():
             if "pyomo.core.base.var.SimpleVar" in str(type(i)):
                 self._data[i.local_name] = i.value
 
-            elif "pyomo.core.base.param.ScalarParam" in str(type(i)):
+            elif "pyomo.core.base.param.SimpleParam" in str(type(i)):
                 self._data[i.local_name] = i.value
 
             elif "pyomo.core.base.param.IndexedParam" in str(type(i)):
@@ -45,7 +46,7 @@ class ProcessResults:
             elif "pyomo.core.base.set.SetProduct_OrderedSet" in str(type(i)):
                 self._data[i.local_name] = i.value_list
 
-            elif "pyomo.core.base.set.OrderedScalarSet" in str(type(i)):
+            elif "pyomo.core.base.sets.SimpleSet" in str(type(i)):
                 self._data[i.local_name] = i.value_list
                 
             elif "pyomo.core.base.objective.SimpleObjective" in str(type(i)):
@@ -82,6 +83,7 @@ class ProcessResults:
             else:
                 print(self._data[data_name])
                 
+    
                 
     def return_chosen(self):
        flow = self._data['FLOW_IN']

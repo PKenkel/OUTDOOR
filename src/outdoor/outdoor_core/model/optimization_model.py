@@ -57,7 +57,8 @@ class SuperstructureModel(AbstractModel):
         self.create_EconomicEvaluation()
         self.create_EnvironmentalEvaluation()
         self.create_FreshwaterEvaluation()
-        self.create_DecisionMaking()
+        # self.create_DecisionMaking()
+        self.create_DecisionMaking_Chemicals()
         self.create_ObjectiveFunction()
         
     def populateModel(self, Data_file):
@@ -126,6 +127,7 @@ class SuperstructureModel(AbstractModel):
         
         self.DC_SET = Set(within = self.U_DIST*iterator(100))
         
+        self.U_DIST_SUB2 = Set(within=self.U_DIST_SUB*self.U_DIST*iterator(100))
 
 
             
@@ -190,8 +192,11 @@ class SuperstructureModel(AbstractModel):
         self.FLOW_SUM = Var(self.U, within=NonNegativeReals) 
         self.Y = Var(self.U, within=Binary)
         self.FLOW_SOURCE = Var(self.U_S, within=NonNegativeReals)
-        self.FLOW_DIST = Var(self.U_DIST_SUB, self.I, self.DC_SET, within=NonNegativeReals)
-        self.Y_DIST = Var(self.U_DIST_SUB, self.DC_SET, within=Binary)
+
+        self.FLOW_DIST = Var(self.U_DIST_SUB2, self.I, within=NonNegativeReals)
+        self.Y_DIST = Var(self.U_DIST_SUB2, within=Binary)
+        
+        
         
         # Constraints
         # -----------
@@ -233,33 +238,14 @@ class SuperstructureModel(AbstractModel):
             else:
                 return self.FLOW_OUT[u,i] == self.FLOW_IN[u,i]            
             
-            
-            
-        def MassBalance_6_rule(self,u,uu,i):
-            if (u,uu) not in self.U_DIST_SUB:
-                return self.FLOW[u,uu,i] <= self.myu[u,uu,i] * self.FLOW_OUT[u,i] + self.alpha[u] * (1-self.Y[uu])
-                    
-            else: 
-                return self.FLOW[u,uu,i] <= sum(self.FLOW_DIST[u,uu,i,k] for k in self.DC_SET) + self.alpha[u] * (1-self.Y[uu])
-                        
-
-        def MassBalance_7_rule(self,u,uu,i):
-            return self.FLOW[u,uu,i] <= self.alpha[u] * self.Y[uu]
-        
-        def MassBalance_8_rule(self,u,uu,i):
-            if (u,uu) not in self.U_DIST_SUB:
-                return self.FLOW[u,uu,i] >= self.myu[u,uu,i] * self.FLOW_OUT[u,i]  - self.alpha[u] * (1-self.Y[uu])
-            else:
-                return self.FLOW[u,uu,i] >= sum(self.FLOW_DIST[u,uu,i,k] for k in self.DC_SET) - self.alpha[u] * (1-self.Y[uu])            
-
-
         def MassBalance_9_rule(self,u,i):
             return self.FLOW_WASTE[u,i] == self.FLOW_OUT[u,i] \
                 - sum(self.FLOW[u,uu,i] for uu in self.UU)
 
         def MassBalance_10_rule(self,i):
-            return self.FLOW_WASTE_TOTAL[i]  == sum(self.FLOW_WASTE[u,i] for u in self.U)
-         
+            return self.FLOW_WASTE_TOTAL[i]  == sum(self.FLOW_WASTE[u,i] for u in self.U) 
+            
+ 
         def MassBalance_11_rule(self,u):
             if self.kappa_2_lhs_conc[u] == 0 and self.kappa_2_rhs_conc[u]  == 0:
                 return 1e03 * sum(self.FLOW_OUT[u,i] * self.kappa_1_lhs_conc[u,i] for i in self.I) \
@@ -283,26 +269,44 @@ class SuperstructureModel(AbstractModel):
             return self.FLOW_SUM[up] >= self.MinProduction[up] 
         
         def MassBalance_14b_rule(self,up):
-            return self.FLOW_SUM[up] <= self.MaxProduction[up]
+            return self.FLOW_SUM[up] <= self.MaxProduction[up]    
+ 
+    
+            
+        def MassBalance_6_rule(self,u,uu,i):
+            if (u,uu) not in self.U_DIST_SUB:
+                return self.FLOW[u,uu,i] <= self.myu[u,uu,i] * self.FLOW_OUT[u,i] + self.alpha[u] * (1-self.Y[uu])
+                    
+            else: 
+                return self.FLOW[u,uu,i] <= sum(self.FLOW_DIST[u,uu,uk,k,i] for (uk,k) in self.DC_SET if (u,uu,uk,k) in self.U_DIST_SUB2) + self.alpha[u] * (1-self.Y[uu])
+            
+        def MassBalance_7_rule(self,u,uu,i):
+            return self.FLOW[u,uu,i] <= self.alpha[u] * self.Y[uu]
+        
+        def MassBalance_8_rule(self,u,uu,i):
+            if (u,uu) not in self.U_DIST_SUB:
+                return self.FLOW[u,uu,i] >= self.myu[u,uu,i] * self.FLOW_OUT[u,i]  - self.alpha[u] * (1-self.Y[uu])
+            else:
+                return self.FLOW[u,uu,i] >= sum(self.FLOW_DIST[u,uu,uk,k,i] for (uk,k) in self.DC_SET if (u,uu,uk,k) in self.U_DIST_SUB2) - self.alpha[u] * (1-self.Y[uu])            
         
         # Distributor Equations
         
-        def MassBalance_15a_rule(self,u,uu,i,uk,k):
-            return self.FLOW_DIST[u,uu,i,uk,k] <= self.Decimal_numbers[u,k] * self.FLOW_OUT[u,i] + self.alpha[u]* (1- self.Y_DIST[u,uu,uk,k]) 
+
+
+        def MassBalance_15a_rule(self,u,uu,uk,k,i):
+            return self.FLOW_DIST[u,uu,uk,k,i] <= self.Decimal_numbers[u,k] * self.FLOW_OUT[u,i] + self.alpha[u]* (1- self.Y_DIST[u,uu,uk,k]) 
             
-        def MassBalance_15b_rule(self,u,uu,i,uk,k):
-            return self.FLOW_DIST[u,uu,i,uk,k] >= self.Decimal_numbers[u,k] * self.FLOW_OUT[u,i] - self.alpha[u]* (1- self.Y_DIST[u,uu,uk,k])                
+        def MassBalance_15b_rule(self,u,uu,uk,k,i):
+            return self.FLOW_DIST[u,uu,uk,k,i] >= self.Decimal_numbers[u,k] * self.FLOW_OUT[u,i] - self.alpha[u]* (1- self.Y_DIST[u,uu,uk,k])                
                 
-        def MassBalance_15c_rule(self,u,uu,i,uk,k):
-            return self.FLOW_DIST[u,uu,i,uk,k] <= self.alpha[u] * self.Y_DIST[u,uu,uk,k]                  
+        def MassBalance_15c_rule(self,u,uu,uk,k,i):
+            return self.FLOW_DIST[u,uu,uk,k,i] <= self.alpha[u] * self.Y_DIST[u,uu,uk,k]  
+                
     
         def MassBalance_16_rule(self,u,i):
             return self.FLOW_OUT[u,i] == sum(self.FLOW[u,uu,i] for uu in self.U if (u,uu) in self.U_DIST_SUB)
 
-        def MassBalance_17_rule(self,u,uu,i):
-            return self.FLOW[u,uu,i] == sum(self.FLOW_DIST[u,uu,i,uk,k] for (uk,k) in self.DC_SET)   
-        
-        
+         
     
          
         self.MassBalance_1 = Constraint(self.U, self.I, rule=MassBalance_1_rule)
@@ -320,11 +324,11 @@ class SuperstructureModel(AbstractModel):
         self.MassBalance_12 = Constraint(self.U, rule=MassBalance_12_rule)        
         self.MassBalance_14a = Constraint(self.U_PP, rule = MassBalance_14a_rule)
         self.MassBalance_14b = Constraint(self.U_PP, rule = MassBalance_14b_rule)
-        self.MassBalance_15a =  Constraint(self.U_DIST_SUB, self.I, self.DC_SET, rule = MassBalance_15a_rule)
-        self.MassBalance_15b =  Constraint(self.U_DIST_SUB, self.I, self.DC_SET, rule = MassBalance_15b_rule)
-        self.MassBalance_15c =  Constraint(self.U_DIST_SUB, self.I, self.DC_SET, rule = MassBalance_15c_rule)   
+        self.MassBalance_15a =  Constraint(self.U_DIST_SUB2, self.I, rule = MassBalance_15a_rule)
+        self.MassBalance_15b =  Constraint(self.U_DIST_SUB2, self.I, rule = MassBalance_15b_rule)
+        self.MassBalance_15c =  Constraint(self.U_DIST_SUB2, self.I, rule = MassBalance_15c_rule)   
         self.MassBalance_16 = Constraint(self.U_DIST, self.I, rule= MassBalance_16_rule)
-        self.MassBalance_17 = Constraint(self.U_DIST_SUB, self.I, rule = MassBalance_17_rule)    
+ 
 
 
 
@@ -773,7 +777,7 @@ class SuperstructureModel(AbstractModel):
         self.ACC_H = Var(within=NonNegativeReals)
         
         def CapexEquation_9_rule(self):
-            return self.ACC_H  == self.HP_ACC_Factor * self.HP_Costs * self.ENERGY_DEMAND_HP_USE   / self.H
+            return self.ACC_H  == self.HP_ACC_Factor * self.HP_Costs * self.ENERGY_DEMAND_HP_USE 
    
         def Cap(self):
             return self.ACC_HP == self.ACC_H / 1000
@@ -820,11 +824,11 @@ class SuperstructureModel(AbstractModel):
             return self.ELCOST == self.ENERGY_DEMAND_HP_EL * self.delta_ut['Electricity'] * self.H/1000
         
         def HEN_CostBalance_4_rule(self,hi):
-            return self.HENCOST[hi]  <=  13.459 /1000 *  self.ENERGY_EXCHANGE[hi]  \
-                + 0.33893/1000  + self.alpha_hex * (1-self.Y_HEX[hi])
+            return self.HENCOST[hi]  <=  13.459 *  self.ENERGY_EXCHANGE[hi]  \
+                + 3.3893  + self.alpha_hex * (1-self.Y_HEX[hi])
         def HEN_CostBalance_4b_rule(self,hi):
-            return self.HENCOST[hi]  >=   13.459/1000  * self.ENERGY_EXCHANGE[hi]  \
-                + 0.33893/1000 - self.alpha_hex * (1-self.Y_HEX[hi])
+            return self.HENCOST[hi]  >=   13.459  * self.ENERGY_EXCHANGE[hi]  \
+                + 3.3893 - self.alpha_hex * (1-self.Y_HEX[hi])
         
         def HEN_CostBalance_4c_rule(self,hi):
             return self.HENCOST[hi]  <= self.Y_HEX[hi] * self.alpha_hex
@@ -1041,7 +1045,132 @@ class SuperstructureModel(AbstractModel):
         self.FreshWaterEquation5 = Constraint(rule= FWD_5_rule)
     
     
+
+
+    def create_DecisionMaking_Chemicals(self):
+        
+        # Waste water logic
+        def TestRule(self):
+            return self.Y[8000] == 1
+        
+        # MEA Logic
+        def TestRule2(self):
+            return self.Y[1100] == self.Y[1101]
+        
+        #DAC Logic
+        def TestRule3(self):
+            return self.Y[1400]  == self.Y[1410]
+        
+        # Oxy fuel Logic
+        def TestRule4(self):
+            return self.Y[1300]  == self.Y[1310]
+        
+        def TestRule5(self):
+            return self.Y[1300] == self.Y[1320]
+            
+        # CO2 Compressor Logic
+        def TestRule6(self):
+            return 2 * self.Y[1110] >= self.Y[1400] + self.Y[1100]
+        
+        # Hydrogen Compressor
+        def TestRule7(self):
+            return 3 * self.Y[2110] >= self.Y[2100] + self.Y[2200] + self.Y[2300]
+
+        
+        # Hydrogen Compressor for HP-EL techs
+        
+        def TestRule8(self):
+            return 2 * self.Y[2410] >= self.Y[2400] + self.Y[2500]
+      
+        
+        # MeOH Reactor Logic
+        def TestRule9(self):
+            return self.Y[3100] == self.Y[3110]
+        
+        def TestRule10(self):
+            return self.Y[3100] == self.Y[3120]
+
+        # MeOH - H2 Comp
+        def TestRule11(self):
+            return self.Y[3100] >= self.Y[2110]
+        
+        #MeOH - CO2 Comp + OXY
+        def TestRule12(self):
+            return 2 * self.Y[3100] >= self.Y[1110] + self.Y[1300]
+            
+        # MeOH  - Offgas combustion logic
+        def TestRule13(self):
+            return self.Y[4100] + self.Y[4200] >= self.Y[3100]        
+
+        # SMR logic
+        def TestRule14(self):
+            return self.Y[5100] + self.Y[5110] + self.Y[5130]  >= 3 * self.Y[5120]
+        
+        def TestRule15(self):
+            return self.Y[5100] == self.Y[5110]
+        
+        def TestRule16(self):
+            return self.Y[5100] == self.Y[5130]
+        
+        # ATR logic
+        def TestRule17(self):
+            return self.Y[5210] + self.Y[5220] >= 2 * self.Y[5200]
+        
+        # SyNFeed Compressor Logic
+        def TestRule18(self):
+            return 2 * self.Y[5140] >= self.Y[5100] + self.Y[5200]
+            
+        # SnyFEED MeOH logic
+        def TestRule19(self):
+            return self.Y[3100] >= self.Y[5140]
+                
+        def TestRule20(self):
+            return self.Y[6110] >= self.Y[6100]
+        
+        def TestRule21(self):
+            return self.Y[666] >= self.Y[6100]
+        
+        def TestRule22(self):
+            return self.Y[888] >= self.Y[5130]
+        
+        def TestRule23(self):
+            return self.Y[777] >= self.Y[6110]
+        
+        def TestRule24(self):
+            return 6 * self.Y[999] >= self.Y[1310] + self.Y[2100] + self.Y[2200] \
+                + self.Y[2300] + self.Y[2400] + self.Y[2500]
+        
+        
+        self.TestCon1 = Constraint(rule=TestRule)
+        self.TestCon2 = Constraint(rule=TestRule2)
+        self.TestCon3 = Constraint(rule=TestRule3)
+        self.TestCon4 = Constraint(rule=TestRule4)
+        self.TestCon5 = Constraint(rule=TestRule5)
+        self.TestCon6 = Constraint(rule=TestRule6)
+        self.TestCon7 = Constraint(rule=TestRule7)
+        self.TestCon8 = Constraint(rule=TestRule8)
+        self.TestCon9 = Constraint(rule=TestRule9)
+        self.TestCon10 = Constraint(rule=TestRule10)
+        self.TestCon11 = Constraint(rule=TestRule11)
+        self.TestCon12 = Constraint(rule=TestRule12)
+        self.TestCon13 = Constraint(rule=TestRule13)
+        self.TestCon14 = Constraint(rule=TestRule14)
+        self.TestCon15 = Constraint(rule=TestRule15)
+        self.TestCon16 = Constraint(rule=TestRule16)
+        self.TestCon17 = Constraint(rule=TestRule17)
+        self.TestCon18 = Constraint(rule=TestRule18)
+        self.TestCon19 = Constraint(rule=TestRule19)
+        self.TestCon20 = Constraint(rule=TestRule20)
+        self.TestCon21 = Constraint(rule=TestRule21)
+        self.TestCon22 = Constraint(rule=TestRule22)
+        self.TestCon23 = Constraint(rule=TestRule23)
+        self.TestCon24 = Constraint(rule=TestRule24)
+        
+        
+        
     
+        
+        
         
         
     # **** DECISION MAKING EQUATIONS *****
@@ -1097,7 +1226,14 @@ class SuperstructureModel(AbstractModel):
         
         # Hydrogen Compressor
         def TestRule8(self):
-            return 2 * self.Y[2110] >= self.Y[2200] + self.Y[2300]
+            return 3 * self.Y[2110] >= self.Y[2100] + self.Y[2200] + self.Y[2300]
+            # return 2 * self.Y[2110] >= self.Y[2200] + self.Y[2300]
+        
+        # Hydrogen Compressor for HP-EL techs
+        
+        def TestRule35(self):
+            return 2 * self.Y[2410] >= self.Y[2400] + self.Y[2500]
+        
         
         # MeOH Reactor Logic
         def TestRule9(self):
@@ -1105,7 +1241,7 @@ class SuperstructureModel(AbstractModel):
         
         def TestRule10(self):
             return self.Y[3100] == self.Y[3120]
-        
+
         # MeOH - H2 Comp
         def TestRule11(self):
             return self.Y[3100] >= self.Y[2110]
@@ -1116,8 +1252,10 @@ class SuperstructureModel(AbstractModel):
             
         # MeOH  - Offgas combustion logic
         def TestRule2(self):
-            return self.Y[4100] == self.Y[3100]
+            # return self.Y[4100] >= self.Y[3100]
+            return self.Y[4100] + self.Y[4200] >= self.Y[3100]
         
+
         # MeOH - Converter logic
         def TestRule13(self):
             return self.Y[3100] == self.Y[26200]
@@ -1211,19 +1349,31 @@ class SuperstructureModel(AbstractModel):
         def TestRule34(self):
             return self.Y[7000] >= self.Y[5100]
         
+        def TestRule36(self):
+            return self.Y[6110] >= self.Y[6100]
         
-        # self.TestCon1 = Constraint(rule=TestRule)
-        # self.TestCon2 = Constraint(rule=TestRule2)
-        # self.TestCon3 = Constraint(rule=TestRule3)
-        # self.TestCon4 = Constraint(rule=TestRule4)
-        # self.TestCon5 = Constraint(rule=TestRule5)
-        # self.TestCon6 = Constraint(rule=TestRule6)
-        # self.TestCon7 = Constraint(rule=TestRule7)
-        # self.TestCon8 = Constraint(rule=TestRule8)
-        # self.TestCon9 = Constraint(rule=TestRule9)
-        # self.TestCon10 = Constraint(rule=TestRule10)
-        # self.TestCon11 = Constraint(rule=TestRule11)
-        # self.TestCon12 = Constraint(rule=TestRule12)
+        def TestRule37(self):
+            return self.Y[666] >= self.Y[6100]
+        
+        def TestRule38(self):
+            return self.Y[777] >= self.Y[6110]
+        
+        
+        
+        
+        
+        self.TestCon1 = Constraint(rule=TestRule)
+        self.TestCon2 = Constraint(rule=TestRule2)
+        self.TestCon3 = Constraint(rule=TestRule3)
+        self.TestCon4 = Constraint(rule=TestRule4)
+        self.TestCon5 = Constraint(rule=TestRule5)
+        self.TestCon6 = Constraint(rule=TestRule6)
+        self.TestCon7 = Constraint(rule=TestRule7)
+        self.TestCon8 = Constraint(rule=TestRule8)
+        self.TestCon9 = Constraint(rule=TestRule9)
+        self.TestCon10 = Constraint(rule=TestRule10)
+        self.TestCon11 = Constraint(rule=TestRule11)
+        self.TestCon12 = Constraint(rule=TestRule12)
         # self.TestCon13 = Constraint(rule=TestRule13)
         # self.TestCon14 = Constraint(rule=TestRule14)
         # self.TestCon15 = Constraint(rule=TestRule15)
@@ -1239,18 +1389,21 @@ class SuperstructureModel(AbstractModel):
         # self.TestCon25 = Constraint(rule=TestRule25)
         # self.TestCon26 = Constraint(rule=TestRule26)
         # self.TestCon27 = Constraint(rule=TestRule27)
-        # self.TestCon28 = Constraint(rule=TestRule28)
-        # self.TestCon28a = Constraint(rule=TestRule28a)
-        # self.TestCon28b = Constraint(rule=TestRule28b)
-        # self.TestCon29 = Constraint(rule=TestRule29)
-        # self.TestCon30 = Constraint(rule=TestRule30)
-        # self.TestCon31 = Constraint(rule=TestRule31)
+        self.TestCon28 = Constraint(rule=TestRule28)
+        self.TestCon28a = Constraint(rule=TestRule28a)
+        self.TestCon28b = Constraint(rule=TestRule28b)
+        self.TestCon29 = Constraint(rule=TestRule29)
+        self.TestCon30 = Constraint(rule=TestRule30)
+        self.TestCon31 = Constraint(rule=TestRule31)
         # self.TestCon32 = Constraint(rule=TestRule32)
         # self.TestCon33 = Constraint(rule=TestRule33)
         # self.TestCon34 = Constraint(rule=TestRule34)
+        self.TestCon35 = Constraint(rule=TestRule35)
         
         
-        
+        self.TestCon36 = Constraint(rule=TestRule36)
+        self.TestCon37 = Constraint(rule=TestRule37)
+        self.TestCon38 = Constraint(rule=TestRule38)
 
         
     # **** OBJECTIVE FUNCTIONS *****

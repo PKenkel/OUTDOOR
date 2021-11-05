@@ -39,7 +39,7 @@ class Superstructure():
         self.distributor_list = {'U_DIST': []}
         self.decimal_set = {'DC_SET': []}
         
-
+        self.distributor_subset2 = {'U_DIST_SUB2': []}
         
 
         # Heat Balance
@@ -840,7 +840,7 @@ class Superstructure():
         self.NI_ParameterList.append(self.distributor_list)
         self.NI_ParameterList.append(self.distributor_subset)
         self.NI_ParameterList.append(self.decimal_set)
-        
+        self.NI_ParameterList.append(self.distributor_subset2)
         self.NI_ParameterList.append(self.OtherUtilitiesList)
         
         
