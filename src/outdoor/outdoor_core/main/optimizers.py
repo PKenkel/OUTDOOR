@@ -81,6 +81,7 @@ def solve_multiObjectiveRun(
 
     start_time = time.time()
     results = {}
+    
 
     for k, v in multi_objectives.items():
 
@@ -106,6 +107,8 @@ def solve_multiObjectiveRun(
     print("Multi-objective run solved, total solver time:")
     print(run_time)
     print("------")
+    
+    results['MultiCriteria'] = multi_objectives
 
     return results
 

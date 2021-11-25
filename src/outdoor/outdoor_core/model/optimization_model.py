@@ -971,7 +971,7 @@ class SuperstructureModel(AbstractModel):
                     * self.em_fac_ut[ut] 
                                             
         def GWP_3_rule(self):
-            return self.GWP_UT['Heat'] == self.em_fac_ut['Heat'] * self.H * (sum(self.ENERGY_DEMAND_HEAT_DEFI[hi] for hi in self.HI)  - self.ENERGY_DEMAND_HEAT_PROD_SELL)
+            return self.GWP_UT['Heat'] == self.em_fac_ut['Heat'] * self.H * (sum(self.ENERGY_DEMAND_HEAT_DEFI[hi] for hi in self.HI)  - self.ENERGY_DEMAND_HEAT_PROD_SELL * 0.7)
         
         def GWP_4_rule(self):
             return self.GWP_TOT == sum(self.GWP_U[u] for u in self.U_C)   \
@@ -1033,7 +1033,7 @@ class SuperstructureModel(AbstractModel):
             return self.FWD_UT1 == sum(self.ENERGY_DEMAND_TOT[ut] * self.fw_fac_ut[ut] for ut in self.U_UT)
         
         def FWD_4_rule(self):
-            return self.FWD_UT2 == (sum(self.ENERGY_DEMAND_HEAT_DEFI[hi] for hi in self.HI) - self.ENERGY_DEMAND_HEAT_PROD_SELL) * self.H * self.fw_fac_ut['Heat'] 
+            return self.FWD_UT2 == (sum(self.ENERGY_DEMAND_HEAT_DEFI[hi] for hi in self.HI) - self.ENERGY_DEMAND_HEAT_PROD_SELL * 0.7) * self.H * self.fw_fac_ut['Heat'] 
                                      
         def FWD_5_rule(self):
             return self.FWD_TOT == self.FWD_UT2 + self.FWD_UT1 - self.FWD_S - self.FWD_C
@@ -1051,7 +1051,7 @@ class SuperstructureModel(AbstractModel):
         
         # Waste water logic
         def TestRule(self):
-            return self.Y[8000] == 1
+            return self.Y[8000] >= self.Y[7100]
         
         # MEA Logic
         def TestRule2(self):
@@ -1063,7 +1063,7 @@ class SuperstructureModel(AbstractModel):
         
         # Oxy fuel Logic
         def TestRule4(self):
-            return self.Y[1300]  == self.Y[1310]
+            return 2 * self.Y[444]  >= self.Y[1110] + self.Y[3120]
         
         def TestRule5(self):
             return self.Y[1300] == self.Y[1320]
@@ -1074,7 +1074,7 @@ class SuperstructureModel(AbstractModel):
         
         # Hydrogen Compressor
         def TestRule7(self):
-            return 3 * self.Y[2110] >= self.Y[2100] + self.Y[2200] + self.Y[2300]
+            return 2 * self.Y[2110] >=   self.Y[2200] + self.Y[2300]
 
         
         # Hydrogen Compressor for HP-EL techs
@@ -1092,7 +1092,7 @@ class SuperstructureModel(AbstractModel):
 
         # MeOH - H2 Comp
         def TestRule11(self):
-            return self.Y[3100] >= self.Y[2110]
+            return 2 * self.Y[3100] >= self.Y[2110] + self.Y[2410]
         
         #MeOH - CO2 Comp + OXY
         def TestRule12(self):
@@ -1103,8 +1103,6 @@ class SuperstructureModel(AbstractModel):
             return self.Y[4100] + self.Y[4200] >= self.Y[3100]        
 
         # SMR logic
-        def TestRule14(self):
-            return self.Y[5100] + self.Y[5110] + self.Y[5130]  >= 3 * self.Y[5120]
         
         def TestRule15(self):
             return self.Y[5100] == self.Y[5110]
@@ -1116,9 +1114,12 @@ class SuperstructureModel(AbstractModel):
         def TestRule17(self):
             return self.Y[5210] + self.Y[5220] >= 2 * self.Y[5200]
         
+        def TestRule26(self):
+            return self.Y[5310] + self.Y[5320] >= 2 * self.Y[5300]
+        
         # SyNFeed Compressor Logic
         def TestRule18(self):
-            return 2 * self.Y[5140] >= self.Y[5100] + self.Y[5200]
+            return 3 * self.Y[5140] >= self.Y[5100] + self.Y[5200] + self.Y[5300]
             
         # SnyFEED MeOH logic
         def TestRule19(self):
@@ -1137,7 +1138,7 @@ class SuperstructureModel(AbstractModel):
             return self.Y[777] >= self.Y[6110]
         
         def TestRule24(self):
-            return 6 * self.Y[999] >= self.Y[1310] + self.Y[2100] + self.Y[2200] \
+            return 4 * self.Y[999] >=  self.Y[2200] \
                 + self.Y[2300] + self.Y[2400] + self.Y[2500]
         
         
@@ -1154,7 +1155,6 @@ class SuperstructureModel(AbstractModel):
         self.TestCon11 = Constraint(rule=TestRule11)
         self.TestCon12 = Constraint(rule=TestRule12)
         self.TestCon13 = Constraint(rule=TestRule13)
-        self.TestCon14 = Constraint(rule=TestRule14)
         self.TestCon15 = Constraint(rule=TestRule15)
         self.TestCon16 = Constraint(rule=TestRule16)
         self.TestCon17 = Constraint(rule=TestRule17)
@@ -1166,9 +1166,20 @@ class SuperstructureModel(AbstractModel):
         self.TestCon23 = Constraint(rule=TestRule23)
         self.TestCon24 = Constraint(rule=TestRule24)
         
+        self.TestCon26 = Constraint(rule=TestRule26)
         
+        def TestRule25(self):
+            return self.Y[4000] >= self.Y[7100]
+
+        def TestRule25a(self):
+            return self.Y[1100] ==0
+
+        def TestRule25b(self):
+            return self.Y[1400] ==0
         
-    
+        self.TestCon25 = Constraint(rule=TestRule25)
+        # self.TestCon25a = Constraint(rule=TestRule25a)
+        # self.TestCon25b = Constraint(rule=TestRule25b)
         
         
         
@@ -1262,7 +1273,7 @@ class SuperstructureModel(AbstractModel):
         
         # Sedimenation - Cultivation logic
         def TestRule14(self):
-            return 2 * self.Y[22100] >= self.Y[21100] + self.Y[21200]
+            return  self.Y[22100] >= self.Y[21100] 
         
         # Harvesting logic
         def TestRule15(self):
@@ -1340,7 +1351,7 @@ class SuperstructureModel(AbstractModel):
         
         # Rec Water Logic
         def TestRule32(self):
-            return 2 * self.Y[21000] >= self.Y[21100] + self.Y[21200]
+            return  self.Y[21000] >= self.Y[21100] 
         
         #Fertilizer logic
         def TestRule33(self):
@@ -1352,58 +1363,61 @@ class SuperstructureModel(AbstractModel):
         def TestRule36(self):
             return self.Y[6110] >= self.Y[6100]
         
-        def TestRule37(self):
-            return self.Y[666] >= self.Y[6100]
-        
-        def TestRule38(self):
-            return self.Y[777] >= self.Y[6110]
+
         
         
         
         
         
         self.TestCon1 = Constraint(rule=TestRule)
-        self.TestCon2 = Constraint(rule=TestRule2)
-        self.TestCon3 = Constraint(rule=TestRule3)
-        self.TestCon4 = Constraint(rule=TestRule4)
-        self.TestCon5 = Constraint(rule=TestRule5)
-        self.TestCon6 = Constraint(rule=TestRule6)
-        self.TestCon7 = Constraint(rule=TestRule7)
-        self.TestCon8 = Constraint(rule=TestRule8)
-        self.TestCon9 = Constraint(rule=TestRule9)
-        self.TestCon10 = Constraint(rule=TestRule10)
-        self.TestCon11 = Constraint(rule=TestRule11)
-        self.TestCon12 = Constraint(rule=TestRule12)
-        # self.TestCon13 = Constraint(rule=TestRule13)
-        # self.TestCon14 = Constraint(rule=TestRule14)
-        # self.TestCon15 = Constraint(rule=TestRule15)
-        # self.TestCon16 = Constraint(rule=TestRule16)
-        # self.TestCon17 = Constraint(rule=TestRule17)
-        # self.TestCon18 = Constraint(rule=TestRule18)
-        # self.TestCon19 = Constraint(rule=TestRule19)
-        # self.TestCon20 = Constraint(rule=TestRule20)
-        # self.TestCon21 = Constraint(rule=TestRule21)
-        # self.TestCon22 = Constraint(rule=TestRule22)
-        # self.TestCon23 = Constraint(rule=TestRule23)
-        # self.TestCon24 = Constraint(rule=TestRule24)
-        # self.TestCon25 = Constraint(rule=TestRule25)
-        # self.TestCon26 = Constraint(rule=TestRule26)
-        # self.TestCon27 = Constraint(rule=TestRule27)
-        self.TestCon28 = Constraint(rule=TestRule28)
-        self.TestCon28a = Constraint(rule=TestRule28a)
-        self.TestCon28b = Constraint(rule=TestRule28b)
-        self.TestCon29 = Constraint(rule=TestRule29)
-        self.TestCon30 = Constraint(rule=TestRule30)
-        self.TestCon31 = Constraint(rule=TestRule31)
-        # self.TestCon32 = Constraint(rule=TestRule32)
-        # self.TestCon33 = Constraint(rule=TestRule33)
-        # self.TestCon34 = Constraint(rule=TestRule34)
-        self.TestCon35 = Constraint(rule=TestRule35)
+        # self.TestCon2 = Constraint(rule=TestRule2)
+        # self.TestCon3 = Constraint(rule=TestRule3)
+        # self.TestCon4 = Constraint(rule=TestRule4)
+        # self.TestCon5 = Constraint(rule=TestRule5)
+        # self.TestCon6 = Constraint(rule=TestRule6)
+        # self.TestCon7 = Constraint(rule=TestRule7)
+        # self.TestCon8 = Constraint(rule=TestRule8)
+        # self.TestCon9 = Constraint(rule=TestRule9)
+        # self.TestCon10 = Constraint(rule=TestRule10)
+        # self.TestCon11 = Constraint(rule=TestRule11)
+        # self.TestCon12 = Constraint(rule=TestRule12)
+        # # self.TestCon13 = Constraint(rule=TestRule13)
+        self.TestCon14 = Constraint(rule=TestRule14)
+        self.TestCon15 = Constraint(rule=TestRule15)
+        self.TestCon16 = Constraint(rule=TestRule16)
+        self.TestCon17 = Constraint(rule=TestRule17)
+        self.TestCon18 = Constraint(rule=TestRule18)
+        self.TestCon19 = Constraint(rule=TestRule19)
+        self.TestCon20 = Constraint(rule=TestRule20)
+        self.TestCon21 = Constraint(rule=TestRule21)
+        self.TestCon22 = Constraint(rule=TestRule22)
+        # # self.TestCon23 = Constraint(rule=TestRule23)
+        # # self.TestCon24 = Constraint(rule=TestRule24)
+        # # self.TestCon25 = Constraint(rule=TestRule25)
+        self.TestCon26 = Constraint(rule=TestRule26)
+        # # self.TestCon27 = Constraint(rule=TestRule27)
+        # self.TestCon28 = Constraint(rule=TestRule28)
+        # self.TestCon28a = Constraint(rule=TestRule28a)
+        # self.TestCon28b = Constraint(rule=TestRule28b)
+        # self.TestCon29 = Constraint(rule=TestRule29)
+        # self.TestCon30 = Constraint(rule=TestRule30)
+        # self.TestCon31 = Constraint(rule=TestRule31)
+        self.TestCon32 = Constraint(rule=TestRule32)
+        # # self.TestCon33 = Constraint(rule=TestRule33)
+        # # self.TestCon34 = Constraint(rule=TestRule34)
+        # self.TestCon35 = Constraint(rule=TestRule35)
         
+
+        def TestRule37(self):
+            return self.Y[24100] == 0
         
-        self.TestCon36 = Constraint(rule=TestRule36)
-        self.TestCon37 = Constraint(rule=TestRule37)
-        self.TestCon38 = Constraint(rule=TestRule38)
+        def TestRule38(self):
+            return self.Y[777] >= self.Y[6110]
+
+        
+        # self.TestCon36 = Constraint(rule=TestRule36)
+        # self.TestCon37 = Constraint(rule=TestRule37)
+        # self.TestCon38 = Constraint(rule=TestRule38)
 
         
     # **** OBJECTIVE FUNCTIONS *****
