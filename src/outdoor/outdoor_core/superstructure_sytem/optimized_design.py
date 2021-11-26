@@ -53,9 +53,11 @@ class ProcessResults:
         that is called ProcessDesign._data
 
         """
-        
+
 
         for i in instance.component_objects():
+            
+            
             if "pyomo.core.base.var.SimpleVar" in str(type(i)):
                 self._data[i.local_name] = i.value
 
@@ -63,7 +65,8 @@ class ProcessResults:
                 self._data[i.local_name] = i.value
 
             elif "pyomo.core.base.param.IndexedParam" in str(type(i)):
-                self._data[i.local_name] = i._data
+                    
+                self._data[i.local_name] = i.extract_values()
 
             elif "pyomo.core.base.var.IndexedVar" in str(type(i)):
                 self._data[i.local_name] = i.extract_values()
@@ -78,6 +81,7 @@ class ProcessResults:
                 self._data['Objective Function'] = i.expr.to_string()
             else:
                 continue
+
             
 
     def _fill_information(self, solver_name, run_time):
@@ -112,7 +116,7 @@ class ProcessResults:
         """
         Decription
         -------       
-        Collects basice results data from the ProcessDesign._data dictionary 
+        Collects basice results data from the ProcessResults._data dictionary 
         for further results output. Data that is collected is:
             Objective function name, Yearly product load, Solver name and run time
             Net production costs (in €/ton), Net production GHG emissione (t/t) and
@@ -154,13 +158,12 @@ class ProcessResults:
             
         return basic_results
 
-
-        
+     
     def _collect_capitalcost_shares(self):
         """
         Decription
         ----------
-        Collects data from the ProcessDesign._data dictionary. 
+        Collects data from the ProcessResults._data dictionary. 
         Data that is collected are the shares (in %) of different unit-operations
         in the total annual capital investment. Data is returned as dictionary
 
@@ -191,7 +194,7 @@ class ProcessResults:
         """
         Description
         -----------
-        Collects data from the ProcessDesign._data dictionary. 
+        Collects data from the ProcessResults._data dictionary. 
         Data that is collected are base economic values, and depict the shares
         of the total costs of:
             CAPEX (all unit-operations)
@@ -256,7 +259,7 @@ class ProcessResults:
         """
         Description
         -----------
-        Collects data from the ProcessDesign._data dictionary. 
+        Collects data from the ProcessResults._data dictionary. 
         Data that is collected are the shares (in %) of different unit-operations
         in the total electricity demand . 
 
@@ -297,7 +300,7 @@ class ProcessResults:
         Description
         -----------
         
-        Collects data from the ProcessDesign._data dictionary. 
+        Collects data from the ProcessResults._data dictionary. 
         Data that is collected are basic heat integration data:
             Total heating / cooling demand (in MW)
             Total heat recovery (from unit-operations) (in MW)
@@ -363,13 +366,12 @@ class ProcessResults:
         
         return heatintegration_results
             
- 
         
     def _collect_GHG_results(self):
         """
         Description
         -----------
-        Collects data from the ProcessDesign._data dictionary. 
+        Collects data from the ProcessResults._data dictionary. 
         Data that is collected are the annual GHG emissions from:
             Direct emissions in unit-operations (sum in t/y)
             Indirect emissions from Electricity and Chilling (sum in t/y)
@@ -433,7 +435,7 @@ class ProcessResults:
         """
         Description
         -----------
-        Collects data from the ProcessDesign._data dictionary. 
+        Collects data from the ProcessResults._data dictionary. 
         Data that is collected are the annual fresh water demand from:
             Indirect demand from Electricity and Chilling (sum in t/y)
             Indirect demand from Heat (sum in t/y)
@@ -462,13 +464,11 @@ class ProcessResults:
         return FWD_results
     
 
-        
-        
     def _collect_results(self):
         """
         Description
         ----------
-        Calls all collector methods to fill ProcessDesign.results dictionary
+        Calls all collector methods to fill ProcessResults.results dictionary
         with all important results
 
         Returns
@@ -504,6 +504,18 @@ class ProcessResults:
 
 
     def save_results(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the results as .txt file
+
+        Decription
+        -------
+        Collects all important results from the ProcessResults Class object and 
+        saves the data as tables in a text file.
+
+        """
         all_results = self._collect_results()
         
         if not  os.path.exists(path):
@@ -528,6 +540,19 @@ class ProcessResults:
 
 
     def save_data(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the complete data as .txt file
+
+
+        Decription
+        -------
+        Collects all data from the ProcessResults Class object and saves the 
+        data as tables in a text file.
+
+        """
         
         if not  os.path.exists(path):
             os.makedirs(path)        
@@ -541,6 +566,14 @@ class ProcessResults:
 
 
     def save_file(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the ProcessResults object as pickle
+        class object.
+
+        """
         
         path = path + self._case_time + '.pkl'
         
@@ -589,6 +622,13 @@ class ProcessResults:
 
 
     def print_results(self):
+        """
+        Description
+        -------
+        Collects all important results data and prints them as tables to the 
+        console. 
+
+        """
         
         all_results = self._collect_results()
         
@@ -596,10 +636,8 @@ class ProcessResults:
             print('')
             print('')
             print(i)
-            print('--------------')
-            
-            print(tabulate(j.items()))
-            
+            print('--------------')        
+            print(tabulate(j.items()))         
             print('')
             
             

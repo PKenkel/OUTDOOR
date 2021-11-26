@@ -104,7 +104,15 @@ def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
         gwp = [MultiObjectives["NPE"][1]]
         fwd = [MultiObjectives["FWD"][1]]
 
-        for k, v in results.items():
+        # for k, v in results.items():
+        #     tac_temp = v._data["TAC"]
+        #     gwp_temp = v._data["GWP_TOT"]
+        #     fwd_temp = v._data["FWD_TOT"]
+        #     tac.append(tac_temp)
+        #     gwp.append(gwp_temp)
+        #     fwd.append(fwd_temp)
+            
+        for k, v in results._results_data.items():
             tac_temp = v._data["TAC"]
             gwp_temp = v._data["GWP_TOT"]
             fwd_temp = v._data["FWD_TOT"]

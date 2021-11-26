@@ -5,11 +5,13 @@ from ..model.optimization_model import SuperstructureModel
 from .optimizers import solve_singleRun
 from .optimizers import solve_sensitivityRun
 from .optimizers import solve_multiObjectiveRun
+from .optimizers import solve_crossParameterRun
 
 from .instance_processor import create_initialInstance
 
 from ..utils.var_parameters import calculate_sensitiveParameters
 from ..utils.var_parameters import prepare_mutableParameters
+
 
 
 def solve_OptimizationProblem(
@@ -26,7 +28,7 @@ def solve_OptimizationProblem(
     Superstructre : Superstructure Object
         Holds the Superstructure Object that is to be solved
         
-    OptimizationMode: String: 'single', 'sensitivity', 'multi-criteria'
+    OptimizationMode: String: 'single', 'sensitivity', 'multi-criteria', 'cross-parameter'
         Defines which optimization will be carried out. Default is "single"
         
         SINGLE: Single criterion optimization for the set-up defined in 
@@ -37,6 +39,11 @@ def solve_OptimizationProblem(
                     paramteres are varied.
         MULTI-CRITERIA: Multi-criteria optimization with given parameter 
                         set for defined criteria.
+        CROSS-PARAMETER: A cross parameters sensitivity run, where two parameters
+                        have to be declared as sensitive parameters.
+                        An optimization for all combinations of these two parameters
+                        is performend and returned.
+                        
         
     SolverName : String
         Holds the Name of the solver. Solvers have to be installed or 
@@ -138,10 +145,11 @@ def solve_OptimizationProblem(
         total_time = total_time + run_time_go
 
         print(
-            " -- Variation run optimizaton finished, optimization time: ",
+            " -- Sensitivity analysis optimizaton finished, optimization time: ",
             run_time_go,
             " seconds --",
         )
+        results.fill_information(total_time)
         print("")
         print("-- Total case study run time: ", total_time, " seconds --")
 
@@ -166,9 +174,48 @@ def solve_OptimizationProblem(
             run_time_go,
             " seconds --",
         )
+        
+        results.fill_information(total_time)
+        
+        
         print("")
         print("-- Total case study run time: ", total_time, " seconds --")
 
+
+    elif OptimizationMode == 'cross-parameter':
+        
+        # -- CROSS-PARAMETER SENSITIVITY RUN, PREPARE PARAMTERS, SOLVE VARIATIONS -
+        # -----------------------------------------------------------------
+        print("-- Cross-parameter sensitivity run-- ")
+        prepare_mutableParameters(S_Model, Superstructure)
+        cross_parameters = calculate_sensitiveParameters(Superstructure)
+        ModelInstance = create_initialInstance(S_Model, Model_Data)
+        
+        results = solve_crossParameterRun(
+            ModelInstance,
+            SolverName,
+            SolverInterface,
+            cross_parameters,
+            Superstructure)
+        
+        
+        end_time_go = time.time()
+        run_time_go = end_time_go - start_time_go
+        total_time = total_time + run_time_go
+        
+        print(
+            "-- Cross-parameter sensitivity run finished, optimization time: ",
+            run_time_go,
+            " seconds --",
+        )
+        
+        results.fill_information(total_time)
+
+        print("")
+        print("-- Total case study run time: ", total_time, " seconds --")        
+        
+        
+        
 
     else:
         print('Optimization mode not defined')
