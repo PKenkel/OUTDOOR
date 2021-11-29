@@ -906,7 +906,7 @@ class SuperstructureModel(AbstractModel):
         # Total Annualized Costs 
         
         def TAC_1_rule(self):
-            return self.TAC == (self.CAPEX + self.OPEX  - self.PROFITS_TOT) 
+            return self.TAC == (self.CAPEX + self.OPEX  - self.PROFITS_TOT) * 1000
         
         self.TAC_Equation = Constraint(rule=TAC_1_rule)
         
@@ -972,10 +972,6 @@ class SuperstructureModel(AbstractModel):
         def GWP_3_rule(self):
             return self.GWP_UT['Heat'] == self.em_fac_ut['Heat'] * self.H * (sum(self.ENERGY_DEMAND_HEAT_DEFI[hi] for hi in self.HI)  - self.ENERGY_DEMAND_HEAT_PROD_SELL * 0.7)
         
-        def GWP_4_rule(self):
-            return self.GWP_TOT == sum(self.GWP_U[u] for u in self.U_C)   \
-                + sum(self.GWP_UT[ut] for ut in self.UT) - self.GWP_CAPTURE \
-                    - sum(self.GWP_CREDITS[u] for u in self.U_PP) + sum(self.GWP_UNITS[u] for u in self.U_C)  
                     
         def GWP_5_rule(self):
             return self.GWP_UT['Heat2'] == 0
@@ -991,6 +987,11 @@ class SuperstructureModel(AbstractModel):
             return self.GWP_CAPTURE == sum(self.FLOW_SOURCE[u_s] *self.flh[u_s] \
                                               * self.em_fac_source[u_s] for u_s in self.U_S) 
     
+    
+        def GWP_4_rule(self):
+            return self.GWP_TOT == sum(self.GWP_U[u] for u in self.U_C)   \
+                + sum(self.GWP_UT[ut] for ut in self.UT) - self.GWP_CAPTURE \
+                    - sum(self.GWP_CREDITS[u] for u in self.U_PP) + sum(self.GWP_UNITS[u] for u in self.U_C)
 
         
         self.EnvironmentalEquation1 = Constraint(self.U_C, rule = GWP_1_rule)
@@ -1434,12 +1435,19 @@ class SuperstructureModel(AbstractModel):
         
         # Parameter
         # ---------
+         
+        self.ProductLoad = Param()
         
         
         # Variables
         # ---------
         
         self.MainProductFlow = Var()
+        
+        self.NPC = Var()
+        self.NPFWD = Var()
+        self.NPE = Var()
+        
         
         
         # Constraints
@@ -1460,7 +1468,7 @@ class SuperstructureModel(AbstractModel):
                                 sum(self.FLOW_IN[Number_Temp,i] for i in self.I) * self.H
                         
                         def MainProduct_2_rule(self):
-                            return self.MainProductFlow == self.SS.ProductLoad
+                            return self.MainProductFlow == self.ProductLoad
 
             
         self.MainProduct_Equation_1 = Constraint(rule=MainProduct_1_rule)
@@ -1469,28 +1477,44 @@ class SuperstructureModel(AbstractModel):
 
 
 
-
+        # Definition of specific fucntion
+        
+        def Specific_1_rule(self):
+            return self.NPC == self.TAC * 1000 / self.ProductLoad
+        
+        def Specific_2_rule(self):
+            return self.NPE == self.GWP_TOT / self.ProductLoad 
+            
+        def Specific_3_rule(self):
+            return self.NPFWD == self.FWD_TOT  / self.ProductLoad 
+        
+        
+        self.Specific_Equation_1 = Constraint(rule=Specific_1_rule)
+        self.Specific_Equation_2 = Constraint(rule=Specific_2_rule)
+        self.Specific_Equation_3 = Constraint(rule=Specific_3_rule)
+        
+        
         # Definition of the used Objective Function
         
         if self.SS.objective == 'NPC':
             
             def Objective_rule(self):
-                return self.TAC 
+                return self.NPC
             
         elif self.SS.objective  == 'NPE':
             
             def Objective_rule(self):
-                return self.GWP_TOT 
+                return self.NPE
             
         elif self.SS.objective == "FWD":
         
             def Objective_rule(self):
-                return self.FWD_TOT 
+                return self.NPFWD
             
         else:
             
             def Objective_rule(self):
-                return self.TAC  
+                return self.NPC
     
         self.Objective = Objective(rule=Objective_rule, sense=minimize)
         

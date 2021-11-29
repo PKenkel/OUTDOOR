@@ -78,21 +78,21 @@ def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
     if Obj == "NPC":
 
         def Objective_rule(Instance):
-            return Instance.TAC
+            return Instance.NPC
 
         Instance.Objective = Objective(rule=Objective_rule, sense=minimize)
 
     elif Obj == "NPE":
 
         def Objective_rule(Instance):
-            return Instance.GWP_TOT
+            return Instance.NPE
 
         Instance.Objective = Objective(rule=Objective_rule, sense=minimize)
 
     elif Obj == "FWD":
 
         def Objective_rule(Instance):
-            return Instance.FWD_TOT
+            return Instance.NPFWD
 
         Instance.Objective = Objective(rule=Objective_rule, sense=minimize)
 
@@ -100,48 +100,39 @@ def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
 
         print("change objective to MCDA")
 
-        tac = [MultiObjectives["NPC"][1]]
-        gwp = [MultiObjectives["NPE"][1]]
-        fwd = [MultiObjectives["FWD"][1]]
+        # Create list with all values, start with reference values
+        npc = [MultiObjectives["NPC"][1]]
+        npe = [MultiObjectives["NPE"][1]]
+        npfwd = [MultiObjectives["FWD"][1]]
 
-        # for k, v in results.items():
-        #     tac_temp = v._data["TAC"]
-        #     gwp_temp = v._data["GWP_TOT"]
-        #     fwd_temp = v._data["FWD_TOT"]
-        #     tac.append(tac_temp)
-        #     gwp.append(gwp_temp)
-        #     fwd.append(fwd_temp)
-            
+
+        # Add values from all preceding single-criterion runs    
         for k, v in results._results_data.items():
-            tac_temp = v._data["TAC"]
-            gwp_temp = v._data["GWP_TOT"]
-            fwd_temp = v._data["FWD_TOT"]
-            tac.append(tac_temp)
-            gwp.append(gwp_temp)
-            fwd.append(fwd_temp)
+            npc_temp = v._data["NPC"]
+            npe_temp = v._data["NPE"]
+            npfwd_temp = v._data["NPFWD"]
+            
+            npc.append(npc_temp)
+            npe.append(npe_temp)
+            npfwd.append(npfwd_temp)
 
-        best_tac = min(tac)
-        worst_tac = max(tac)
+        # Check for best and worst values
+        
+        best_npc = min(npc)
+        worst_npc = max(npc)
 
-        best_gwp = min(gwp) * 1e-04
-        worst_gwp = max(gwp) * 1e-04
+        best_npe = min(npe)
+        worst_npe = max(npe)
 
-        best_fwd = min(fwd) * 1e-04
-        worst_fwd = max(fwd) * 1e-04
+        best_npfwd = min(npfwd)
+        worst_npfwd = max(npfwd)
 
-        Instance.GWP_ad = Var()
-        Instance.FWD_ad = Var()
 
-        def GWP_ad_rule(Instance):
-            return Instance.GWP_ad == Instance.GWP_TOT * 1e-04
-
-        def FWD_ad_rule(Instance):
-            return Instance.FWD_ad == Instance.FWD_TOT * 1e-04
-
-        Instance.GWP_ad_Con = Constraint(rule=GWP_ad_rule)
-        Instance.FWD_ad_Con = Constraint(rule=FWD_ad_rule)
-
+        # Create new set with objectives 
+        # Create new parameter which is the score depending on criterion
+        
         Instance.ObjSet = Set(initialize=["NPC", "NPE", "FWD"])
+        
         Instance.V_pos = Param(
             Instance.ObjSet,
             initialize={
@@ -157,24 +148,25 @@ def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
 
         Instance.V = Var(Instance.ObjSet)
 
+
         def mTAC_rule(Instance):
             return (
                 Instance.V["NPC"]
-                == ((worst_tac - Instance.TAC) / (worst_tac - best_tac))
+                == ((worst_npc - Instance.NPC) / (worst_npc - best_npc))
                 * MultiObjectives["NPC"][0]
             )
 
         def mGWP_rule(Instance):
             return (
                 Instance.V["NPE"]
-                == ((worst_gwp - Instance.GWP_ad) / (worst_gwp - best_gwp))
+                == ((worst_npe - Instance.NPE) / (worst_npe - best_npe))
                 * MultiObjectives["NPE"][0]
             )
 
         def mFWD_rule(Instance):
             return (
                 Instance.V["FWD"]
-                == ((worst_fwd - Instance.FWD_ad) / (worst_fwd - best_fwd))
+                == ((worst_npfwd - Instance.NPFWD) / (worst_npfwd - best_npfwd))
                 * MultiObjectives["FWD"][0]
             )
 

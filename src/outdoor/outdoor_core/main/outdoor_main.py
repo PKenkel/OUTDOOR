@@ -162,7 +162,6 @@ def solve_OptimizationProblem(
         print("-- Multi-objective optimization run -- ")
         ModelInstance = create_initialInstance(S_Model, Model_Data)
         MultiObjectives = Superstructure.multi_objectives
-        print(MultiObjectives)
         results = solve_multiObjectiveRun(
             ModelInstance, SolverName, SolverInterface, MultiObjectives
         )

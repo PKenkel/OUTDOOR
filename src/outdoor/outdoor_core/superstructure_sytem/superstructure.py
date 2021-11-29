@@ -63,7 +63,7 @@ class Superstructure():
             
         self.ModelName = ModelName
         self.MainProduct = MainProduct
-        self.ProductLoad = ProductLoad
+        self.ProductLoad = {'ProductLoad': ProductLoad}
         
 
 
@@ -888,6 +888,7 @@ class Superstructure():
         self.NI_ParameterList.append(self.decimal_set)
         self.NI_ParameterList.append(self.distributor_subset2)
         self.NI_ParameterList.append(self.OtherUtilitiesList)
+        self.NI_ParameterList.append(self.ProductLoad)
         
         
         
