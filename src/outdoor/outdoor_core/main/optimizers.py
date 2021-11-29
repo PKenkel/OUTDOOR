@@ -80,7 +80,7 @@ def solve_multiObjectiveRun(
 
     start_time = time.time()
     
-    results = MultipleResults(optimization_mode='Multi-critera optimization')
+    results = MultipleResults(optimization_mode='Multi-criteria optimization')
     
     
 
@@ -122,7 +122,7 @@ def solve_sensitivityRun(
     print("Preparing copy of initial model")
     InitialModel = copy.deepcopy(ModelInstance)
     print("Initial copy prepared")
-    results = MultipleResults(optimization_mode='Sensitivity Analysis')
+    results = MultipleResults(optimization_mode='Sensitivity analysis')
 
     for i, k in variations_parameter.items():
         if type(k) is dict:

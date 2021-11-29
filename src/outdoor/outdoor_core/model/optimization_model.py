@@ -58,7 +58,7 @@ class SuperstructureModel(AbstractModel):
         self.create_EnvironmentalEvaluation()
         self.create_FreshwaterEvaluation()
         # self.create_DecisionMaking()
-        self.create_DecisionMaking_Chemicals()
+        # self.create_DecisionMaking_Chemicals()
         self.create_ObjectiveFunction()
         
     def populateModel(self, Data_file):
@@ -646,7 +646,6 @@ class SuperstructureModel(AbstractModel):
         self.delta_ut = Param(self.U_UT, initialize = 0)
         self.delta_q = Param(self.HI, initialize=30)
         self.delta_cool = Param(initialize = 15)
-        self.delta_rm = Param(self.I, initialize=0)
         self.ProductPrice =Param(self.U_PP, initialize=0)
         
         # Cost factors (CAPEX, Heat Pump)
@@ -907,7 +906,7 @@ class SuperstructureModel(AbstractModel):
         # Total Annualized Costs 
         
         def TAC_1_rule(self):
-            return self.TAC == self.CAPEX + self.OPEX  - self.PROFITS_TOT
+            return self.TAC == (self.CAPEX + self.OPEX  - self.PROFITS_TOT) 
         
         self.TAC_Equation = Constraint(rule=TAC_1_rule)
         
@@ -1473,25 +1472,25 @@ class SuperstructureModel(AbstractModel):
 
         # Definition of the used Objective Function
         
-        if self.SS.Objective == 'NPC':
+        if self.SS.objective == 'NPC':
             
             def Objective_rule(self):
-                return self.TAC
+                return self.TAC 
             
-        elif self.SS.Objective  == 'NPE':
+        elif self.SS.objective  == 'NPE':
             
             def Objective_rule(self):
-                return self.GWP_TOT
+                return self.GWP_TOT 
             
-        elif self.SS.Objective == "FWD":
+        elif self.SS.objective == "FWD":
         
             def Objective_rule(self):
-                return self.FWD_TOT
+                return self.FWD_TOT 
             
         else:
             
             def Objective_rule(self):
-                return self.TAC        
+                return self.TAC  
     
         self.Objective = Objective(rule=Objective_rule, sense=minimize)
         

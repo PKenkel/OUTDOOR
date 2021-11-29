@@ -68,6 +68,7 @@ def solve_OptimizationProblem(
         of the Single/Multi run designs as python dictionaries.
 
     """
+    
 
     # -- START OPTIMIZATION ALGORITHM --
     # ----------------------------------
@@ -155,13 +156,13 @@ def solve_OptimizationProblem(
 
 
     elif OptimizationMode == "multi-objective":
-
+        
         # -- MULTI-OBJECTIVE RUN, CREATE AN INSTANCE, SOLVE MULTIPLE CRITERIA -
         # -----------------------------------------------------------------
         print("-- Multi-objective optimization run -- ")
         ModelInstance = create_initialInstance(S_Model, Model_Data)
-        MultiObjectives = Superstructure.Objectives
-
+        MultiObjectives = Superstructure.multi_objectives
+        print(MultiObjectives)
         results = solve_multiObjectiveRun(
             ModelInstance, SolverName, SolverInterface, MultiObjectives
         )

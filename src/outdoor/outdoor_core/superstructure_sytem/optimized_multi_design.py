@@ -22,7 +22,15 @@ class MultipleResults:
         self._results_data = {}
         self._multi_criteria_data = None
         self._sensitivity_data = None
-        self._optimization_mode = optimization_mode
+        self._optimization_mode_set = {'Sensitivity analysis', 
+                                       'Multi-criteria optimization', 
+                                       'Cross-parameter sensitivity'}
+        
+        if optimization_mode in self._optimization_mode_set:
+            self._optimization_mode = optimization_mode
+        else: 
+            print('Optimization mode not supported')
+
 
 
     def add_process(self, index, process_results):    
@@ -79,6 +87,35 @@ class MultipleResults:
 
                 print('')
 
+
+
+    def create_sensitivity_graph(self):
+        
+        if self._optimization_mode == 'Sensitivity analysis':
+        
+            data  = self._collect_sensi_data()
+  
+            for i,j in data.items():
+                
+                x_vals = j[0]
+                y_vals = j[1]
+                titel = i
+                
+                fig, ax  = plt.subplots()
+                
+                ax.set_xlabel(titel)
+                ax.set_ylabel('Net production costs in €/t')
+                fig.set_dpi(750)
+                
+                ax.plot(x_vals, y_vals, linestyle='--', 
+                    marker='o')       
+        else:
+            print('Sensitivity graph presentation only available for  \
+                  Sensitivity analysis mode')
+            
+
+
+# Private methods
                 
     def _collect_sensi_data(self):
         
@@ -105,25 +142,36 @@ class MultipleResults:
         
         return data
             
-                
+  
+    
+    def create_mcda_table(self, table_type = 'values'):
+        if self._optimization_mode == 'Multi-criteria optimization':
+            # TODO
+            data = self._collect_mcda_data(table_type)
+            table = tabulate(data)
+            
+            
+            print('')
+            print(table_type)
+            print('--------')
+            print(table)
+            print('')
+        else:
+            print('MCDA table representation is only supported for optimization \
+                  mode Multi-criteria optimization')
+        
+    
+    
+    def _collect_mcda_data(self, data_type = 'values'):
+        # TODO
+        
+        mpf = self._results_data['MCDA']._data['MainProductFlow']
+        
+        data = {}
+        
+        return data
+        
+    
+              
 
                 
-    def create_sensi_graph(self):
-        
-        data  = self._collect_sensi_data()
-  
-        for i,j in data.items():
-            
-            x_vals = j[0]
-            y_vals = j[1]
-            titel = i
-            
-            fig, ax  = plt.subplots()
-            
-            ax.set_xlabel(titel)
-            ax.set_ylabel('Net production costs in €/t')
-            fig.set_dpi(750)
-            
-            ax.plot(x_vals, y_vals, linestyle='--', 
-                marker='o')       
-            

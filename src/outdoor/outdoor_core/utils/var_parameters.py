@@ -16,7 +16,7 @@ def calculate_sensitiveParameters(Superstructure):
         
         return list_
 
-    for i in Superstructure.SensiParameters:
+    for i in Superstructure.sensitive_parameters:
         if len(i) == 4:
             value_dic[i[0]] = calc_points(i)
         elif len(i) == 5:
@@ -57,6 +57,6 @@ def prepare_mutableParameters(ModelInstance, Superstructure):
             raise ValueError('Parameter to set mutable not existing')
         
         
-    for i in Superstructure.SensiParameters:
+    for i in Superstructure.sensitive_parameters:
         name = i[0]
         set_mutable(ModelInstance,name)
