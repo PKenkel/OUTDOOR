@@ -131,12 +131,12 @@ class MultipleResults:
             if titel not in data.keys():
                 data[titel] = ([[], []])
                 x = i[-1]
-                y = round(j._data['TAC'] * 1e6 / j._data['MainProductFlow'], 2)
+                y = round(j._data['NPC'], 2)
                 data[titel][0].append(x)
                 data[titel][1].append(y)
             else:
                 x = i[-1]
-                y = round(j._data['TAC'] * 1e6 / j._data['MainProductFlow'], 2)
+                y = round(j._data['NPC'], 2)
                 data[titel][0].append(x)
                 data[titel][1].append(y)   
         
@@ -146,10 +146,13 @@ class MultipleResults:
     
     def create_mcda_table(self, table_type = 'values'):
         if self._optimization_mode == 'Multi-criteria optimization':
-            # TODO
-            data = self._collect_mcda_data(table_type)
-            table = tabulate(data)
             
+            data = self._collect_mcda_data(table_type)
+            index = ['NPC', 'NPE', 'FWD']
+            if table_type != 'relative closeness':
+                table = tabulate(data,headers='keys', showindex = index) 
+            else:
+                table = tabulate(data, headers = 'keys')
             
             print('')
             print(table_type)
@@ -162,14 +165,96 @@ class MultipleResults:
         
     
     
-    def _collect_mcda_data(self, data_type = 'values'):
-        # TODO
+    def _collect_mcda_data(self, table_type = 'values'):
+        data = dict()
         
-        mpf = self._results_data['MCDA']._data['MainProductFlow']
+        r_npc = round(self._multi_criteria_data['NPC'][1], 2)
+        r_npe = round(self._multi_criteria_data['NPE'][1], 2)
+        r_fwd = round(self._multi_criteria_data['FWD'][1], 2)
         
-        data = {}
+        if table_type == 'values':
+            data['Ref'] = [r_npc, r_npe, r_fwd]
+            
+            for i,j in self._results_data.items():
+                npc = round(j._data['NPC'], 2)
+                npe = round(j._data['NPE'], 2)
+                fwd = round(j._data['NPFWD'], 2)
+                
+                data[i] = [npc, npe, fwd]
+                        
+        else:
+            
+            npc_list = [r_npc]
+            npe_list = [r_npe]
+            fwd_list = [r_fwd]
+            
+            for i in self._results_data.values():
+                npc_list.append(i._data['NPC'])
+                npe_list.append(i._data['NPE'])
+                fwd_list.append(i._data['NPFWD'])
+            
+            best_npc = min(npc_list)
+            worst_npc = max(npc_list)
+    
+            best_npe = min(npe_list)
+            worst_npe = max(npe_list)
+    
+            best_fwd = min(fwd_list)
+            worst_fwd = max(fwd_list)  
+            
+            
+            r_npc = round((worst_npc - r_npc) / (worst_npc-best_npc),3)
+            r_npe = round((worst_npe - r_npe) / (worst_npe-best_npe),3)
+            r_fwd = round((worst_fwd - r_fwd) / (worst_fwd-best_fwd),3)
+            
+            npc_weight = self._multi_criteria_data['NPC'][0]
+            npe_weight = self._multi_criteria_data['NPE'][0]
+            fwd_weight = self._multi_criteria_data['FWD'][0]
+            
+            
+            # Prepare Reference values
+            
+            if table_type == 'scores':
+                data['Ref'] = [r_npc, r_npe, r_fwd]
+            else:
+                data['Ref'] = [r_npc * npc_weight, 
+                               r_npe * npe_weight, 
+                               r_fwd * fwd_weight]
+                
+                
+            
+            
+            # Prepare calculated values
+            for i,j in self._results_data.items():
+                npc = round((worst_npc - j._data['NPC']) / (worst_npc-best_npc),3)
+                npe = round((worst_npe - j._data['NPE']) / (worst_npe-best_npe),3)
+                fwd = round((worst_fwd - j._data['NPFWD']) / (worst_fwd-best_fwd),3)
+                
+                if table_type == 'scores':
+                
+                    data[i] =[npc, npe, fwd]
+                
+                else:
+                    
+                    data[i] = [npc * npc_weight, npe * npe_weight, fwd * fwd_weight]
+                    
+
+            if table_type == 'relative closeness':
+                C = {}
+                
+                for i,j in data.items():
+                    d_p = abs(npc_weight-j[0]) + abs(npe_weight-j[1]) + abs(fwd_weight-j[2])
+                    d_n = abs(0-j[0]) + abs(0-j[1]) + abs(0-j[2])       
+                    C[i]  = [round(d_n / (d_p+d_n),5)]   
+                
+                data = C
+    
         
+            
         return data
+                    
+                    
+   
         
     
               

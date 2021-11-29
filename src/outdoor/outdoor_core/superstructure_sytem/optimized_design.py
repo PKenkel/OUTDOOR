@@ -133,8 +133,6 @@ class ProcessResults:
         
         basic_results['Basic results'] = {}
         
-        mpf  = self._data['MainProductFlow']
-        
         basic_results['Basic results']['Objective Function'] = \
             self._objective_function
             
@@ -148,13 +146,13 @@ class ProcessResults:
             self._solver        
             
         basic_results['Basic results']['Net production costs'] = \
-            round(self._data['TAC'] * 1e6 / mpf,2)
+            round(self._data['NPC'], 2)
             
         basic_results['Basic results']['Net production GHG emissions'] = \
-            round(self._data['GWP_TOT'] / mpf,3)
+            round(self._data['NPE'], 3)
             
         basic_results['Basic results']['Net present FWD'] = \
-            round(self._data['FWD_TOT'] / mpf,3)
+            round(self._data['NPFWD'], 3)
             
         return basic_results
 

@@ -58,7 +58,7 @@ class SuperstructureModel(AbstractModel):
         self.create_EnvironmentalEvaluation()
         self.create_FreshwaterEvaluation()
         # self.create_DecisionMaking()
-        # self.create_DecisionMaking_Chemicals()
+        self.create_DecisionMaking_Chemicals()
         self.create_ObjectiveFunction()
         
     def populateModel(self, Data_file):
