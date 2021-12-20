@@ -27,7 +27,10 @@ class Superstructure():
                                          'capital_costs', 
                                          'heating_demand', 
                                          'component_concentration', 
-                                         'source_costs'}
+                                         'source_costs',
+                                         'opex',
+                                         'simple_capex',
+                                         'product_price'}
 
 
 
@@ -116,6 +119,11 @@ class Superstructure():
         self.LinIntervalsList = {'JI': []} 
         self.UnitNames = {'Names': {}}
         # --------------
+        
+        self.groups  = dict()
+        self.connections = dict()
+        
+        
         
         
         # Databased input load (UNDER CONSTRUCTION)

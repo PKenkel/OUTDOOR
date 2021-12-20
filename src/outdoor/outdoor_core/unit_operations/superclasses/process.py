@@ -32,6 +32,9 @@ class Process():
         self.Number = UnitNumber
         self.Type = None
         self.Group = None
+        self.Connections = dict()
+        
+        
         
         self.Possible_Sources = []
         
@@ -72,6 +75,16 @@ class Process():
                 superstructure.SourceSet['U_SU'].append((i,self.Number))
         
         
+        if self.Group is not None:
+            try:
+                superstructure.groups[self.Group].append(self.Number)
+            except:
+                superstructure.groups[self.Group] = [self.Number]
+                
+        if self.Connections:
+            superstructure.connections[self.Number] = dict()
+            for i,j in self.Connections.items():
+                superstructure.connections[self.Number][i] = j
 
 
     # GENERAL DATA SETTING
@@ -87,6 +100,8 @@ class Process():
         self.set_group(ProcessGroup)
         self.set_full_load_hours(full_load_hours)
 
+
+
     def set_name(self, Name):
         self.Name = Name
         
@@ -100,7 +115,9 @@ class Process():
         self.FLH['flh'][self.Number] = full_load_hours
 
 
-
+    def set_connections(self, units_dict):
+        self.Connections = units_dict
+        
 
 
 
@@ -230,7 +247,6 @@ class Process():
 
     # ADDITIONAL METHODS 
     # ------------------
-
 
 
 

@@ -17,7 +17,14 @@ def change_source_costs(Instance, Parameter, Value, Index = None, Superstructure
         
     
 
-
+def change_product_price(Instance, Parameter, Value, Index = None, Superstructure = None):
+    
+    for i in Superstructure.UnitsList:
+        if i.Number == Index:
+            
+            Instance.ProductPrice[Index] = Value 
+            
+    return Instance
 
 
     

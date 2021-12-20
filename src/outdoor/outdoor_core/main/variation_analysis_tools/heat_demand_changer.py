@@ -8,6 +8,7 @@ Created on Tue Jun 15 11:54:16 2021
 
 
 def change_heat_demand(Instance, Parameter, Value, Index = None, Superstructure = None):
+    '# currently not working in excel wrapper'
     if Value > 0:
         tau_h = Value
         Instance.tau_h[Index] = tau_h

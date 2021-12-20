@@ -62,7 +62,7 @@ class MultipleResults:
         if not  os.path.exists(path):
             os.makedirs(path)
             
-        path = path + self._case_time + '.txt'
+        path = path + '/' + 'results_file'  + self._case_time + '.txt'
         
         with open(path, encoding='utf-8', mode = 'w') as f:
             
@@ -89,31 +89,136 @@ class MultipleResults:
 
 
 
+    def save_data(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the complete data as .txt file
+
+
+        Decription
+        -------
+        Collects all data from the ProcessResults Class object and saves the 
+        data as tables in a text file.
+
+        """
+        
+        if not  os.path.exists(path):
+            os.makedirs(path)        
+            
+        path = path + '/' + 'input_file' + self._case_time + 'data.txt'
+        
+        with open(path, encoding = 'utf-8', mode = 'w') as f:
+            
+            for i,j in self._results_data.items():
+                f.write(f'Identifier of single run: {i} \n')
+                all_data = j._data
+                
+                for k,t in all_data.items():
+                    f.write(f'{k}: {t} \n \n')
+                    
+                f.write(' ----------------- \n \n')
+
+
+
+
+    def save_file(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the ProcessResults object as pickle
+        class object.
+
+        """
+        
+        path = path + '/' + 'data_file' + self._case_time + '.pkl'
+        
+        with open(path, 'wb') as output:
+            pic.dump(self, output)
+
+
+
+
     def create_sensitivity_graph(self):
         
         if self._optimization_mode == 'Sensitivity analysis':
         
             data  = self._collect_sensi_data()
+            
+            len_ = len(data)
+            
+            fig = plt.figure()
+            
+            count = 1
   
             for i,j in data.items():
                 
                 x_vals = j[0]
                 y_vals = j[1]
                 titel = i
-                
-                fig, ax  = plt.subplots()
+
+                ax = fig.add_subplot(len_,1,count)
                 
                 ax.set_xlabel(titel)
                 ax.set_ylabel('Net production costs in €/t')
-                fig.set_dpi(750)
+
                 
                 ax.plot(x_vals, y_vals, linestyle='--', 
-                    marker='o')       
+                    marker='o')  
+                
+                count +=1
+                
+            
+            return fig
         else:
             print('Sensitivity graph presentation only available for  \
                   Sensitivity analysis mode')
             
 
+
+    def create_mcda_table(self, table_type = 'values'):
+        if self._optimization_mode == 'Multi-criteria optimization':
+            
+            data = self._collect_mcda_data(table_type)
+            index = ['NPC', 'NPE', 'FWD']
+            if table_type != 'relative closeness':
+                table = tabulate(data,headers='keys', showindex = index) 
+            else:
+                table = tabulate(data, headers = 'keys')
+            
+            print('')
+            print(table_type)
+            print('--------')
+            print(table)
+            print('')
+        else:
+            print('MCDA table representation is only supported for optimization \
+                  mode Multi-criteria optimization')
+
+
+
+    def create_plot_bar(self, 
+                        user_input, 
+                        save='No',
+                        Path=None):
+        
+        for i,j in self._results_data.items():
+            
+            
+            j.create_plot_bar(user_input,
+                              save,
+                              Path)
+            
+    def create_flowchart(self, path):
+        
+        for i,j in self._results_data.items():
+            
+            path_  = path + '/' + str(i)
+            
+            j.create_flowchart(path_)
+            
 
 # Private methods
                 
@@ -144,26 +249,7 @@ class MultipleResults:
             
   
     
-    def create_mcda_table(self, table_type = 'values'):
-        if self._optimization_mode == 'Multi-criteria optimization':
-            
-            data = self._collect_mcda_data(table_type)
-            index = ['NPC', 'NPE', 'FWD']
-            if table_type != 'relative closeness':
-                table = tabulate(data,headers='keys', showindex = index) 
-            else:
-                table = tabulate(data, headers = 'keys')
-            
-            print('')
-            print(table_type)
-            print('--------')
-            print(table)
-            print('')
-        else:
-            print('MCDA table representation is only supported for optimization \
-                  mode Multi-criteria optimization')
-        
-    
+
     
     def _collect_mcda_data(self, table_type = 'values'):
         data = dict()

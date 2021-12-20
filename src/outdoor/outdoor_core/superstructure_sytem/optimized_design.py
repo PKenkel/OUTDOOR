@@ -11,6 +11,13 @@ from tabulate import tabulate
 import os 
 import datetime
 import cloudpickle as pic
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import pydot
+
+
+
 
 
 class ProcessResults:
@@ -56,12 +63,19 @@ class ProcessResults:
 
 
         for i in instance.component_objects():
-            
-            
-            if "pyomo.core.base.var.SimpleVar" in str(type(i)):
-                self._data[i.local_name] = i.value
 
+            if "pyomo.core.base.var.SimpleVar" in str(type(i)):
+
+                self._data[i.local_name] = i.value
+                
+            elif "pyomo.core.base.var.ScalarVar" in str(type(i)):
+                self._data[i.local_name] = i.value
+                
             elif "pyomo.core.base.param.SimpleParam" in str(type(i)):
+                self._data[i.local_name] = i.value
+                
+            elif "pyomo.core.base.param.ScalarParam" in str(type(i)):
+                    
                 self._data[i.local_name] = i.value
 
             elif "pyomo.core.base.param.IndexedParam" in str(type(i)):
@@ -75,9 +89,19 @@ class ProcessResults:
                 self._data[i.local_name] = i.value_list
 
             elif "pyomo.core.base.sets.SimpleSet" in str(type(i)):
+                    
+                self._data[i.local_name] = i.value_list
+                
+            elif "pyomo.core.base.sets.ScalarSet" in str(type(i)):
+                
                 self._data[i.local_name] = i.value_list
                 
             elif "pyomo.core.base.objective.SimpleObjective" in str(type(i)):
+                    
+                self._data['Objective Function'] = i.expr.to_string()
+            
+            elif "pyomo.core.base.objective.ScalarObjective" in str(type(i)):
+                
                 self._data['Objective Function'] = i.expr.to_string()
             else:
                 continue
@@ -211,7 +235,7 @@ class ProcessResults:
         """
         economic_results = {'Economic results': {}}
         
-        total_costs = self._data['TAC'] 
+        total_costs = self._data['TAC'] / 1000
 
         profits  = 0
         wwt  = 0
@@ -401,19 +425,19 @@ class ProcessResults:
         for i in self._data['GWP_CREDITS'].values():
             if i is not None and i >= 1e-05:
                 ghg_ab += i
-                
-        GHG_results['Green house gas emission shares']['Electricity'] \
-            = round(self._data['GWP_UT']['Electricity'], 0)
-            
-        GHG_results['Green house gas emission shares']['Chilling'] \
-            = round(self._data['GWP_UT']['Chilling'], 0)
-            
-        GHG_results['Green house gas emission shares']['Heat'] \
-            = round(self._data['GWP_UT']['Chilling'], 0)
- 
+
         GHG_results['Green house gas emission shares']['Direct emissions'] \
             = round(ghg_d, 0)
             
+        GHG_results['Green house gas emission shares']['Electricity'] \
+            = round(self._data['GWP_UT']['Electricity'], 0)
+            
+        GHG_results['Green house gas emission shares']['Heat'] \
+            = round(self._data['GWP_UT']['Heat'], 0)
+                       
+        GHG_results['Green house gas emission shares']['Chilling'] \
+            = round(self._data['GWP_UT']['Chilling'], 0)
+                        
         GHG_results['Green house gas emission shares']['Plant building emissions'] \
             = round(ghg_b, 0)
             
@@ -449,15 +473,15 @@ class ProcessResults:
         
         FWD_results['Fresh water demand shares']['Indirect demand from raw materials'] \
             = round(-self._data['FWD_S'], 0)
-
-        FWD_results['Fresh water demand shares']['Avoided burden from byproducds'] \
-            = round(-self._data['FWD_C'], 0)
         
         FWD_results['Fresh water demand shares']['Utilities (Electricity and chilling)'] \
             = round(self._data['FWD_UT1'], 0)
 
         FWD_results['Fresh water demand shares']['Utilities (Heating)'] \
             = round(self._data['FWD_UT2'], 0)
+            
+        FWD_results['Fresh water demand shares']['Avoided burden from byproducds'] \
+            = round(-self._data['FWD_C'], 0)
 
         return FWD_results
     
@@ -493,11 +517,137 @@ class ProcessResults:
         return self.results                
         
                         
+
+
+
         
         
         
 # Public Methods ------
 # --------------------- 
+
+
+    def create_plot_bar(self, 
+                        user_input, 
+                        save = False,    
+                        Path = None,
+                        gui = False):
+        
+                
+        
+        fig = plt.figure()
+        ax1 = fig.add_subplot()
+        
+  
+
+        data = self._collect_results()[user_input]
+        
+        labels = list()
+        values = list()
+        
+        for i,j in data.items():
+            labels.append(i)
+            values.append(j)
+        
+        value_sum = round(sum(values))
+        
+        series = pd.Series(data=data, index=data.keys(), name=' ')
+        
+        plot_labels = {'Breakdown': None,
+                       'titel': user_input,
+                       'total': ' ',
+                       }
+        
+        
+        if value_sum == 100:
+            plot_labels['Breakdown'] = 'Breakdown (%)'
+            
+            if user_input == 'Economic results':
+                NPC = round(self._data['NPC'])
+                plot_labels['total'] = f'NPC are {NPC} €/ ton'         
+          
+        else:
+            if user_input == 'Heating and cooling':
+                plot_labels['Breakdown'] = 'Amounts in MW'
+
+            else:
+                plot_labels['Breakdown'] = 'Breakdown'
+
+        
+
+        
+        if plot_labels['total']:   
+          total = plot_labels['total']
+        else:
+          total = None
+         
+        titel = plot_labels['titel']
+        
+      
+        plt.rcParams['figure.dpi'] = 160
+        
+        my_colors = plt.cm.Greys(np.linspace(0.0, 0.7, len(values)))
+        
+        axes = pd.DataFrame(series).T.plot(
+                                           kind='bar', 
+                                           stacked=True,
+                                           rot='horizontal', 
+                                           figsize=(3, 4),
+                                           title= f' {titel}, {total}',
+                                           edgecolor = 'k',
+                                           color=my_colors,
+                                           legend=None,
+                                           ax = ax1
+                                           )                
+        
+        ax1.tick_params(
+                        axis='x',          
+                        which='both',      
+                        bottom=False,      
+                        top=False,        
+                        labelbottom=False
+                        )
+        
+        axes.spines['top'].set_visible(False)
+  
+        colLabels = [plot_labels['Breakdown'] for i in range(len(values))]
+        array=(np.array(values, dtype=float).reshape((len(values), 1)))
+        
+        ax1.table(cellText=array,
+                          rowLabels=labels,
+                          rowColours=my_colors,
+                          colLabels=colLabels,
+                          cellLoc='center',
+                          loc='bottom'
+                        )    
+
+
+              
+        # Save input file if save statement = True
+        if save == True:
+            date_time_now = datetime.datetime.now().strftime("%Y_%m_%d__%H-%M-%S")
+            
+            if Path == None:
+                my_path = os.path.abspath(__file__)
+                plt.savefig('/{}_Chart_{}.pdf'.format(date_time_now, user_input), dpi=160, bbox_inches='tight')
+                print('Saved in {}'.format(my_path))
+    
+            if Path is not None:
+                assert os.path.exists(
+                    Path), "This file path does not seem to exist: "+str(Path)
+                plt.savefig(Path.rstrip('.py')+'/{}_Chart_{}.pdf'.format(date_time_now, user_input), dpi=160, bbox_inches='tight')
+                print('Saved in {}'.format(Path))
+        
+        
+                
+        # Create temp-file for presentation in GUI
+        if gui == True:     
+            plt.savefig('temp/new.png', dpi =160, bbox_inches='tight')
+            
+            
+
+
+        return fig
 
 
 
@@ -520,7 +670,7 @@ class ProcessResults:
             os.makedirs(path)
         
         
-        path = path + self._case_time + '.txt'
+        path = path + '/results_file' + self._case_time + '.txt'
           
         with open(path, encoding='utf-8', mode = 'w') as f:
                         
@@ -555,7 +705,9 @@ class ProcessResults:
         if not  os.path.exists(path):
             os.makedirs(path)        
             
-        path = path + self._case_time + 'data.txt'
+        path = path + '/' + 'input_file' + self._case_time + '_data.txt'
+        
+
         
         with open(path, encoding = 'utf-8', mode = 'w') as f:
             
@@ -573,7 +725,7 @@ class ProcessResults:
 
         """
         
-        path = path + self._case_time + '.pkl'
+        path = path + '/' + 'data_file' + self._case_time + '.pkl'
         
         with open(path, 'wb') as output:
             pic.dump(self, output)
@@ -599,7 +751,9 @@ class ProcessResults:
             else:
                 print(self._data[data_name])
                 
-                    
+ 
+
+                   
                 
     def return_chosen(self):
        flow = self._data['FLOW_IN']
@@ -617,6 +771,8 @@ class ProcessResults:
                    chosen[i] = names[i]
        return chosen
         
+
+
 
 
     def print_results(self):
@@ -638,8 +794,135 @@ class ProcessResults:
             print(tabulate(j.items()))         
             print('')
             
+         
             
+    def create_flowchart(self, path):
+        
+        def make_node(graph, name, shape):
+            """
+            Parameters
+            ----------
+            graph : Dot class
+            name : String
 
+            shape : String (Options check documentation of graphviz module)
+
+         
+            Returns
+            -------
+            node : Pydot Node object
+
+            """
+            
+            node = pydot.Node(name, height=0.5, width=2, fixedsize=True)
+            node.set_shape(shape)
+            graph.add_node(node)
+            
+            return node
+        
+        def make_link(graph, a_node, b_node, label = None, width = 1,  
+                      style = 'solid'):
+            """
+
+            Parameters
+            ----------
+            graph : Dot object
+            a_node : pydot node object (starting point)
+            b_node : pydot node object (ending point)
+            label : Label (can be string but also float etc. )
+            width : 
+                DESCRIPTION. The default is 1.
+            style : TYPE, optional
+                DESCRIPTION. The default is 'solid'. For options check
+                            documentation of graphviz module
+ 
+            Returns
+            -------
+            edge : pydot Edge object
+
+            """
+            edge = pydot.Edge(a_node, b_node)
+            edge.set_penwidth(width)
+            edge.set_style(style)
+            
+            if label is not None:
+                edge.set_label(label)
+                
+            graph.add_edge(edge)
+            
+            return edge
+                
+        data = {}
+        
+        for i,j in self._data['FLOW_FT'].items():
+            if j > 1e-04:
+                data[i] = round(j, 2)
+                
+        for i,j in self._data['FLOW_ADD'].items():
+            if j > 1e-04:
+                data[i] =round(j,2)
+                     
+
+        flowchart  = pydot.Dot('flowchart', rankdir = 'LR', ratio="compress", 
+                               size="15!,1",  dpi="500")
+        
+        # size="width, height" -> definiert MAXIMUM Breite/Höhe. Wenn "!" 
+        # hinter der zahlt steht, ist es die MINIMUM Breite/Höhe
+     
+        nodes = {}
+        edges = {}    
+
+        for i,j in data.items():
+           
+            for v in i:
+                
+                if v not in nodes.keys():
+                    
+                    if v in self._data['U_S']:
+                        nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                                'ellipse')
+                         
+                    elif v in self._data['U_STOICH_REACTOR']:
+                        
+                        if v in self._data['U_TUR']:
+                            nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                            'doubleoctagon') 
+                            
+                        elif v in self._data['U_FUR']:
+                            nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                            'doubleoctagon')
+                           
+                        else:
+                            nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                                 'octagon')
+       
+                    elif v in self._data['U_YIELD_REACTOR']:
+                        nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                            'octagon')
+         
+                    elif v in self._data['U_PP']:
+                        nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                            'house')
+               
+                    elif v in self._data['U_DIST']:
+                        nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                            'circle')
+                        
+                    else:
+                        nodes[v] = make_node(flowchart, self._data['Names'][v], 
+                                            'box')
+
+        
+        for i,j in data.items():
+            edges[i[0],i[1]] = make_link(
+                flowchart, nodes[i[0]], nodes[i[1]], f'{j} t/h')
+            
+        if not  os.path.exists(path):
+            os.makedirs(path)
+            
+        path  = path + '/flowchart.png'
+            
+        flowchart.write_png(path)    
     
 
         

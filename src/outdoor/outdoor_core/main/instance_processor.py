@@ -13,8 +13,9 @@ from .variation_analysis_tools.utility_cost_changer import change_utility_costs
 from .variation_analysis_tools.capital_cost_changer import change_capital_costs
 from .variation_analysis_tools.concentration_demand_changer import change_concentration_demand
 from .variation_analysis_tools.heat_demand_changer import change_heat_demand
-from .variation_analysis_tools.source_cost_changer import change_source_costs
-
+from .variation_analysis_tools.source_cost_changer import change_source_costs, change_product_price
+from .variation_analysis_tools.opex_changer import change_opex_factor
+from .variation_analysis_tools.simple_capex_changer import change_simple_capex
 
 
     
@@ -60,6 +61,9 @@ def change_Instance(Instance, parameter, value, index=None, superstructure=None)
         "component_concentration": change_concentration_demand,
         "heating_demand": change_heat_demand,
         "source_costs": change_source_costs,
+        "opex": change_opex_factor,
+        "simple_capex": change_simple_capex,
+        "product_price": change_product_price
     }
 
     function_dictionary.get(parameter, error_func)(
