@@ -226,8 +226,6 @@ def wrapp_SystemData(dfi):
 
                 
                 obj.add_sensi_parameters(p_name, min_v, max_v, steps, index)        
-
-        print(obj.sensitive_parameters)
    
         
     return obj

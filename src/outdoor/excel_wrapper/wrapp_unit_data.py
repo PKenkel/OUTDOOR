@@ -29,8 +29,11 @@ def wrapp_GeneralData(obj, df1):
     Name = df1.iloc[0,0]
 
     LifeTime = df1.iloc[4,0]
-
-    ProcessGroup = df1.iloc[3,0]
+    
+    if not pd.isnull(df1.iloc[3,0]): 
+        ProcessGroup = df1.iloc[3,0]
+    else:
+        ProcessGroup = None
     
     if not pd.isnull(df1.iloc[12,0]):
         emissions = df1.iloc[12,0]
@@ -66,13 +69,13 @@ def wrapp_GeneralData(obj, df1):
 
 
     obj.set_generalData(ProcessGroup, 
-                         LifeTime, 
-                         emissions,
-                         full_load_hours,
-                         maintenance_factor, 
-                         cost_percentage, 
-                         time_span, 
-                         time_mode)
+                        LifeTime, 
+                        emissions,
+                        full_load_hours,
+                        maintenance_factor, 
+                        cost_percentage, 
+                        time_span, 
+                        time_mode)
     
     
 def wrapp_ReacionData(obj, df1, df2 = None):
@@ -282,6 +285,16 @@ def wrapp_AdditivesData(obj,df1, df2, df3):
     sourceslist = WF.read_list(df1,0)
     obj.set_possibleSources(sourceslist)
     
+    
+    connections = dict()
+    
+    for i in range(1,4):
+        x = WF.read_list(df1,i)
+        connections[i] = x
+    
+    obj.set_connections(connections)
+    
+    
 
 def wrapp_EconomicData(obj, df, df2):
     
@@ -355,7 +368,12 @@ def wrapp_ProductpoolData(obj, series):
     obj.ProductName= series[4]
     obj.set_productPrice(series[8])
     obj.ProductType = series[9] 
-    obj.set_group(series[7])
+    
+    if not pd.isnull(series[7]):
+        obj.set_group(series[7])
+    else:
+        obj.set_group(None)
+        
     
     EmissionCredits = 0
     FreshWaterCredits = 0

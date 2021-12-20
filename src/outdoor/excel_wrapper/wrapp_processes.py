@@ -56,7 +56,7 @@ def wrapp_processUnits(dfi):
     BalanceDataRange= WF.convert_total('S', 10, 'U', 35)
     EconomicDataRange= WF.convert_total('H', 11, 'I', 30)
     
-    PossibleSourcesRange = WF.convert_total('W', 10, 'W', 27)
+    PossibleSourcesRange = WF.convert_total('W', 10, 'Z', 27)
     
     ConcDataRange = WF.convert_total2('B', 10, 'F', 30)
     GammaDataRange = WF.convert_total2('H', 10,'J', 30)
