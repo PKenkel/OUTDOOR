@@ -26,19 +26,17 @@ ts = outdoor.get_DataFromExcel(Excel_Path)
 
 # (Opt,calc_time) = outdoor.solve_OptimizationProblem(ts, 'single','gurobi', 'local')
 
-(Opt,calc_time) = outdoor.solve_OptimizationProblem(ts, 'multi-objective','gurobi', 'local')
+# (Opt,calc_time) = outdoor.solve_OptimizationProblem(ts, 'multi-objective','gurobi', 'local')
 
-# (Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'sensitivity', 'gurobi', 'local')
+(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'sensitivity', 'gurobi', 'local')
 
 current, peak = tracemalloc.get_traced_memory()
 print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
 
 
+outdoor.create_superstructure_flowsheet(ts, Results_Path)
 
-
-# ts.add_sensi_parameters('electricity_price',10,100,2)
-# ts.add_sensi_parameters('heating_demand',5,20,4,('Heat',2200))
-# ts.add_sensi_parameters('component_concentration',3,9,2,3000)
-# ts.add_sensi_parameters('capital_costs',1,4,2,2200)
-
-
+Opt.save_results(Results_Path)
+Opt.create_flowchart(Results_Path)
+Opt.create_sensitivity_graph()
+Opt.create_plot_bar('Capital costs shares')
