@@ -32,7 +32,6 @@ class MultipleResults:
             print('Optimization mode not supported')
 
 
-
     def add_process(self, index, process_results):    
         self._results_data[index] = process_results
         
@@ -47,178 +46,7 @@ class MultipleResults:
         self._case_time = datetime.datetime.now()
         self._case_time = str(self._case_time)
         
-        
 
-    def print_results(self):
-        
-        for i,j in self._results_data.items():
-            print('')
-            print(f'Identifier of Single run:{i}')
-            j.print_results()
-            
-            
-    def save_results(self, path):
-        
-        if not  os.path.exists(path):
-            os.makedirs(path)
-            
-        path = path + '/' + 'results_file'  + self._case_time + '.txt'
-        
-        with open(path, encoding='utf-8', mode = 'w') as f:
-            
-            f.write('\n')
-            f.write(f'Run mode: {self._optimization_mode} \n')
-            f.write(f'Total run time {self._total_run_time} \n \n \n')
-        
-            for i,j in self._results_data.items():
-                
-                f.write(f'Identifier of Single run: {i} \n')
-                all_results = j._collect_results()
-                
-                for k,t in all_results.items():
-                        
-                    table = tabulate(t.items())
-                    f.write('\n')
-                    f.write(k)
-                    f.write('-------- \n')
-                    f.write(table)
-                    f.write('\n')
-                    f.write('\n \n')
-
-                print('')
-
-
-
-    def save_data(self, path):
-        """
-
-        Parameters
-        ----------
-        path : String type of where to save the complete data as .txt file
-
-
-        Decription
-        -------
-        Collects all data from the ProcessResults Class object and saves the 
-        data as tables in a text file.
-
-        """
-        
-        if not  os.path.exists(path):
-            os.makedirs(path)        
-            
-        path = path + '/' + 'input_file' + self._case_time + 'data.txt'
-        
-        with open(path, encoding = 'utf-8', mode = 'w') as f:
-            
-            for i,j in self._results_data.items():
-                f.write(f'Identifier of single run: {i} \n')
-                all_data = j._data
-                
-                for k,t in all_data.items():
-                    f.write(f'{k}: {t} \n \n')
-                    
-                f.write(' ----------------- \n \n')
-
-
-
-
-    def save_file(self, path):
-        """
-
-        Parameters
-        ----------
-        path : String type of where to save the ProcessResults object as pickle
-        class object.
-
-        """
-        
-        path = path + '/' + 'data_file' + self._case_time + '.pkl'
-        
-        with open(path, 'wb') as output:
-            pic.dump(self, output)
-
-
-
-
-    def create_sensitivity_graph(self):
-        
-        if self._optimization_mode == 'Sensitivity analysis':
-        
-            data  = self._collect_sensi_data()
-            
-            len_ = len(data)
-            
-            fig = plt.figure()
-            
-            count = 1
-  
-            for i,j in data.items():
-                
-                x_vals = j[0]
-                y_vals = j[1]
-                titel = i
-
-                ax = fig.add_subplot(len_,1,count)
-                
-                ax.set_xlabel(titel)
-                ax.set_ylabel('Net production costs in €/t')
-
-                
-                ax.plot(x_vals, y_vals, linestyle='--', 
-                    marker='o')  
-                
-                count +=1
-                
-            
-            return fig
-        else:
-            print('Sensitivity graph presentation only available for  \
-                  Sensitivity analysis mode')
-            
-
-
-    def create_mcda_table(self, table_type = 'values'):
-        if self._optimization_mode == 'Multi-criteria optimization':
-            
-            data = self._collect_mcda_data(table_type)
-            index = ['NPC', 'NPE', 'FWD']
-            if table_type != 'relative closeness':
-                table = tabulate(data,headers='keys', showindex = index) 
-            else:
-                table = tabulate(data, headers = 'keys')
-            
-            print('')
-            print(table_type)
-            print('--------')
-            print(table)
-            print('')
-        else:
-            print('MCDA table representation is only supported for optimization \
-                  mode Multi-criteria optimization')
-
-
-
-    def create_plot_bar(self, 
-                        user_input, 
-                        save='No',
-                        Path=None):
-        
-        for i,j in self._results_data.items():
-            
-            
-            j.create_plot_bar(user_input,
-                              save,
-                              Path)
-            
-    def create_flowchart(self, path):
-        
-        for i,j in self._results_data.items():
-            
-            path_  = path + '/' + str(i)
-            
-            j.create_flowchart(path_)
-            
 
 # Private methods
                 
@@ -341,7 +169,212 @@ class MultipleResults:
                     
                     
    
+    def _collect_cross_parameter_data(self):
+        npc_index = ['Case', 'NPC']
+        npc_data = dict()
         
+        for i,j in self._results_data.items():
+            npc_data[i] = j._data['NPC']
+            
+        npc_table = tabulate(npc_data.items(), headers=npc_index)
+        
+        return (npc_table,npc_data)
+
+
+    
+    def _collect_results(self):
+        results = dict()
+        
+        for i,j in self._results_data.items():
+            results[i] = j._collect_results()
+
+            
+
+
+        return results
+
+        
+
+    def print_results(self):
+        
+        for i,j in self._results_data.items():
+            print('')
+            print(f'Identifier of Single run:{i}')
+            j.print_results()
+            
+            
+    def save_results(self, path):
+        
+        if not  os.path.exists(path):
+            os.makedirs(path)
+            
+        path = path + '/' + 'results_file'  + self._case_time + '.txt'
+        
+        with open(path, encoding='utf-8', mode = 'w') as f:
+            
+            f.write('\n')
+            f.write(f'Run mode: {self._optimization_mode} \n')
+            f.write(f'Total run time {self._total_run_time} \n \n \n')
+        
+            for i,j in self._results_data.items():
+                
+                f.write(f'Identifier of Single run: {i} \n')
+                all_results = j._collect_results()
+                
+                for k,t in all_results.items():
+                        
+                    table = tabulate(t.items())
+                    f.write('\n')
+                    f.write(k)
+                    f.write('-------- \n')
+                    f.write(table)
+                    f.write('\n')
+                    f.write('\n \n')
+
+                print('')
+
+
+    def save_data(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the complete data as .txt file
+
+
+        Decription
+        -------
+        Collects all data from the ProcessResults Class object and saves the 
+        data as tables in a text file.
+
+        """
+        
+        if not  os.path.exists(path):
+            os.makedirs(path)        
+            
+        path = path + '/' + 'input_file' + self._case_time + 'data.txt'
+        
+        with open(path, encoding = 'utf-8', mode = 'w') as f:
+            
+            for i,j in self._results_data.items():
+                f.write(f'Identifier of single run: {i} \n')
+                all_data = j._data
+                
+                for k,t in all_data.items():
+                    f.write(f'{k}: {t} \n \n')
+                    
+                f.write(' ----------------- \n \n')
+
+
+            
+
+    def save_file(self, path, option='raw'):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the ProcessResults object as pickle
+        class object.
+
+        """
+        if not  os.path.exists(path):
+            os.makedirs(path)  
+            
+        if option == 'tidy':
+            
+            for i in self._results_data.values():
+                i._tidy_data()
+                
+        path = path + '/' + 'data_file' + self._case_time + '.pkl'
+        
+        with open(path, 'wb') as output:
+            pic.dump(self, output, protocol=4)
+
+
+
+
+    def create_sensitivity_graph(self):
+        
+        if self._optimization_mode == 'Sensitivity analysis':
+        
+            data  = self._collect_sensi_data()
+            
+            len_ = len(data)
+            
+            fig = plt.figure()
+            
+            count = 1
+  
+            for i,j in data.items():
+                
+                x_vals = j[0]
+                y_vals = j[1]
+                titel = i
+
+                ax = fig.add_subplot(len_,1,count)
+                
+                ax.set_xlabel(titel)
+                ax.set_ylabel('Net production costs in €/t')
+
+                
+                ax.plot(x_vals, y_vals, linestyle='--', 
+                    marker='o')  
+                
+                count +=1
+                
+            
+            return fig
+        else:
+            print('Sensitivity graph presentation only available for  \
+                  Sensitivity analysis mode')
+            
+
+
+    def create_mcda_table(self, table_type = 'values'):
+        if self._optimization_mode == 'Multi-criteria optimization':
+            
+            data = self._collect_mcda_data(table_type)
+            index = ['NPC', 'NPE', 'FWD']
+            if table_type != 'relative closeness':
+                table = tabulate(data,headers='keys', showindex = index) 
+            else:
+                table = tabulate(data, headers = 'keys')
+            
+            print('')
+            print(table_type)
+            print('--------')
+            print(table)
+            print('')
+        else:
+            print('MCDA table representation is only supported for optimization \
+                  mode Multi-criteria optimization')
+
+
+
+    def create_plot_bar(self, 
+                        user_input, 
+                        save='No',
+                        Path=None):
+        
+        for i,j in self._results_data.items():
+            
+            
+            j.create_plot_bar(user_input,
+                              save,
+                              Path)
+            
+    def create_flowsheet(self, path):
+        
+        for i,j in self._results_data.items():
+            
+            path_  = path + '/' + str(i)
+            
+            j.create_flowsheet(path_)
+            
+
+
+            
+    
     
               
 

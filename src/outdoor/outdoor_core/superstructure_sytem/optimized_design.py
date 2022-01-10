@@ -130,7 +130,25 @@ class ProcessResults:
         self._product_load = self._data['MainProductFlow']
         
         
-
+    def _tidy_data(self):
+        
+        temp = dict()
+        exeptions = ['Y', 'Y_DIST', 'lin_CAPEX_z', 'Y_HEX']
+        for i,j in self._data.items():
+            if not 'index' in i:
+                if type(j) == dict:
+                    temp[i] = dict()
+                    for k,m in j.items():
+                        if i not in exeptions:
+                            if m != 0:
+                                temp[i][k] = m
+                        else:
+                            temp[i][k] = m
+                else:
+                    temp[i] = j
+        self._data = temp
+        
+                
 
     # Extracting methods to get important results
     
@@ -199,14 +217,14 @@ class ProcessResults:
         total_costs = self._data['CAPEX']
         
         capitalcost_shares['Capital costs shares']['Heat pump'] \
-            = round(self._data['ACC_HP'] / total_costs *100,2)
+            = round(self._data.get('ACC_HP',0) / total_costs *100,2)
         
         
         for i,j in self._data['ACC'].items():
             if j >= 1e-3:
                 index_name = self._data['Names'][i]
                 capitalcost_shares['Capital costs shares'][index_name] \
-                    = round((j + self._data['TO_CAPEX'][i]) / total_costs * 100,2)
+                    = round((j + self._data.get('TO_CAPEX',0).get(i,0)) / total_costs * 100,2)
         
         
         return capitalcost_shares
@@ -249,23 +267,23 @@ class ProcessResults:
                 
         
         economic_results['Economic results']['CAPEX share'] \
-            = round(self._data['CAPEX'] / total_costs * 100,2)
+            = round(self._data.get('CAPEX',0) / total_costs * 100,2)
         
         economic_results['Economic results']['Raw material consumption share'] \
-            = round(self._data['RM_COST_TOT'] /1000 / total_costs * 100, 2)
+            = round(self._data.get('RM_COST_TOT',0) /1000 / total_costs * 100, 2)
             
         economic_results['Economic results']['Operating and Maintanence share'] \
-            = round(self._data['M_COST_TOT'] / total_costs * 100, 2)
+            = round(self._data.get('M_COST_TOT',0) / total_costs * 100, 2)
             
         economic_results['Economic results']['Electricity share'] \
-            = round((self._data['ENERGY_COST']['Electricity'] + \
-                   self._data['ELCOST']) /1000 / total_costs * 100, 2)
+            = round((self._data.get('ENERGY_COST',0).get('Electricity',0) + \
+                   self._data.get('ELCOST',0)) /1000 / total_costs * 100, 2)
         
         economic_results['Economic results']['Chilling share'] \
-            = round(self._data['ENERGY_COST']['Chilling'] /1000 / total_costs * 100, 2)  
+            = round(self._data.get('ENERGY_COST',0).get('Chilling',0) /1000 / total_costs * 100, 2)  
             
         economic_results['Economic results']['Heat integration share'] \
-            = round(self._data['C_TOT'] / 1000 / total_costs * 100, 2)
+            = round(self._data.get('C_TOT',0) / 1000 / total_costs * 100, 2)
                   
         economic_results['Economic results']['Waste treatment share'] \
             = round(wwt / total_costs * 100, 2)
@@ -293,16 +311,16 @@ class ProcessResults:
         """
         electricity_shares = {'Electricity demand shares': {}}
                 
-        total_el = self._data['ENERGY_DEMAND_HP_EL'] * self._data['H']
+        total_el = self._data.get('ENERGY_DEMAND_HP_EL',0) * self._data['H']
          
         for i,j in self._data['ENERGY_DEMAND'].items():
             if i[1] == 'Electricity' and j >= 1e-05:
-                total_el += j * self._data['flh'][i[0]]
+                total_el += j * self._data.get('flh',0).get(i[0],0)
         
 
         
         electricity_shares['Electricity demand shares']['Heatpump electricity share'] \
-            = round(self._data['ENERGY_DEMAND_HP_EL'] * self._data['H'] \
+            = round(self._data.get('ENERGY_DEMAND_HP_EL',0) * self._data['H'] \
                     / total_el * 100, 2)
         
                 
@@ -311,7 +329,7 @@ class ProcessResults:
                 index_name = self._data['Names'][i[0]]
                 electricity_shares['Electricity demand shares'] \
                     [index_name] \
-                    = round(j * self._data['flh'][i[0]] / total_el * 100, 2)
+                    = round(j * self._data.get('flh',0).get(i[0],0) / total_el * 100, 2)
     
 
         return electricity_shares
@@ -373,17 +391,17 @@ class ProcessResults:
             = round(steam, 2)                                        
 
         heatintegration_results['Heating and cooling']['Internally used HP Steam'] \
-            = round(self._data['ENERGY_DEMAND_HEAT_PROD_USE'], 2)
+            = round(self._data.get('ENERGY_DEMAND_HEAT_PROD_USE',0), 2)
         
         heatintegration_results['Heating and cooling']\
             ['High temperature heat pump heat supply'] \
-            = round(self._data['ENERGY_DEMAND_HP_USE'],2)
+            = round(self._data.get('ENERGY_DEMAND_HP_USE',0),2)
 
         heatintegration_results['Heating and cooling']['Net heating demand'] \
             = round(net_heating, 2)    
         
         heatintegration_results['Heating and cooling']['Net cooling demand'] \
-            = round(self._data['ENERGY_DEMAND_COOLING'], 2)          
+            = round(self._data.get('ENERGY_DEMAND_COOLING',0), 2)          
         
         
         return heatintegration_results
@@ -430,13 +448,13 @@ class ProcessResults:
             = round(ghg_d, 0)
             
         GHG_results['Green house gas emission shares']['Electricity'] \
-            = round(self._data['GWP_UT']['Electricity'], 0)
+            = round(self._data.get('GWP_UT',0).get('Electricity',0), 0)
             
         GHG_results['Green house gas emission shares']['Heat'] \
-            = round(self._data['GWP_UT']['Heat'], 0)
+            = round(self._data.get('GWP_UT',0).get('Heat',0), 0)
                        
         GHG_results['Green house gas emission shares']['Chilling'] \
-            = round(self._data['GWP_UT']['Chilling'], 0)
+            = round(self._data.get('GWP_UT',0).get('Chilling',0), 0)
                         
         GHG_results['Green house gas emission shares']['Plant building emissions'] \
             = round(ghg_b, 0)
@@ -472,18 +490,56 @@ class ProcessResults:
         FWD_results = {'Fresh water demand shares': {}}
         
         FWD_results['Fresh water demand shares']['Indirect demand from raw materials'] \
-            = round(-self._data['FWD_S'], 0)
+            = round(-self._data.get('FWD_S',0), 0)
         
         FWD_results['Fresh water demand shares']['Utilities (Electricity and chilling)'] \
-            = round(self._data['FWD_UT1'], 0)
+            = round(self._data.get('FWD_UT1',0), 0)
 
         FWD_results['Fresh water demand shares']['Utilities (Heating)'] \
-            = round(self._data['FWD_UT2'], 0)
+            = round(self._data.get('FWD_UT2',0), 0)
             
         FWD_results['Fresh water demand shares']['Avoided burden from byproducds'] \
-            = round(-self._data['FWD_C'], 0)
+            = round(-self._data.get('FWD_C',0), 0)
 
         return FWD_results
+    
+
+
+    def _collect_energy_data(self):
+        energy_data = {'Energy data': {}}
+        
+        heat_demand = self._data['ENERGY_DEMAND_HEAT_UNIT']
+        cool_demand = self._data['ENERGY_DEMAND_COOL_UNIT']
+        
+        total_el = self._data.get('ENERGY_DEMAND_HP_EL',0) * self._data['H']
+         
+        for i,j in self._data['ENERGY_DEMAND'].items():
+            if i[1] == 'Electricity' and j >= 1e-05:
+                total_el += j * self._data.get('flh',0).get(i[0],0)
+        
+        energy_data['Energy data']['heat'] = heat_demand
+        energy_data['Energy data']['cooling'] = cool_demand
+        energy_data['Energy data']['electricity'] = total_el
+        
+        return energy_data
+    
+    
+
+    def _collect_mass_flows(self):
+        mass_flow_data = {'Mass flows': {}}
+        
+        for i,j in self._data['FLOW_FT'].items():
+            if j > 1e-04:
+                mass_flow_data['Mass flows'][i] = round(j, 2)
+                
+        for i,j in self._data['FLOW_ADD'].items():
+            if j > 1e-04:
+                mass_flow_data['Mass flows'][i] =round(j,2)      
+        
+        return mass_flow_data
+    
+            
+    
     
 
     def _collect_results(self):
@@ -513,6 +569,8 @@ class ProcessResults:
         self.results.update(self._collect_heatintegration_results())
         self.results.update(self._collect_GHG_results())
         self.results.update(self._collect_FWD_results())
+        self.results.update(self._collect_energy_data())
+        self.results.update(self._collect_mass_flows())
         
         return self.results                
         
@@ -643,160 +701,12 @@ class ProcessResults:
         # Create temp-file for presentation in GUI
         if gui == True:     
             plt.savefig('temp/new.png', dpi =160, bbox_inches='tight')
-            
-            
-
 
         return fig
 
 
 
-    def save_results(self, path):
-        """
-
-        Parameters
-        ----------
-        path : String type of where to save the results as .txt file
-
-        Decription
-        -------
-        Collects all important results from the ProcessResults Class object and 
-        saves the data as tables in a text file.
-
-        """
-        all_results = self._collect_results()
-        
-        if not  os.path.exists(path):
-            os.makedirs(path)
-        
-        
-        path = path + '/results_file' + self._case_time + '.txt'
-          
-        with open(path, encoding='utf-8', mode = 'w') as f:
-                        
-            for i,j in all_results.items():
-                table = tabulate(j.items())
-                
-                f.write('\n')
-                f.write(i)
-                f.write('-------- \n')
-                f.write(table)
-                f.write('\n')
-                f.write('\n \n')
-
-            print('')
-
-
-    def save_data(self, path):
-        """
-
-        Parameters
-        ----------
-        path : String type of where to save the complete data as .txt file
-
-
-        Decription
-        -------
-        Collects all data from the ProcessResults Class object and saves the 
-        data as tables in a text file.
-
-        """
-        
-        if not  os.path.exists(path):
-            os.makedirs(path)        
-            
-        path = path + '/' + 'input_file' + self._case_time + '_data.txt'
-        
-
-        
-        with open(path, encoding = 'utf-8', mode = 'w') as f:
-            
-            for i,j in self._data.items():
-                f.write(f'{i}: {j} \n \n')
-
-
-    def save_file(self, path):
-        """
-
-        Parameters
-        ----------
-        path : String type of where to save the ProcessResults object as pickle
-        class object.
-
-        """
-        
-        path = path + '/' + 'data_file' + self._case_time + '.pkl'
-        
-        with open(path, 'wb') as output:
-            pic.dump(self, output)
-            
-
-
-    def pprint(self, data_name=None):
-        if data_name is None:
-            for  i,j in self._data.items():
-                if type(j) is dict:
-                    print("\t \t"+ "Key "+' : ' +"Value "+ "\n")
-                    for k,v in j.items():
-                        print("\t \t"+ str(k)+ ' : ' +str(v))
-                else:
-                    print("\t \t"+ "Key "+' : ' +"Value "+ "\n")
-                    print("\t \t"+ str(j)+ "\n")
-            
-        else:
-            if type(self._data[data_name]) == dict:
-                print("\t \t"+ "Key "+' : ' +"Value "+ "\n")
-                for i,j in self._data[data_name].items():
-                    print("\t \t"+ str(i)+ ' : ' +str(j)+ "\n")
-            else:
-                print(self._data[data_name])
-                
- 
-
-                   
-                
-    def return_chosen(self):
-       flow = self._data['FLOW_IN']
-       y = self._data['Y']
-       names = self._data['Names']
-       chosen  = {}
-       
-       for i,j in y.items():
-           if j == 1:
-               tot_flow = 0
-               for k in flow.keys():
-                   if i == k[0]:
-                       tot_flow = tot_flow + flow[k]
-               if tot_flow >= 0.0001 :
-                   chosen[i] = names[i]
-       return chosen
-        
-
-
-
-
-    def print_results(self):
-        """
-        Description
-        -------
-        Collects all important results data and prints them as tables to the 
-        console. 
-
-        """
-        
-        all_results = self._collect_results()
-        
-        for i,j in all_results.items():
-            print('')
-            print('')
-            print(i)
-            print('--------------')        
-            print(tabulate(j.items()))         
-            print('')
-            
-         
-            
-    def create_flowchart(self, path):
+    def create_flowsheet(self, path):
         
         def make_node(graph, name, shape):
             """
@@ -923,6 +833,174 @@ class ProcessResults:
         path  = path + '/flowchart.png'
             
         flowchart.write_png(path)    
+
+
+
+
+
+
+
+
+
+    def save_results(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the results as .txt file
+
+        Decription
+        -------
+        Collects all important results from the ProcessResults Class object and 
+        saves the data as tables in a text file.
+
+        """
+        all_results = self._collect_results()
+        
+        if not  os.path.exists(path):
+            os.makedirs(path)
+        
+        
+        path = path + '/results_file' + self._case_time + '.txt'
+          
+        with open(path, encoding='utf-8', mode = 'w') as f:
+                        
+            for i,j in all_results.items():
+                table = tabulate(j.items())
+                
+                f.write('\n')
+                f.write(i)
+                f.write('-------- \n')
+                f.write(table)
+                f.write('\n')
+                f.write('\n \n')
+
+            print('')
+
+
+
+    def save_data(self, path):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the complete data as .txt file
+
+
+        Decription
+        -------
+        Collects all data from the ProcessResults Class object and saves the 
+        data as tables in a text file.
+
+        """
+        
+        if not  os.path.exists(path):
+            os.makedirs(path)        
+            
+        path = path + '/' + 'input_file' + self._case_time + '_data.txt'
+        
+
+        
+        with open(path, encoding = 'utf-8', mode = 'w') as f:
+            
+            for i,j in self._data.items():
+                f.write(f'{i}: {j} \n \n')
+
+
+
+    def save_file(self, path, option='raw'):
+        """
+
+        Parameters
+        ----------
+        path : String type of where to save the ProcessResults object as pickle
+        class object.
+
+        """
+        if option == 'tidy':
+            self._tidy_data()
+            
+        path = path + '/' + 'data_file' + self._case_time + '.pkl'
+        
+        with open(path, 'wb') as output:
+            pic.dump(self, output)
+            
+
+
+
+    def pprint(self, data_name=None):
+        if data_name is None:
+            for  i,j in self._data.items():
+                if type(j) is dict:
+                    print("\t \t"+ "Key "+' : ' +"Value "+ "\n")
+                    for k,v in j.items():
+                        print("\t \t"+ str(k)+ ' : ' +str(v))
+                else:
+                    print("\t \t"+ "Key "+' : ' +"Value "+ "\n")
+                    print("\t \t"+ str(j)+ "\n")
+            
+        else:
+            if type(self._data[data_name]) == dict:
+                print("\t \t"+ "Key "+' : ' +"Value "+ "\n")
+                for i,j in self._data[data_name].items():
+                    print("\t \t"+ str(i)+ ' : ' +str(j)+ "\n")
+            else:
+                print(self._data[data_name])
+                
+                    
+                
+    def return_chosen(self):
+       flow = self._data['FLOW_SUM']
+       flow_s = self._data['FLOW_SOURCE']
+       
+       y = self._data['Y']
+       names = self._data['Names']
+       chosen  = {}
+ 
+       for i,j in y.items():
+           if j == 1:
+               try:
+                   if flow[i] >= 0.0001:
+                       chosen[i] = names[i]
+               except:
+                   pass
+                   
+           else:
+               try:   
+                   if flow_s[i] >= 0.0001:
+                       chosen[i] = names[i]
+               except:
+                   pass
+               
+                   
+       return chosen
+    
+        
+
+
+
+    def print_results(self):
+        """
+        Description
+        -------
+        Collects all important results data and prints them as tables to the 
+        console. 
+
+        """
+        
+        all_results = self._collect_results()
+        
+        for i,j in all_results.items():
+            print('')
+            print('')
+            print(i)
+            print('--------------')        
+            print(tabulate(j.items()))         
+            print('')
+            
+         
+            
+
     
 
         

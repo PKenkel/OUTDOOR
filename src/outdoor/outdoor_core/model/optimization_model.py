@@ -1053,139 +1053,6 @@ class SuperstructureModel(AbstractModel):
     
 
 
-    # def create_DecisionMaking_Chemicals(self):
-        
-        
-    #     def ProcessGroup_logic_1_rule(self,u,uu):
-            
-    #         ind = False
-            
-    #         for i,j in self.SS.groups.items():
-                
-    #             if u in j and uu in j:
-    #                 return self.Y[u] == self.Y[uu]
-    #                 ind = True
-                    
-    #         if ind == False:
-    #             return Constraint.Skip
-                
-    #     self.ProcessGroup_logic_1 = Constraint(self.U, 
-    #                                            self.UU, 
-    #                                            rule = ProcessGroup_logic_1_rule)
-        
-        
-    #     numbers = [1,2,3]
-    #     def ProcessGroup_logic_2_rule(self,u,k):
-            
-    #         ind = False
-            
-    #         for i,j in self.SS.connections.items():
-    #             if u == i:
-    #                 if j[k]:
-    #                     return sum(self.Y[uu] for uu in j[k]) >= self.Y[u]
-    #                     ind = True
-            
-    #         if ind == False:
-    #             return Constraint.Skip 
-            
-    #     self.ProcessGroup_logic_2 = Constraint(self.U, 
-    #                                            numbers, 
-    #                                            rule = ProcessGroup_logic_2_rule)
-            
-            
-            
-        # # Waste water logic
-        # def TestRule(self):
-        #     return self.Y[8000] >= self.Y[7100]
-        
-
-        # # Oxy fuel Logic
-        # def TestRule4(self):
-        #     return 2 * self.Y[444]  >= self.Y[1110] + self.Y[3120]
-        
-            
-        # # CO2 Compressor Logic
-        # def TestRule6(self):
-        #     return 2 * self.Y[1110] >= self.Y[1400] + self.Y[1100]
-        
-        # # Hydrogen Compressor
-        # def TestRule7(self):
-        #     return 2 * self.Y[2110] >=   self.Y[2200] + self.Y[2300]
-
-        
-        # # Hydrogen Compressor for HP-EL techs
-        
-        # def TestRule8(self):
-        #     return 2 * self.Y[2410] >= self.Y[2400] + self.Y[2500]
-      
-
-
-        # # MeOH - H2 Comp
-        # def TestRule11(self):
-        #     return 2 * self.Y[3100] >= self.Y[2110] + self.Y[2410]
-        
-        # #MeOH - CO2 Comp + OXY
-        # def TestRule12(self):
-        #     return 2 * self.Y[3100] >= self.Y[1110] + self.Y[1300]
-            
-        # # MeOH  - Offgas combustion logic
-        # def TestRule13(self):
-        #     return self.Y[4100] + self.Y[4200] >= self.Y[3100]        
-        
-        # # SyNFeed Compressor Logic
-        # def TestRule18(self):
-        #     return 3 * self.Y[5140] >= self.Y[5100] + self.Y[5200] + self.Y[5300]
-            
-        # # SnyFEED MeOH logic
-        # def TestRule19(self):
-        #     return self.Y[3100] >= self.Y[5140]
-                
-        # def TestRule20(self):
-        #     return self.Y[6110] >= self.Y[6100]
-        
-        # def TestRule21(self):
-        #     return self.Y[666] >= self.Y[6100]
-        
-        # def TestRule22(self):
-        #     return self.Y[888] >= self.Y[5130]
-        
-        # def TestRule23(self):
-        #     return self.Y[777] >= self.Y[6110]
-        
-        # def TestRule24(self):
-        #     return 4 * self.Y[999] >=  self.Y[2200] \
-        #         + self.Y[2300] + self.Y[2400] + self.Y[2500]
-        
-        
-        # self.TestCon1 = Constraint(rule=TestRule)
-        # self.TestCon4 = Constraint(rule=TestRule4)
-        # self.TestCon6 = Constraint(rule=TestRule6)
-        # self.TestCon7 = Constraint(rule=TestRule7)
-        # self.TestCon8 = Constraint(rule=TestRule8)
-        # self.TestCon11 = Constraint(rule=TestRule11)
-        # self.TestCon12 = Constraint(rule=TestRule12)
-        # self.TestCon13 = Constraint(rule=TestRule13) 
-        # self.TestCon18 = Constraint(rule=TestRule18)
-        # self.TestCon19 = Constraint(rule=TestRule19)
-        # self.TestCon20 = Constraint(rule=TestRule20)
-        # self.TestCon21 = Constraint(rule=TestRule21)
-        # self.TestCon22 = Constraint(rule=TestRule22)
-        # self.TestCon23 = Constraint(rule=TestRule23)
-        # self.TestCon24 = Constraint(rule=TestRule24)
-        
-        
-        
-        # def TestRule25(self):
-        #     return self.Y[4000] >= self.Y[7100]
-
-        
-        # self.TestCon25 = Constraint(rule=TestRule25)
-
-        
-        # def TestRule26(self):
-        #     return self.Y[4100] == 0
-        
-        # self.TestCon26 = Constraint(rule=TestRule26)
         
         
         
@@ -1257,6 +1124,12 @@ class SuperstructureModel(AbstractModel):
                                                numbers, 
                                                rule = ProcessGroup_logic_2_rule)
        
+        
+        def Test_con(self):
+            return self.Y[3200] + self.Y[21100] + self.Y[21200]  == 0
+        
+        # self.Test_con_1 = Constraint(rule=Test_con)
+        
 
         
     # **** OBJECTIVE FUNCTIONS *****

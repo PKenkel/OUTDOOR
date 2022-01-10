@@ -220,8 +220,8 @@ def solve_crossParameterRun(ModelInstance,
                                 for n in value_list2:
                                     value2 = n
                                     
-                                    ModelInstance = change_Instance(ModelInstance, i, l, i2)
-                                    ModelInstance = change_Instance(ModelInstance, k, n, k2)
+                                    ModelInstance = change_Instance(ModelInstance, i, l, i2, Superstructure)
+                                    ModelInstance = change_Instance(ModelInstance, k, n, k2, Superstructure)
 
                                     single_solved = solve_singleRun(
                                             ModelInstance, SolverName, SolverInterface
@@ -236,7 +236,7 @@ def solve_crossParameterRun(ModelInstance,
                             for n in value_list2:
                                 value2 = n
                                 
-                                ModelInstance = change_Instance(ModelInstance, i, l, i2)
+                                ModelInstance = change_Instance(ModelInstance, i, l, i2, Superstructure)
                                 ModelInstance = change_Instance(ModelInstance, k, n)
 
                                 single_solved = solve_singleRun(
@@ -259,7 +259,7 @@ def solve_crossParameterRun(ModelInstance,
                                 value2 = n
                                 
                                 ModelInstance = change_Instance(ModelInstance, i, l)
-                                ModelInstance = change_Instance(ModelInstance, k, n, k2)
+                                ModelInstance = change_Instance(ModelInstance, k, n, k2, Superstructure)
                                  
                                 single_solved = solve_singleRun(
                                      ModelInstance, SolverName, SolverInterface
