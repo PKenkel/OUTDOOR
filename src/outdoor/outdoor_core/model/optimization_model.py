@@ -1126,7 +1126,7 @@ class SuperstructureModel(AbstractModel):
        
         
         def Test_con(self):
-            return self.Y[3200] + self.Y[21100] + self.Y[21200]  == 0
+            return self.Y[60000] + self.Y[70000]+self.Y[31000] == 0
         
         # self.Test_con_1 = Constraint(rule=Test_con)
         

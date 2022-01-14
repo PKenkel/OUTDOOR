@@ -26,6 +26,7 @@ def solve_singleRun(ModelInstance, SolverName, SolverInterface):
         try:
             if SolverName == "gurobi":
                 solver = SolverFactory(SolverName, solver_io="python")
+                solver.options['threads'] = 5
                 results = solver.solve(ModelInstance, tee=True)
             elif SolverName == "scip":
                 solver = SolverFactory(SolverName)
