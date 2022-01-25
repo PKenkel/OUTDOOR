@@ -2,7 +2,7 @@
 Overview
 ========
 
-OUTDOOR ( Open Superstructure Modeling and Optimization Framework) is a tool to construct superstructure optimization models and solve them using MILP solvers. 
+OUTDOOR (Open Superstructure Modeling and Optimization Framework) is a tool to construct superstructure optimization models and solve them using MILP solvers. 
  
 The Program consists of three main aspects:
 
