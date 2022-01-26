@@ -11,9 +11,8 @@ import sys
 
 import pandas as pd
 
-from ..outdoor_core.Block_Superstructure import Superstructure
-import outdoor.excel_wrapper.Wrapping_Functions  as WF
-
+from ..outdoor_core.superstructure_sytem.superstructure import Superstructure
+from . import wrapping_functions as WF
 
 
 
@@ -46,7 +45,7 @@ def wrapp_SystemData(dfi):
     # Setting the Ranges
 
     GeneralDataRange = WF.convert_total('B', 4, 'C', 20)
-    UtitilylistRange = WF.convert_total('S', 5, 'U', 8)
+    UtilitylistRange = WF.convert_total('S', 5, 'V', 8)
     ComponentlistRange = WF.convert_total('E', 5, 'K', 30)
     TemperatureIntervals = WF.convert_total('B', 34, 'B', 39)
     ReactionsListRange = WF.convert_total('N', 5, 'N', 15)
@@ -60,7 +59,7 @@ def wrapp_SystemData(dfi):
     df1 = dfi.iloc[GeneralDataRange]
 
 
-    df2 = dfi.iloc[UtitilylistRange ] 
+    df2 = dfi.iloc[UtilitylistRange] 
 
     df3 = dfi.iloc[ComponentlistRange]
 
@@ -80,12 +79,13 @@ def wrapp_SystemData(dfi):
 
     obj = Superstructure(ModelName= df1.iloc[1,1], 
                          Objective= df1.iloc[2,1], 
-                         MainProduct= df1.iloc[3,1], 
-                         ProductLoad= df1.iloc[4,1])
+                         MainProduct= df1.iloc[4,1], 
+                         ProductLoad= df1.iloc[5,1],
+                         OptimizationMode = df1.iloc[3,1])
     
     
-    obj.set_numberProcessSteps(df1.iloc[5,1])
     obj.set_operatingHours(df1.iloc[6,1])
+
     obj.set_cecpi(df1.iloc[7,1])
     
     
@@ -125,7 +125,6 @@ def wrapp_SystemData(dfi):
     liste = WF.read_list(df3,0)
     obj.add_components(liste) 
     
-
     liste = WF.read_list(df6,0)
     obj.add_reactions(liste)
 
@@ -137,21 +136,24 @@ def wrapp_SystemData(dfi):
 
     dict2  = WF.read_type1(df3,0,3)
     obj.set_mw(dict2) 
+    
+    dict3 = WF.read_type1(df3,0,2)
+    obj.set_cp(dict3)
+    
+
 
 
 
     # ADD OTHER PARAMETERS
     # ---------------------
-    
-    obj.set_deltaEL(df2.iloc[0,1])
 
     dict1 = WF.read_type1(df2,0,2)
     obj.set_utilityEmissionsFactor(dict1)
     
-    dict1 = WF.read_type1(df3,0,4)
-    obj.set_deltaRM(dict1)
+    dict1 = WF.read_type1(df2,0,3)
+    obj.set_utilityFreshWaterFator(dict1)
     
-    liste = WF.read_type1(df3,0,5)
+    liste = WF.read_type1(df3,0,4)
     obj.set_componentEmissionsFactor(liste) 
     
     obj.set_deltaCool(df8.iloc[4,1])
@@ -163,9 +165,69 @@ def wrapp_SystemData(dfi):
   
     obj.set_heatUtilities(liste1, liste2)
     
+    dict3 = WF.read_type1(df2,0,1)
+    obj.set_deltaUt(dict3)
+
+
+    # PARAMETERS FOR SPECIAL OPTIMIZATION MODES
+    # -----------------------------------------
     
+    if obj.optimization_mode == 'multi-objective':
+        
+        MultiCriteriaRange = WF.convert_total('N', 32, 'P',34)
+        df9 = dfi.iloc [MultiCriteriaRange]
+        
+        dict1 = {}
+        dict1[df9.iloc[0,0]] = (df9.iloc[0,1], df9.iloc[0,2])
+        dict1[df9.iloc[1,0]] = (df9.iloc[1,1], df9.iloc[1,2])
+        dict1[df9.iloc[2,0]] = (df9.iloc[2,1], df9.iloc[2,2])
+        
+        obj.set_multiObjectives(dict1)
+        
+        
+    elif obj.optimization_mode == 'sensitivity':
+        
+        SensitivityRange = WF.convert_total('S', 33, 'X',41)
+        df9 = dfi.iloc[SensitivityRange]
     
-    
+        for i in range(len(df9)):
+            if not pd.isnull(df9.iloc[i,0]):
+            
+                p_name = df9.iloc[i,0]
+                min_v = df9.iloc[i,2]
+                max_v = df9.iloc[i,3]
+                steps = df9.iloc[i,4]
+                
+                if not pd.isnull(df9.iloc[i,1]):
+                    index =  df9.iloc[i,1]
+                else:
+                    index = None
+
+                
+                obj.add_sensi_parameters(p_name, min_v, max_v, steps, index)
+                
+    elif obj.optimization_mode == 'cross-parameter sensitivity':
+        
+        SensitivityRange = WF.convert_total('S', 33, 'X',41)
+        df9 = dfi.iloc[SensitivityRange]
+
+        for i in range(2):
+            if not pd.isnull(df9.iloc[i,0]):
+            
+                p_name = df9.iloc[i,0]
+                min_v = df9.iloc[i,2]
+                max_v = df9.iloc[i,3]
+                steps = df9.iloc[i,4]
+                
+                if not pd.isnull(df9.iloc[i,1]):
+                    index =  df9.iloc[i,1]
+                else:
+                    index = None
+
+                
+                obj.add_sensi_parameters(p_name, min_v, max_v, steps, index)        
+   
+        
     return obj
 
 

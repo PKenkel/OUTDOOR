@@ -7,7 +7,7 @@ Created on Thu Mar 26 10:52:43 2020
 
 
 import pandas as pd
-import outdoor.excel_wrapper.Wrapping_Functions  as WF
+from . import wrapping_functions as WF
 
 
 def wrapp_GeneralData(obj, df1):   
@@ -29,8 +29,11 @@ def wrapp_GeneralData(obj, df1):
     Name = df1.iloc[0,0]
 
     LifeTime = df1.iloc[4,0]
-
-    ProcessGroup = df1.iloc[3,0]
+    
+    if not pd.isnull(df1.iloc[3,0]): 
+        ProcessGroup = df1.iloc[3,0]
+    else:
+        ProcessGroup = None
     
     if not pd.isnull(df1.iloc[12,0]):
         emissions = df1.iloc[12,0]
@@ -40,8 +43,10 @@ def wrapp_GeneralData(obj, df1):
     if not pd.isnull(df1.iloc[13,0]):
         
         maintenance_factor = df1.iloc[13,0]
-    else: 
-        maintenance_factor  = 0.044875
+    else:
+        maintenance_factor = None
+        
+
         
     cost_percentage  = None
     time_span  = None
@@ -62,14 +67,15 @@ def wrapp_GeneralData(obj, df1):
     else:
         full_load_hours = None
 
+
     obj.set_generalData(ProcessGroup, 
-                         LifeTime, 
-                         emissions,
-                         full_load_hours,
-                         maintenance_factor, 
-                         cost_percentage, 
-                         time_span, 
-                         time_mode)
+                        LifeTime, 
+                        emissions,
+                        full_load_hours,
+                        maintenance_factor, 
+                        cost_percentage, 
+                        time_span, 
+                        time_mode)
     
     
 def wrapp_ReacionData(obj, df1, df2 = None):
@@ -98,6 +104,7 @@ def wrapp_ReacionData(obj, df1, df2 = None):
         list1 = WF.read_list_new(df1, 2, 0)
         obj.set_inertComponents(list1)
 
+
         
     else:
 
@@ -107,6 +114,7 @@ def wrapp_ReacionData(obj, df1, df2 = None):
         dict2 = WF.read_type2(df2,0,1,2)
         obj.set_thetaFactors(dict2)
         
+
 
 def wrapp_EnergyData(obj, df, df2, df3):
     
@@ -138,7 +146,6 @@ def wrapp_EnergyData(obj, df, df2, df3):
     if not pd.isnull(df.iloc[0,1]):
         ProcessElectricityDemand = df.iloc[0,1] 
         ProcessElectricityReferenceFlow = df.iloc[1,1]
-        
         ProcessElectricityReferenceComponentList = WF.read_list_new(df2, 1, 2)
 
     else:
@@ -166,6 +173,15 @@ def wrapp_EnergyData(obj, df, df2, df3):
         ProcessHeat2ReferenceFlow = None
         ProcessHeat2ReferenceComponentList = []
         
+    if not pd.isnull(df.iloc[0,4]):
+        ChillingDemand = df.iloc[0,4]
+        ChillingReferenceFlow = df.iloc[1,4]
+        ChillingReferenceComponentList = WF.read_list_new(df2, 4, 2)
+    else:
+        ChillingDemand = 0
+        ChillingReferenceFlow = None
+        ChillingReferenceComponentList = []
+        
 
     wrapp_Temperatures(obj, df3, df)    
     
@@ -179,7 +195,10 @@ def wrapp_EnergyData(obj, df, df2, df3):
                         ProcessHeatReferenceFlow,
                         ProcessHeatReferenceComponentList,
                         ProcessHeat2ReferenceFlow,
-                        ProcessHeat2ReferenceComponentList
+                        ProcessHeat2ReferenceComponentList,
+                        ChillingDemand,
+                        ChillingReferenceFlow,
+                        ChillingReferenceComponentList
                         )
     
 def wrapp_Temperatures(obj, df1, df2): 
@@ -266,6 +285,16 @@ def wrapp_AdditivesData(obj,df1, df2, df3):
     sourceslist = WF.read_list(df1,0)
     obj.set_possibleSources(sourceslist)
     
+    
+    connections = dict()
+    
+    for i in range(1,4):
+        x = WF.read_list(df1,i)
+        connections[i] = x
+    
+    obj.set_connections(connections)
+    
+    
 
 def wrapp_EconomicData(obj, df, df2):
     
@@ -339,25 +368,36 @@ def wrapp_ProductpoolData(obj, series):
     obj.ProductName= series[4]
     obj.set_productPrice(series[8])
     obj.ProductType = series[9] 
-    obj.set_group(series[7])
+    
+    if not pd.isnull(series[7]):
+        obj.set_group(series[7])
+    else:
+        obj.set_group(None)
+        
     
     EmissionCredits = 0
+    FreshWaterCredits = 0
     
     if not pd.isnull(series[10]):
         EmissionCredits = series[10]
+        
+    if not pd.isnull(series[11]):
+        FreshWaterCredits = series[11]
        
     minp = 0
-    maxp = 10000000
+    maxp = 100000
     
-    if not pd.isnull(series[11]):
-        minp = series[11]
     if not pd.isnull(series[12]):
-        maxp = series[12]
+        minp = series[12]
+    if not pd.isnull(series[13]):
+        maxp = series[13]
         
     obj.set_productionLimits(minp,maxp)
     
 
-    obj.set_emissionCredits(EmissionCredits)    
+    obj.set_emissionCredits(EmissionCredits)  
+    
+    obj.set_freshwaterCredits(FreshWaterCredits)
  
     
 def wrapp_SourceData(obj, series, df, counter):
@@ -366,15 +406,20 @@ def wrapp_SourceData(obj, series, df, counter):
     
     dic = WF.read_type1(df, 0 , counter)
     
-    UpperLimit = 10000000
+    UpperLimit = 100000
     Costs = 0
     EmissionFactor = 0
+    FreshwaterFactor = 0
+    
     
     if not pd.isnull(series[7]):
         UpperLimit = series[7]
 
     if not pd.isnull(series[8]):
         EmissionFactor = series[8]
+        
+    if not pd.isnull(series[9]):
+        FreshwaterFactor = series[9]
         
     
     if not pd.isnull(series[6]):
@@ -384,6 +429,7 @@ def wrapp_SourceData(obj, series, df, counter):
     obj.set_sourceData(Costs,
                         UpperLimit,
                         EmissionFactor,
+                        FreshwaterFactor,
                         Composition_dictionary  = dic
                         )
     

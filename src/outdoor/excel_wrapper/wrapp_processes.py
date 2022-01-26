@@ -12,9 +12,19 @@ Created on Thu Mar 26 10:56:00 2020
 """
 
 import pandas as pd
-from ..outdoor_core.Block_Process import *
-from .Wrapp_UnitData import *
-import outdoor.excel_wrapper.Wrapping_Functions  as WF
+from ..outdoor_core.unit_operations.library.pool import ProductPool
+from ..outdoor_core.unit_operations.library.source import Source
+from ..outdoor_core.unit_operations.library.stoich_reactor import StoichReactor
+from ..outdoor_core.unit_operations.library.yield_reactor import YieldReactor
+from ..outdoor_core.unit_operations.library.distributor import Distributor
+from ..outdoor_core.unit_operations.library.splitter import Splitter
+from ..outdoor_core.unit_operations.library.furnace import HeatGenerator
+from ..outdoor_core.unit_operations.library.turbine import ElectricityGenerator
+
+
+from ..outdoor_core.unit_operations.superclasses.physical_process import PhysicalProcess
+from .wrapp_unit_data import *
+from . import wrapping_functions as WF
 
 
 
@@ -37,16 +47,16 @@ def wrapp_processUnits(dfi):
     dfi : Dataframe 
     
     """
-
+    
 
     # Set the Excel Ranges
     GeneralDataRange = WF.convert_total ('E', 10, 'E', 30)
-    EnergyDataRange = WF.convert_total('M', 10, 'P', 30)
-    KappaUtRange = WF.convert_total('M', 10, 'P', 30)
-    BalanceDataRange= WF.convert_total('S', 10, 'U', 30)
+    EnergyDataRange = WF.convert_total('M', 10, 'Q', 30)
+    KappaUtRange = WF.convert_total('M', 10, 'Q', 30)
+    BalanceDataRange= WF.convert_total('S', 10, 'U', 35)
     EconomicDataRange= WF.convert_total('H', 11, 'I', 30)
     
-    PossibleSourcesRange = WF.convert_total('W', 10, 'W', 27)
+    PossibleSourcesRange = WF.convert_total('W', 10, 'Z', 27)
     
     ConcDataRange = WF.convert_total2('B', 10, 'F', 30)
     GammaDataRange = WF.convert_total2('H', 10,'J', 30)
@@ -97,7 +107,7 @@ def wrapp_processUnits(dfi):
 
 def wrapp_productPoolUnits(dfi):
     
-    DataRange = WF.convert_total ('D', 6, 'K', 14)
+    DataRange = WF.convert_total ('D', 6, 'Q', 16)
     DataFrame = dfi.iloc[DataRange]
     PoolList = []
     
@@ -115,8 +125,8 @@ def wrapp_productPoolUnits(dfi):
 
 
 def wrapp_sourceUnits(dfi):
-    GeneralDataRange = WF.convert_total('E',6,'O',10)
-    CompositionDataRange  = WF.convert_total('D', 12, 'O', 23)
+    GeneralDataRange = WF.convert_total('E',6,'S',11)
+    CompositionDataRange  = WF.convert_total('D', 13, 'S', 36)
     SourcesList = []
     
     

@@ -1,25 +1,83 @@
 
 import copy
-from .Block_Capex import capex_calculator
+from ..utils.linearizer import capex_calculator
 
 
 class Superstructure():  
     
     
-    def __init__(self, ModelName, Objective, MainProduct=None, ProductLoad=None, *args, **kwargs):
+    def __init__(self, ModelName, Objective, MainProduct=None, ProductLoad=None, OptimizationMode = None , *args, **kwargs):
         
         super().__init__()
+
+
+        # CONSTANT SETS
+        # -------------
+        
+
+        self.OBJECTIVE_SET = {'NPE', 'NPC', 'FWD'}
+        
+        self.OPTIMIZATION_MODE_SET = {'single', 
+                                      'multi-objective', 
+                                      'sensitivity',
+                                      'cross-parameter sensitivity'}
+        
+        self.SENSITIVE_PARAMETERS_SET = {'electricity_price', 
+                                         'heat_price', 
+                                         'capital_costs', 
+                                         'heating_demand', 
+                                         'component_concentration', 
+                                         'source_costs',
+                                         'opex',
+                                         'simple_capex',
+                                         'product_price'}
+
+
+
+        self.CECPI_SET = {1994: 368.1, 1995: 381.1, 1996: 381.7, 1997: 386.5,
+                          1998: 389.5, 1999: 390.6, 2000: 394.1, 2001: 394.3,
+                          2002: 395.6, 2003: 402.0, 2004: 444.2, 2005: 468.2,
+                          2006: 499.6, 2007: 525.4, 2008: 575.4, 2009: 521.9,
+                          2010: 550.8, 2011: 585.7, 2012: 584.6, 2013: 567.1,
+                          2014: 576.1, 2015: 556.8, 2016: 541.7, 2017: 566.1,
+                          2018: 603.1, 2019: 607.5, 2020: 596.2}
+
+
+
+        # Non-indexed Attributes
+        # ----------------------
+        
+        # Main input
+        # ----------
+        
+        if Objective in self.OBJECTIVE_SET:
+            self.objective = Objective
+        else:
+            print('No correct objectives chosen, default objective NPC is simulated')
+            self.objective = 'NPC'
         
         
-        # Lists
+        if OptimizationMode in self.OPTIMIZATION_MODE_SET:
+            self.optimization_mode = OptimizationMode
+        else:
+            print('No correct mode chosen, default mode single is simulated')
+            self.optimization_mode = 'single'
+            
+            
+        self.ModelName = ModelName
+        self.MainProduct = MainProduct
+        self.ProductLoad = {'ProductLoad': ProductLoad}
+        
+
+
+        
+        
+        
+        # Lists for sets
         # -----
         
-        self.Objective_dic = {'NPE' : 'NPE', 'NPC': 'NPC'}
-        self.Data_File = {None: {}}
-        self.ModelName = ModelName
-        
-        
         # Unit Operations
+        # ----------------
         self.UnitsList = []
         self.UnitsNumberList = {'U': []}    
         self.UnitsNumberList2 = {'UU': []}   
@@ -32,59 +90,50 @@ class Superstructure():
         self.CostUnitsList = {'U_C':[]}
         self.SourceList = {'U_S': []}
         self.SourceSet = {'U_SU': []}
-        
         self.YieldSubSet = {'YC': []}
+        self.distributor_subset =  {'U_DIST_SUB': []}
+        self.distributor_list = {'U_DIST': []}
+        self.decimal_set = {'DC_SET': []}
+        self.distributor_subset2 = {'U_DIST_SUB2': []}
+        # ------------------
         
-        
-        
-        # Heat Balance
+
+        # Heat Balance and Utilities
+        # --------------------------
         self.HeatIntervalList =  {'HI': []}
         self.HeatUtilitiesList = {'H_UT': []}
+        self.Heat_Temperatures = []
+        self.HeatIntervals = {}
+        self.UtilitiesList = {'UT' :[]}        
+        self.OtherUtilitiesList = {'U_UT': []}
+        # ---------------------------
+
 
         # Others
+        # ----------
         self.ComponentsList = {'I': []}
         self.ReactionsList = {'R': []}
         self.ReactantsList ={'M': []}
-        self.UtilitiesList = {'UT' :[]}
+
         self.LinPointsList = {'J': []}
         self.LinIntervalsList = {'JI': []} 
         self.UnitNames = {'Names': {}}
-        self.Heat_Temperatures = []
-        self.HeatIntervals = {}
+        # --------------
         
-        # ParameterList
-        self.NI_ParameterList =[]
-        self.I_ParameterList =[]
+        self.groups  = dict()
+        self.connections = dict()
+        
+        
+        
+        
+        # Databased input load (UNDER CONSTRUCTION)
+        
         self.Database = None
         
 
         
-        # Non-indexed Attributes
-        # ----------------------
-        
-        try: 
-            self.Objective = self.Objective_dic[Objective]
-        except:
-            self.Objective = 'NPC'
-            
-             
-        self.MainProduct = MainProduct
-        self.ProductLoad = ProductLoad
-        self.NPC  = 0
-        self.NPE = 0
-        self.CAC = 0 
-        
-        
-        self.IR = {'IR': 0}
-        self.H = {'H': 0}
-        self.K_O = {'K_OM' : 2.06875}
-        self.CECPI = {'CECPI': 0}
-        
-        self.hourly_wage = {'hourly_wage': 41}
-        self.working_hours = {'working_hours': 8322}
-        self.capacity_flow = {'capacity_flow': None}
-        self.process_steps = {'process_steps': 4}
-        
+        # Heat pump variables
+        # -------------------
         self.HP_Costs = {'HP_Costs': 0}
         self.HP_ACC_Factor = {'HP_ACC_Factor': 0}
         self.COP_HP = {'COP_HP': 3}
@@ -92,43 +141,60 @@ class Superstructure():
         self.HP_T_IN = {}
         self.HP_T_OUT = {}
         self.HP_active = False
+        # -------------------
         
-        self.linearizationDetail = 'average'
+        
+        #  Cost calculation variables
+        # ----------------------------
+        self.linearizationDetail = 'real'
+        self.IR = {'IR': 0}
+        self.H = {'H': 0}
+        self.CECPI = {'CECPI': 0}
+        self.K_OM = 0
+        # ---------------------------
 
+
+
+        # For special optimization mode run
+        # --------------------------
+        self.sensitive_parameters = []
+        self.multi_objectives = dict()
+        # --------------------------
         
         
         
         # Indexed Attributes
         # ------------------
         
-        self.CECPI_dic = {1994: 368.1, 1995: 381.1, 1996: 381.7, 1997: 386.5,
-                          1998: 389.5, 1999: 390.6, 2000: 394.1, 2001: 394.3,
-                          2002: 395.6, 2003: 402.0, 2004: 444.2, 2005: 468.2,
-                          2006: 499.6, 2007: 525.4, 2008: 575.4, 2009: 521.9,
-                          2010: 550.8, 2011: 585.7, 2012: 584.6, 2013: 567.1,
-                          2014: 576.1, 2015: 556.8, 2016: 541.7, 2017: 566.1,
-                          2018: 603.1}
-        
-        
-        self.delta_rm = {'delta_rm': {}}
-        self.delta_el = {'delta_el': 50}
-        self.delta_q = {'delta_q': {}}
-        self.delta_cool = {'delta_cool': 14}
 
+        # Utility costs 
+        # --------------
+        self.delta_q = {'delta_q': {}}
+        self.heat_utilities = {}
+        self.delta_cool = {'delta_cool': 14}
+        self.delta_ut = {'delta_ut': {}}
+        # -------------
         
+        
+        # Additional data 
+        # ---------------
         self.lhv = {'LHV':{}}
         self.mw = {'MW': {}}
+        self.cp = {'CP': {}}
         self.em_fac_ut = {'em_fac_ut': {}}
         self.em_fac_comp = {'em_fac_comp': {}}
+        self.fw_fac_ut = {'fw_fac_ut': {}}
         self.alpha = dict()
-        
-        self.heat_utilities = {}
-        
-        
-        
-   
+        # ---------------
 
 
+
+        # - Output data structures
+        # ------------------------
+        self.Data_File = {None: {}}
+        self.NI_ParameterList =[]
+        self.I_ParameterList =[]
+        # -----------------------
 
      
         
@@ -139,15 +205,19 @@ class Superstructure():
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
+
+
         
     def set_operatingHours(self, hours):
         self.H['H'] = hours
         
     def set_interestRate(self, IR):
         self.IR['IR'] = IR
+                
+    def set_omFactor(self,OM):
+        self.K_OM = OM
         
-    def set_omFactor(self, OM):
-        self.K_O['K_OM'] = OM
+        
         
     def set_cecpi(self, year):
         """
@@ -157,7 +227,7 @@ class Superstructure():
             Years from 1994 up to 2018 can be entered here
             
         """
-        self.CECPI['CECPI'] = self.CECPI_dic[year]
+        self.CECPI['CECPI'] = self.CECPI_SET[year]
         
             
 
@@ -219,14 +289,13 @@ class Superstructure():
             
             fine     :  300 
             average  :  20 
-            rough    :  10  
+            rough    :  10
+            real     : New Approach
             
         """
         self.linearizationDetail = Detail
  
 
-    def set_numberProcessSteps(self, Number):
-        self.process_steps['process_steps']  = Number
 
         
 
@@ -263,14 +332,7 @@ class Superstructure():
 
 
           
-            
-          
-            
-          
-            
-          
-            
-          
+  
 
     def __set_unitNames(self):
         for i in self.UnitsList:
@@ -345,13 +407,21 @@ class Superstructure():
                 for j in i:
                     if j not in self.UtilitiesList['UT']:
                         self.UtilitiesList['UT'].append(j)
-                        if j == 'Heat' or j =='Heat2':
+                        if j == 'Heat':
+                            self.HeatUtilitiesList['H_UT'].append('Heat2')
                             self.HeatUtilitiesList['H_UT'].append(j)
+                            self.UtilitiesList['UT'].append('Heat2')
+                        else:
+                            self.OtherUtilitiesList['U_UT'].append(j)
             else:
                 if i not in self.UtilitiesList['UT']:
                     self.UtilitiesList['UT'].append(i)
-                    if i == 'Heat' or i =='Heat2':
+                    if i == 'Heat':
                         self.HeatUtilitiesList['H_UT'].append(i)
+                        self.HeatUtilitiesList['H_UT'].append('Heat2')
+                        self.UtilitiesList['UT'].append('Heat2')
+                    else:
+                        self.OtherUtilitiesList['U_UT'].append(i)
     
     
     
@@ -379,14 +449,22 @@ class Superstructure():
         for i,j in mw_dic.items():
             self.mw['MW'][i] = j 
     
+    
+    def set_cp(self,cp_dic):
+        for i,j in cp_dic.items():
+            self.cp['CP'][i] = j 
+            
+            
 
     def add_linearisationIntervals(self):
         if self.linearizationDetail == "rough":
             n = 10
         elif self.linearizationDetail == "fine":
             n = 301
-        else:        
+        elif self.linearizationDetail == 'average':        
             n = 20
+        else:
+            n = 13
             
         for i in range(1,n):
             self.LinPointsList['J'].append(i)
@@ -429,6 +507,28 @@ class Superstructure():
             if k != 0:
                 self.HeatIntervalList['HI'].append(k)
             k -= 1
+
+
+
+
+
+    def add_sensi_parameters(self, 
+                             parameter_name = None, 
+                             min_value = 0, 
+                             max_value = 0, 
+                             steps = 0, 
+                             index = None):
+
+        if parameter_name in self.SENSITIVE_PARAMETERS_SET:
+            if index is None:
+                self.sensitive_parameters.append(
+                    (parameter_name,min_value,max_value,steps))
+            else:
+                self.sensitive_parameters.append(
+                    (parameter_name,min_value,max_value,steps,index))
+        else:
+            raise ValueError('Parameter Name is not valid for sensitivity analyis')
+
         
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
@@ -443,33 +543,28 @@ class Superstructure():
             for k,t in self.HeatIntervals.items():
                 if t <= i and k<len(self.HeatIntervals)-1:
                     self.delta_q['delta_q'][k+1] = j
-        
-                    
-    def set_deltaEL(self, delta_el_value):
-        self.delta_el['delta_el'] = delta_el_value      
-        
-        
+                             
+    def set_deltaUt(self, delta_ut_dic):
+        for j,k in delta_ut_dic.items():
+            self.delta_ut['delta_ut'][j] = k 
         
     def set_deltaCool(self, delta_cool_value):
         self.delta_cool['delta_cool'] = delta_cool_value
-            
-            
-            
-    def set_deltaRM(self, delta_rm_dic):
-        for i in delta_rm_dic:
-            self.delta_rm['delta_rm'][i] = delta_rm_dic[i]
-           
-            
            
     def set_utilityEmissionsFactor(self, em_fac_ut_dic):
         for i in em_fac_ut_dic:
-            self.em_fac_ut['em_fac_ut'][i]  =em_fac_ut_dic[i]
+            self.em_fac_ut['em_fac_ut'][i]  = em_fac_ut_dic[i]
             
-            
-            
+    def set_utilityFreshWaterFator(self, fw_fac_ut_dic):
+        for i in fw_fac_ut_dic:
+            self.fw_fac_ut['fw_fac_ut'][i] = fw_fac_ut_dic[i]
+                      
     def set_componentEmissionsFactor(self, em_fac_comp_dic):
         for i in em_fac_comp_dic:
             self.em_fac_comp['em_fac_comp'][i] = em_fac_comp_dic[i]
+
+    def set_multiObjectives(self, Objectives_dictionary):
+        self.multi_objectives = Objectives_dictionary
             
             
 #------------------------------------------------------------------------------
@@ -741,7 +836,15 @@ class Superstructure():
     def __set_optionalFLH(self):
         for x in self.UnitsList:
             if x.FLH['flh'][x.Number] is None:
-                x.FLH['flh'][x.Number] = self.H['H']     
+                x.FLH['flh'][x.Number] = self.H['H']   
+ 
+                
+    def __set_optionalKOM(self):
+        for x in self.UnitsList:
+            if x.Number in self.CostUnitsList['U_C']:
+                if x.K_OM['K_OM'][x.Number] is None:
+                    x.K_OM['K_OM'][x.Number] = self.K_OM
+                
         
 
 #------------------------------------------------------------------------------
@@ -780,25 +883,21 @@ class Superstructure():
         self.NI_ParameterList.append(self.LinPointsList)
         self.NI_ParameterList.append(self.LinIntervalsList)
         self.NI_ParameterList.append(self.H)
-        self.NI_ParameterList.append(self.K_O)
         self.NI_ParameterList.append(self.IR)
         self.NI_ParameterList.append(self.CECPI)
-        self.NI_ParameterList.append(self.delta_el)
         self.NI_ParameterList.append(self.delta_cool)  
         self.NI_ParameterList.append(self.COP_HP)
         self.NI_ParameterList.append(self.HP_ACC_Factor)
-        self.NI_ParameterList.append(self.HP_Costs)
-        self.NI_ParameterList.append(self.capacity_flow)
-        self.NI_ParameterList.append(self.hourly_wage)
-        self.NI_ParameterList.append(self.working_hours)
-        self.NI_ParameterList.append(self.process_steps)    
+        self.NI_ParameterList.append(self.HP_Costs)   
         self.NI_ParameterList.append(self.YieldSubSet)
-        
+
         self.NI_ParameterList.append(self.distributor_list)
         self.NI_ParameterList.append(self.distributor_subset)
         self.NI_ParameterList.append(self.decimal_set)
+        self.NI_ParameterList.append(self.distributor_subset2)
+        self.NI_ParameterList.append(self.OtherUtilitiesList)
+        self.NI_ParameterList.append(self.ProductLoad)
         
-
         
         
     def __fill_indexedParameterList(self):
@@ -809,12 +908,15 @@ class Superstructure():
         """
         
         self.I_ParameterList.append(self.delta_q)
-        self.I_ParameterList.append(self.delta_rm)
         self.I_ParameterList.append(self.em_fac_ut)
         self.I_ParameterList.append(self.em_fac_comp)
+        self.I_ParameterList.append(self.fw_fac_ut)
         self.I_ParameterList.append(self.lhv)
         self.I_ParameterList.append(self.mw)
         self.I_ParameterList.append(self.UnitNames)
+        self.I_ParameterList.append(self.cp)
+        self.I_ParameterList.append(self.delta_ut)
+        
 
         
     
@@ -887,12 +989,6 @@ class Superstructure():
                     except:
                         self.Data_File[None][j] = copy.copy(k)        
    
-
-
-    def __calc_capacityFlow(self):
-        cap = self.ProductLoad / self.H['H'] * 1000
-        cap =cap**0.242
-        self.capacity_flow['capacity_flow'] = cap
         
 
 
@@ -910,18 +1006,19 @@ class Superstructure():
 
 
         """
-        
+
         self.add_linearisationIntervals()
-        
+ 
         self.__calc_capexLinearizationParameters() 
-      
+
         self.__calc_accFactorParameter()
         
         self.__set_optionalFLH()
         
+        self.__set_optionalKOM()
+        
         self.__set_turnoverParameter()
         
-        self.__calc_capacityFlow()
 
         
 
@@ -1021,6 +1118,5 @@ class Superstructure():
                     print('Something wrong in parameter init')
                 finally:
                     return self.Data_File
-        
-    
-        
+                
+          

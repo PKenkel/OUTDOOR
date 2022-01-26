@@ -1,42 +1,42 @@
 import sys
 import os
+from pyomo.environ import *
+
+import tracemalloc
+tracemalloc.start()
+
 
 a = os.path.dirname(__file__)
 a = os.path.dirname(a)
 
 
-b= a + '/src'
+b = a + '/src'
 sys.path.append(b)
 
 
-
-
-import outdoor
+import outdoor 
 
 Excel_Path = "Test_Excel.xlsm"
 
 Results_Path = os.path.dirname(a) + '/outdoor_examples/results/'
 
-Data_Path =os.path.dirname(a) + '/outdoor_examples/data/'
+Data_Path = os.path.dirname(a) + '/outdoor_examples/data/'
 
 ts = outdoor.get_DataFromExcel(Excel_Path)
 
-(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'gurobi', 'local')
+# (Opt,calc_time) = outdoor.solve_OptimizationProblem(ts, 'single','gurobi', 'local')
+
+# (Opt,calc_time) = outdoor.solve_OptimizationProblem(ts, 'multi-objective','gurobi', 'local')
+
+(Opt,Info) = outdoor.solve_OptimizationProblem(ts, 'sensitivity', 'gurobi', 'local')
+
+current, peak = tracemalloc.get_traced_memory()
+print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
 
 
-outdoor.Save_CaseStudy(Opt, Info, Results_Path)
+outdoor.create_superstructure_flowsheet(ts, Results_Path)
 
-outdoor.displayHeatBalanceResults(Opt,Info)
-outdoor.displayBasicResults(Opt)
-
-outdoor.save_dict_to_file(Data_Path, Info)
-
-
-# a=ts.UnitsList[6]
-
-# b=ts.UnitsList[7]
-
-
-# print(ts.decimal_set)
-# Opt.DC_SET.pprint()
-# Opt.U_DIST_SUB.pprint()
+Opt.save_results(Results_Path)
+Opt.create_flowchart(Results_Path)
+Opt.create_sensitivity_graph()
+Opt.create_plot_bar('Capital costs shares')
