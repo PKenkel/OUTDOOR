@@ -17,6 +17,75 @@ from ..superstructure_sytem.optimized_design import ProcessResults
 from ..superstructure_sytem.optimized_multi_design import MultipleResults
 
 
+
+# class SingleOptimizer:
+    
+#     def __init__(self, model_instance, 
+#                  solver_name, 
+#                  solver_interface, 
+#                  thread_count = 4, 
+#                  max_time = None, 
+#                  max_gap = None):
+        
+#         self.SOLVER_LIBRARY = {'gurobi', 'cbc', 'scip'}
+#         self.model_instance = model_instance
+        
+#         if solver_name in self.SOLVER_LIBRARY:
+#             self.solver = solver_name
+#         else:
+#             self.solver = solver_name
+#             print('Solver not in library, correct optimization not garanteed')
+        
+#         if self.solver == 'gurobi':    
+#             self.interface = 'python'
+            
+#         self.max_gap = max_gap
+#         self.max_time = max_time
+#         self.threads = thread_count
+        
+#     def run_optimization(self):
+#         timer = self.timer()
+#         solver = SolverFactory(self.solver, solver_io = self.interface)
+#         solver = self.set_solver_options(solver,
+#                                          self.max_gap, 
+#                                          self.max_time, 
+#                                          self.threads)
+        
+#         results  = solver.solve(self.model_instance, tee=True)
+#         gap = ((results['Problem'][0]['Upper bound'] - 
+#                        results['Problem'][0]['Lower bound']) /
+#                        results['Problem'][0]['Upper bound']
+#                        ) * 100
+        
+#         model_output = ProcessResults(ModelInstance, SolverName, run_time, gap)
+        
+#         timer = self.timer(timer)
+#         print(f'solving time {round(timer,2)} seconds')
+        
+#         return model_output
+    
+    
+#     def set_solver_options(self, solver, gap=None, time=None, threads=None):      
+#         if threads is not None:
+#             solver.options['threads'] = threads
+#         if gap is not None:
+#             solver.options['MIPGap'] = gap
+#         if time is not None:
+#             solver.options['timelimit'] = time
+        
+#         return solver
+        
+#     def timer(self, past_time=None):
+#         time_ = time.time()
+        
+#         if past_time is not None:
+#             time_ = time_ - past_time
+        
+#         return time_
+    
+
+
+
 def solve_singleRun(ModelInstance, SolverName, SolverInterface):
 
     start_time = time.time()
@@ -27,7 +96,14 @@ def solve_singleRun(ModelInstance, SolverName, SolverInterface):
             if SolverName == "gurobi":
                 solver = SolverFactory(SolverName, solver_io="python")
                 solver.options['threads'] = 5
+                # solver.options['MIPGap'] = 0.01
+                solver.options['timelimit'] = 100
                 results = solver.solve(ModelInstance, tee=True)
+
+                gap = ((results['Problem'][0]['Upper bound'] - 
+                       results['Problem'][0]['Lower bound']) /
+                       results['Problem'][0]['Upper bound']
+                       ) * 100
             elif SolverName == "scip":
                 solver = SolverFactory(SolverName)
                 results = solver.solve(ModelInstance, tee=True)
@@ -60,8 +136,7 @@ def solve_singleRun(ModelInstance, SolverName, SolverInterface):
 
     end_time = time.time()
     run_time = end_time - start_time
-
-    solved = ProcessResults(ModelInstance, SolverName, run_time)
+    solved = ProcessResults(ModelInstance, SolverName, run_time, gap)
 
     print("-----------")
     print("Single run solved, solver time:")

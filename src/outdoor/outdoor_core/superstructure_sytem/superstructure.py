@@ -3,10 +3,38 @@ import copy
 from ..utils.linearizer import capex_calculator
 
 
+
+# ToDos
+
+"""
+- set unit names funktion in classen  ? 
+- functions in snake case
+- variables in snake case
+- Überprüfen ob Notwendig:
+    - Objective, MainProduct, Load, Optimization Mode
+    
+- Doppelnutzung von OptimizationMode raus
+- Docstrings für alle Funktionen
+
+- Unique function --> Auf Basis von set(list))
+- add linearization detail anpassen
+- Listen Namen anpassen
+- Load Data from text kann raus --> da muss neue struktur eher in den main -optimizer
+- Create data_file mehr dokumentation und error handling 
+
+"""
+
 class Superstructure():  
     
     
-    def __init__(self, ModelName, Objective, MainProduct=None, ProductLoad=None, OptimizationMode = None , *args, **kwargs):
+    def __init__(self, 
+                 ModelName, 
+                 Objective, 
+                 MainProduct=None, 
+                 ProductLoad=None, 
+                 OptimizationMode = None , 
+                 *args, 
+                 **kwargs):
         
         super().__init__()
 
@@ -377,6 +405,7 @@ class Superstructure():
                     
         
     def add_reactants(self,*args):
+        
         """
         Parameters
         ----------

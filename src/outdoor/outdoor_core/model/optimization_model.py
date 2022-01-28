@@ -1,6 +1,26 @@
 from pyomo.environ import *
 
 
+# todos
+
+"""
+ - Entkopplung von Superstructure Objekt ? 
+         - Main Produkt --> Machbar
+         - Heat pump --> Machbar
+         - Objectives --> Machbar
+         - Logics = wird schwerder
+         
+- Genreller approach:
+    Entweder alles in "Modell Objekte"" überführen, die dann alle über das Data File gesetzt
+    werden (Sicher machbar für Prod/Obj/HP, schwierig für Logics)
+    
+    Oder: Parameterübergabe bzw. getter-funktionen aus Superstructure 
+    
+- Möglichkeit UU set zu kicken= 
+- Kombi set für mögliche topologie ?=
+
+"""
+
 class SuperstructureModel(AbstractModel):
         
     """
@@ -1126,7 +1146,7 @@ class SuperstructureModel(AbstractModel):
        
         
         def Test_con(self):
-            return self.Y[60000] + self.Y[70000]+self.Y[31000] == 0
+            return self.Y[70000] +  self.Y[31000] == 0
         
         # self.Test_con_1 = Constraint(rule=Test_con)
         
