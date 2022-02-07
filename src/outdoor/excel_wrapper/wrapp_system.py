@@ -11,7 +11,7 @@ import sys
 
 import pandas as pd
 
-from ..outdoor_core.superstructure_sytem.superstructure import Superstructure
+from ..outdoor_core.input_classes.superstructure import Superstructure
 from . import wrapping_functions as WF
 
 

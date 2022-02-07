@@ -14,6 +14,8 @@ from .wrapp_processes import wrapp_productPoolUnits
 from .wrapp_processes import wrapp_sourceUnits
 from .wrapp_processes import wrapp_distributors
 
+from ..outdoor_core.utils.timer import time_printer
+
 
 from .wrapp_system import wrapp_SystemData
 
@@ -45,7 +47,7 @@ def get_DataFromExcel(PathName=None):
     Superstructure_Object  
     
     """
-
+    timer = time_printer(programm_step='Extract data from excel')
     datframe = pd.read_excel(PathName, sheet_name = None)
 
     PU_ObjectList  =[]
@@ -85,7 +87,7 @@ def get_DataFromExcel(PathName=None):
 
          
     Superstructure_Object.add_UnitOperations(PU_ObjectList)
-
+    timer = time_printer(timer, 'Exctract data from excel')
     return Superstructure_Object
 
 
