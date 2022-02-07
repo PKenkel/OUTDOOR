@@ -6,77 +6,11 @@ Created on Tue Jun 15 11:54:16 2021
 @author: philippkenkel
 """
 
-import time
 from pyomo.environ import *
+from ...utils.timer import time_printer
 
-from .variation_analysis_tools.utility_cost_changer import change_utility_costs
-from .variation_analysis_tools.capital_cost_changer import change_capital_costs
-from .variation_analysis_tools.concentration_demand_changer import change_concentration_demand
-from .variation_analysis_tools.heat_demand_changer import change_heat_demand
-from .variation_analysis_tools.source_cost_changer import change_source_costs, change_product_price
-from .variation_analysis_tools.opex_changer import change_opex_factor
-from .variation_analysis_tools.simple_capex_changer import change_simple_capex
-
-
+def change_objective_function(Instance, Obj, results=None, MultiObjectives=None):
     
-def create_initialInstance(S_Model, Model_Data):
-    """
-    Parameters
-    ----------
-    S_Model : SuperstructureModel Object, which is a Pyomo AbstractModel
-    Model_Data : Model Data as Python Dictionary, created from Superstructure object
-
-    Description
-    -----------
-    
-    Takes the Abstract model as well as the intial data file and creates an inital
-    Instance (Concrete model).
-
-    Returns
-    -------
-    ModelInstance : Pyomo Concrete Model / Filled SuperstructureModel Object
-
-    """
-
-    start_time = time.time()
-    print("-- Create initial Model instance from DataFile")
-    ModelInstance = S_Model.populateModel(Model_Data)
-    end_time = time.time()
-    run_time = end_time - start_time
-    print("-- Initial model created, calculation time: ", run_time, " --")
-
-    return ModelInstance
-
-
-def error_func(*args):
-    raise ValueError("Parameter not in Variation Parameter set")
-    
-    
-
-def change_Instance(Instance, parameter, value, index=None, superstructure=None):
-    function_dictionary = {
-        "electricity_price": change_utility_costs,
-        "chilling_price": change_utility_costs,
-        "capital_costs": change_capital_costs,
-        "component_concentration": change_concentration_demand,
-        "heating_demand": change_heat_demand,
-        "source_costs": change_source_costs,
-        "opex": change_opex_factor,
-        "simple_capex": change_simple_capex,
-        "product_price": change_product_price
-    }
-
-    function_dictionary.get(parameter, error_func)(
-        Instance, parameter, value, index, superstructure
-    )
-
-    return Instance
-
-    
-    
-        
-def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
-
     Instance.del_component(Instance.Objective)
 
     if Obj == "NPC":
@@ -102,7 +36,7 @@ def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
 
     elif Obj == "MCDA":
 
-        print("change objective to MCDA")
+        timer = time_printer(programm_step = 'Model reformulation')
 
         # Create list with all values, start with reference values
         npc = [MultiObjectives["NPC"][1]]
@@ -301,9 +235,9 @@ def change_Objective(Instance, Obj, results=None, MultiObjectives=None):
 
         def Objective_rule(Instance):
             return Instance.MCDA_Ob
-
+        
         Instance.Objective = Objective(rule=Objective_rule, sense=maximize)
-
+        timer = time_printer(timer, 'Model reformulation')
     else:
         print("Error in change_Objetive function, no fitting input")
                 
